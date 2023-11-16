@@ -1,0 +1,41 @@
+{% extends "frontend/template.html" %}
+{% load static %}
+
+{% block title %} Criar usuário | Arena Sunset {% endblock %}
+
+{% block content %}
+<form id="formulario" enctype="multipart/form-data">
+
+  <input id="usuario" name="usuario"><br>
+  <input id="senha" name="senha" type="password"><br>
+  <input id="foto" accept="image/*" name="foto" type="file"><br>
+
+  {% csrf_token %}
+
+  <button type="submit">Gravar</button>
+
+</form>
+
+<script>
+  $(document).ready(function(){
+
+    const form = $("#formulario").submit(function(){
+      gravar(new FormData(this))
+      return false;
+    });
+
+    const gravar = (formData) => {
+      form_data_request('http://localhost:8000/backend/usuarios/criar', formData, 'POST', 'RAO10ESc4yj5VgUqjL1WXVVHPAYcqkpr')
+      .then(json => {
+        console.log(json)
+      })
+      .catch(e => {
+        console.log(e)
+      })
+    }
+  })
+  
+  
+</script>
+
+{% endblock %}

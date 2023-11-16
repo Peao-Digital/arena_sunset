@@ -1,0 +1,20 @@
+{% extends "frontend/template.html" %}
+{% load static %}
+
+{% block title %} Login | Arena Sunset {% endblock %}
+
+{% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/login.css' %}">
+<script src="{% static 'frontend/js/login.js' %}"></script>
+
+<form method="post" action="{% url 'frontend:login' %}?next={{next_url}}">
+  {% csrf_token %}
+  <label>Usário</label><input type="text" name="username" required><br>
+  <label>Password</label><input type="password" autocomplete="current-password" name="password" required>
+  <input type="submit" value="Login">
+  <br>
+
+  {{erro_login}}
+</form>
+
+{% endblock %}

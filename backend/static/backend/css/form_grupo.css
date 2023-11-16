@@ -1,0 +1,14 @@
+.related-widget-wrapper,
+.related-widget-wrapper .selector {
+  width: 100%
+}
+
+.selector-available, 
+.selector-chosen {
+  width: 49%;
+}
+
+.selector-available > select, 
+.selector-chosen > select {
+  width: 100%;
+}
