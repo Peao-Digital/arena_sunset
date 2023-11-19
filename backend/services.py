@@ -8,6 +8,8 @@ from django.contrib.auth.models import (User, Group)
 from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 
+from .functions import *
+
 from .models import *
 
 def upload_file(f, name, dirpath):
@@ -152,7 +154,9 @@ class UsuarioSrv():
         u_obj.last_name = sobrenome
         u_obj.email = email
         u_obj.username = usuario
-        u_obj.set_password(senha)
+        
+        if senha != '':
+          u_obj.set_password(senha)
 
         u_obj.save()
 
@@ -270,3 +274,139 @@ class UsuarioSrv():
       return {"erro": e, "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
+  def trocar_senha(request):
+    try:
+
+      post_data = json.loads(request.body)
+      senha = post_data.get('senha', None)
+
+      request.user.set_password(senha)
+      request.user.save()
+
+      return {'msg': 'A senha foi trocada com sucesso!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro": e, "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+class ProfessorSrv():
+  
+  @staticmethod
+  def listar(request):
+    try:
+
+      if f_usuario_possui_grupo(request.user, 'PROFESSOR') and request.user.is_superuser is False:
+        dados = User.objects.select_related().filter(pk=request.user.id)
+      else:
+        dados = User.objects.select_related().filter(groups__tipo_grupo__tipo='PROFESSOR')
+
+      d_json = []
+      for dado in dados:
+        d_json.append({
+          'id': dado.id, 'usuario': dado.username,
+          'nome': f_nome_usuario(dado)
+        })
+
+      return {'dados': d_json}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro": e, "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
+  def ver_horarios(request, id):
+    pass
+
+class PacoteSrv():
+
+  @staticmethod
+  def listar(request):
+    try:
+      dados = Pacote.objects.values('id', 'nome', 'qtd_aulas_semana', 'qtd_participantes').all()
+      return {'dados': list(dados)}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro": e, "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
+  def ver(request, id):
+    try:
+      dados = Pacote.objects.values('id', 'nome', 'qtd_aulas_semana', 'qtd_participantes').get(pk=id)
+      return {'dados': dados}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro": e, "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+  
+  @staticmethod
+  def criar(request):
+    try:
+      post_data = json.loads(request.body)
+
+      pacote_obj = Pacote()
+      pacote_obj.nome = post_data.get('nome', None)
+      pacote_obj.valor = post_data.get('valor', None)
+      pacote_obj.qtd_aulas_semana = post_data.get('qtd_aulas_semana', None)
+      pacote_obj.qtd_participantes = post_data.get('qtd_participantes', None)
+      pacote_obj.ativo = post_data.get('ativo', None)
+
+      pacote_obj.full_clean()
+      pacote_obj.save()
+      
+      return {'id': pacote_obj.id}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro": e, "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+    
+  @staticmethod
+  def atualizar(request, id):
+    try:
+      post_data = json.loads(request.body)
+     
+      pacote_obj = Pacote.objects.get(pk=id)
+      pacote_obj.nome = post_data.get('nome', None)
+      pacote_obj.qtd_aulas_semana = post_data.get('qtd_aulas_semana', None)
+      pacote_obj.qtd_participantes = post_data.get('qtd_participantes', None)
+      pacote_obj.ativo = post_data.get('ativo', None)
+
+      pacote_obj.full_clean()
+      pacote_obj.save()
+      
+      return {'id': pacote_obj.id}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro": e, "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+    
+  @staticmethod
+  def deletar(request, id):
+    try:
+      pacote_obj = Pacote.objects.get(pk=id)
+      pacote_obj.delete()
+
+      return {'msg': 'O registro foi deletado com sucesso!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro": e, "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+    
+class AgendaSrv():
+  pass

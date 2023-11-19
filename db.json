@@ -1,0 +1,88 @@
+[
+{
+  "model": "auth.group",
+  "pk": 1,
+  "fields": {
+    "name": "Administradores do Site",
+    "permissions": []
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 2,
+  "fields": {
+    "name": "Professores",
+    "permissions": []
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 3,
+  "fields": {
+    "name": "Atendimento",
+    "permissions": []
+  }
+},
+{
+  "model": "auth.group",
+  "pk": 4,
+  "fields": {
+    "name": "Alunos",
+    "permissions": []
+  }
+},
+{
+  "model": "auth.user",
+  "pk": 1,
+  "fields": {
+    "password": "pbkdf2_sha256$390000$VsXqHoSNxx4NyMEwTMPoE3$wA1Q4aJ98qK0ZkmaepiTFbQwvOSecf5aI862O+1/m6A=",
+    "last_login": "2023-11-17T18:18:14.105Z",
+    "is_superuser": true,
+    "username": "admin_django",
+    "first_name": "Administrador",
+    "last_name": "Django",
+    "email": "",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2023-11-13T17:03:03Z",
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "backend.tipogrupo",
+  "pk": 1,
+  "fields": {
+    "grupo": 3,
+    "descricao": "Grupo para o perfil Atendimento (professor que pode ver de todos os professores)",
+    "tipo": "ATENDIMENTO"
+  }
+},
+{
+  "model": "backend.tipogrupo",
+  "pk": 2,
+  "fields": {
+    "grupo": 4,
+    "descricao": "",
+    "tipo": "ALUNOS"
+  }
+},
+{
+  "model": "backend.tipogrupo",
+  "pk": 3,
+  "fields": {
+    "grupo": 2,
+    "descricao": "",
+    "tipo": "PROFESSOR"
+  }
+},
+{
+  "model": "backend.tipogrupo",
+  "pk": 4,
+  "fields": {
+    "grupo": 1,
+    "descricao": "",
+    "tipo": "ADM_SITE"
+  }
+}
+]
