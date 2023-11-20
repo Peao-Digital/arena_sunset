@@ -22,5 +22,8 @@ urlpatterns = [
   path('pacotes/criar', PacoteCrudView.as_view(http_method_names=['post']), name="Criar pacote"),
   path('pacotes/atualizar/<int:id>', PacoteCrudView.as_view(http_method_names=['put']), name="Atualizar pacote"),
   path('pacotes/deletar/<int:id>', PacoteCrudView.as_view(http_method_names=['delete']), name="Deletar pacote"),
-  path('pacotes/listar', PacoteCrudView.as_view(http_method_names=['get']), name="Buscar pacotes")
+  path('pacotes/listar', PacoteCrudView.as_view(http_method_names=['get']), name="Buscar pacotes"),
+
+  path('agenda/reservar_especial/criar', ReservaEspecialCrudView.as_view(http_method_names=['post']), name="Reservar dia especial"),
+  path('agenda/reservar_especial/<int:id>', ReservaEspecialCrudView.as_view(http_method_names=['delete']), name="Reservar dia especial"),
 ]

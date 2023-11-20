@@ -106,3 +106,17 @@ class PacoteCrudView(View):
     if status != 400:
       res, status = PacoteSrv.deletar(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+
+class ReservaEspecialCrudView(View):
+  
+  def post(self, request):
+    res, status = apenas_administracao(request.user)
+    if status != 400:
+      res, status = AgendaSrv.criar_reserva_especial(request)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+
+  def delete(self, request, id):
+    res, status = apenas_administracao(request.user)
+    if status != 400:
+      res, status = AgendaSrv.deletar_reserva_especial(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)

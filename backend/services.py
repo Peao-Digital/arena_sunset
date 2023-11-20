@@ -30,7 +30,7 @@ class GruposSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
@@ -68,14 +68,14 @@ class UsuarioSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
   def criar(request):
     try:
-      post_data = request.POST
+      post_data = json.loads(request.body)
 
       with transaction.atomic():
         usuario = post_data.get('usuario', None)
@@ -102,17 +102,17 @@ class UsuarioSrv():
 
         u_obj.save()
 
-        arquivo = ''
-        if request.FILES.get('foto', None) is not None:
-          extensao = request.FILES['foto'].name.split('.')[-1]
-          nome = 'foto_perfil_{}.{}'.format(u_obj.id, extensao)
-          dirpath = os.path.join(settings.UPLOAD_ROOT, 'usuarios')
-          arquivo = upload_file(request.FILES['foto'], nome, dirpath)
+        #arquivo = ''
+        #if request.FILES.get('foto', None) is not None:
+        #  extensao = request.FILES['foto'].name.split('.')[-1]
+        #  nome = 'foto_perfil_{}.{}'.format(u_obj.id, extensao)
+        #  dirpath = os.path.join(settings.UPLOAD_ROOT, 'usuarios')
+        #  arquivo = upload_file(request.FILES['foto'], nome, dirpath)
 
         p_obj = Perfil()
         p_obj.user = u_obj
         p_obj.cpf = cpf
-        p_obj.foto_perfil = arquivo
+        #p_obj.foto_perfil = arquivo
 
         p_obj.save()
         
@@ -124,7 +124,7 @@ class UsuarioSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
@@ -177,7 +177,7 @@ class UsuarioSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
@@ -219,7 +219,7 @@ class UsuarioSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
@@ -233,7 +233,7 @@ class UsuarioSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
   
@@ -271,7 +271,7 @@ class UsuarioSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
@@ -289,7 +289,7 @@ class UsuarioSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
@@ -315,7 +315,7 @@ class ProfessorSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
@@ -333,7 +333,7 @@ class PacoteSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
@@ -345,7 +345,7 @@ class PacoteSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
   
@@ -368,7 +368,7 @@ class PacoteSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
     
@@ -390,7 +390,7 @@ class PacoteSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
     
@@ -404,9 +404,70 @@ class PacoteSrv():
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
-      return {"erro": e, "tipo_erro": "validacao"}, 400
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
-    
+
 class AgendaSrv():
-  pass
+  
+  '''
+    -----------Reservar dias/horarios que não podem ser agendados (feriados, torneios, etc...)-----------
+  '''
+  @staticmethod
+  def criar_reserva_especial(request):
+    try:
+      post_data = json.loads(request.body)
+
+      with transaction.atomic():
+        data = post_data.get('data', None)
+        hora_ini = post_data.get('hora_ini', '00:00')
+        hora_fim = post_data.get('hora_fim', '23:59')
+
+        obj_r = DiaReservado()
+        obj_r.descricao = post_data.get('descricao', '')
+        obj_r.dia_inteiro = post_data.get('dia_inteiro', None)
+
+        obj_a = Agenda()
+        obj_a.data = data
+        obj_a.data_horario_ini = conveter_datahorario(data, hora_ini)
+        obj_a.data_horario_fim = conveter_datahorario(data, hora_fim)
+        obj_a.reserva_especial = obj_r
+
+        if obj_a.existe() is False:
+          obj_r.full_clean()
+          obj_r.save()
+
+          obj_r.full_clean()
+          obj_a.save()
+        else:
+          return {'msg': 'Um registro com esta data/horário já existe!'}, 400
+      
+      return {'id': obj_r.id}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
+  def deletar_reserva_especial(request, id):
+    try:
+      with transaction.atomic():
+        obj_r = DiaReservado.objects.filter(pk=id)
+        obj_a = Agenda.objects.filter(reserva_especial=obj_r)
+
+        obj_a.delete()
+        obj_r.delete()
+        
+      return {'msg': 'Registro deletado com sucesso!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  '''
+    -----------Reservas normais-----------
+  '''

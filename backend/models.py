@@ -1,5 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import (User, Group)
+from django.db.models import Q
+
+from backend.functions import conveter_datahorario
 
 from .constants import *
 from .models import *
@@ -36,16 +39,6 @@ class Pacote(models.Model):
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
 
 '''
-  Classe DiaReservado 
-'''
-class DiaReservado(models.Model):
-  data = models.DateField()
-  horario_ini = models.CharField(max_length=20, null=True)
-  horario_fim = models.CharField(max_length=20, null=True)
-  descricao = models.TextField()
-  repetir_ano = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
-
-'''
   Classe de aluno
 '''
 class Aluno(models.Model):
@@ -72,9 +65,6 @@ class AlunoPacote(models.Model):
 class Aula(models.Model):
   pacote = models.ForeignKey(Pacote, on_delete=models.DO_NOTHING)
   contratante = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING, related_name='aula_contratante')
-  data = models.DateField()
-  horario_ini = models.CharField(max_length=20)
-  horario_fim = models.CharField(max_length=20)
   professor = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aula_professor')
   ativa = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
 
@@ -98,3 +88,51 @@ class AulaAluno(models.Model):
 
   conferido_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aulaaluno_conferido_por', null=True)
   conferido_em = models.DateTimeField(null=True)
+
+'''
+  Classe DiaReservado 
+'''
+class DiaReservado(models.Model):
+  descricao = models.TextField(blank=True)
+
+  class Meta:
+    verbose_name_plural = 'Dias de reserva especiais'
+
+'''
+  Classe Agenda 
+'''
+class Agenda(models.Model):
+  data = models.DateField()
+  data_horario_ini = models.DateTimeField()
+  data_horario_fim = models.DateTimeField()
+
+  aula = models.ForeignKey(Aula, on_delete=models.CASCADE, null=True)
+  reserva_especial = models.ForeignKey(DiaReservado, on_delete=models.CASCADE, null=True)
+  dia_inteiro = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
+
+  class Meta:
+    unique_together = ('data_horario_ini', 'data_horario_fim')
+    constraints = [
+      models.CheckConstraint(
+        name="%(app_label)s_%(class)s_aula_ou_especial",
+        check=(
+            models.Q(aula__isnull=True, reserva_especial__isnull=False)
+            | models.Q(aula__isnull=False, reserva_especial__isnull=True)
+        ),
+      )
+    ]
+  
+  def existe(self):
+    c1 = len(
+      Agenda.objects.filter(
+        data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim)
+      )
+    ) > 0
+
+    c2 = len(
+      Agenda.objects.filter(
+        data=self.data, dia_inteiro='S'
+      )
+    ) > 0
+
+    return c1 or c2

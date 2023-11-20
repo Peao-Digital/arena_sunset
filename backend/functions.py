@@ -1,5 +1,5 @@
 from datetime import datetime
-from django.contrib.auth.models import (User, Group)
+from django.utils.timezone import make_aware
 
 def f_usuario_possui_grupo(user, tipo_grupo):
   if user.is_authenticated is False:
@@ -14,3 +14,6 @@ def f_nome_usuario(user):
   if user.first_name != '':
     return user.first_name.capitalize() + ' ' + user.last_name
   return user.username.capitalize()
+
+def conveter_datahorario(data, hora):
+  return make_aware(datetime.strptime(data + ' ' + hora, '%Y-%m-%d %H:%M'))
