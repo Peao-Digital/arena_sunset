@@ -1,7 +1,161 @@
-html, body {
+html,
+body {
   width: 100%;
   height: 100%;
-  background-color: rgba(243, 239, 239, 0.863);
   margin: 0;
+  color: #fff;
+  background-color: #070e1d;
   font-family: "Raleway", sans-serif;
+}
+
+/* Div do conteudo */
+
+main {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  width: 100%;
+  height: 100%;
+}
+
+.divContent {
+  width: 100%;
+}
+
+/* Toggle */
+
+.toggle {
+  display: flex;
+  justify-content: center;
+  height: 60px;
+  border-bottom: 1px solid #314473;
+  align-items: center;
+}
+
+.btn-logo {
+  margin-right: 90px;
+}
+
+.logo-nav {
+  width: 55px;
+}
+
+.btnToggle,
+.btnToggle:focus {
+  border: none;
+  box-shadow: none;
+}
+
+/* Sidebar - Navbar */
+
+.navbar {
+  padding: 5px;
+  height: 60px;
+  display: flex;
+  justify-content: flex-end;
+  background-color: #0d1529;
+  border-bottom: 1px solid #314473;
+}
+
+.custom-sidebar {
+  width: 50px;
+  transition: width 0.3s ease;
+  height: 100%;
+  overflow-x: hidden;
+  background-color: #0d1529;
+  border-right: 1px solid #314473;
+}
+
+.custom-sidebar.show {
+  height: 100%;
+  width: 280px;
+  overflow-x: hidden;
+  background-color: #0d1529;
+  border-right: 1px solid #314473;
+}
+
+/* Botões Sidebar list */
+
+.btn-list {
+  padding: 25px 16px 50px;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+}
+
+.btn-list li {
+  text-align: left;
+  list-style-type: none;
+}
+
+.nav-link {
+  color: #455fa2;
+}
+
+.nav-link:hover {
+  color: #FE5408;
+}
+
+.btn-list-sidebar {
+  color: #455fa2;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  padding: 0;
+  height: 32px;
+  white-space: nowrap;
+}
+
+.btn-list-sidebar:hover,
+.btn-list-sidebar:active {
+  color: #FE5408;
+}
+
+.icons {
+  width: 16px;
+  height: 16px;
+}
+
+.list-title {
+  font-size: 14px;
+  margin-left: 20px;
+}
+
+/* Account Button */
+
+.myaccount {
+  color: white;
+  padding: 10px;
+  border-radius: 100%;
+  border: none;
+  background-color: #FE5408;
+}
+
+.dropdown-toggle::after {
+  display: none;
+}
+
+ul.dropdown-menu.show {
+  background-color: #070e1d;
+  width: 280px;
+  position: absolute;
+  right: -16px;
+  left: auto;
+  font-size: .875rem;
+  top: 133%;
+  border: 1px solid #314473;
+}
+
+ul.dropdown-menu.show::after {
+  content: "";
+  width: 13px;
+  height: 13px;
+  background: #070e1d;
+  position: absolute;
+  top: -7px;
+  right: 25px;
+  transform: rotate(45deg);
+  border-top: 1px solid #314473;
+  border-left: 1px solid #314473;
 }

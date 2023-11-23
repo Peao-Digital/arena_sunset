@@ -3,18 +3,46 @@
 
 {% block title %} Login | Arena Sunset {% endblock %}
 
+{% block navbar %}{% endblock %}
+{% block sidebar %}{% endblock %}
+
 {% block content %}
+
 <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/login.css' %}">
 <script src="{% static 'frontend/js/login.js' %}"></script>
 
-<form method="post" action="{% url 'frontend:login' %}?next={{next_url}}">
-  {% csrf_token %}
-  <label>Usário</label><input type="text" name="username" required><br>
-  <label>Password</label><input type="password" autocomplete="current-password" name="password" required>
-  <input type="submit" value="Login">
-  <br>
+<div class="container-fluid login-container">
 
-  {{erro_login}}
-</form>
+  <div class="card">
+    <div class="card-title mt-4 mb-4">
+      <img src="{% static 'frontend/img/logopadel.png' %}" />
+    </div>
+
+    <div class="card-body">
+      <form class="formulario" method="post" action="{% url 'frontend:login' %}?next={{next_url}}">
+        {% csrf_token %}
+
+        <div class="mb-3">
+          <input class="form-control" type="text" name="username" placeholder="Usuário" required>
+        </div>
+
+        <div class="mb-3">
+          <input class="form-control" type="password" autocomplete="current-password" name="password"
+            placeholder="Senha" required>
+        </div>
+
+        <div class="mb-3 recover_password">
+          <a href="#">Esqueci a senha</a>
+        </div>
+
+        <div class="mb-3">
+          <button class="btn btn-login w-100" type="submit" value="login">Entrar</button>
+        </div>
+        {{erro_login}}
+      </form>
+    </div>
+  </div>
+
+</div>
 
 {% endblock %}
