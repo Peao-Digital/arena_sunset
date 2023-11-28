@@ -7,16 +7,21 @@ const removerAlertas = () => {
 }
 
 const normal_request = (url, parametros = {}, tipo, csrf) => {
+  let config = {
+    method: tipo,
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrf
+    }
+  }
+
+  if (tipo != "GET") {
+    config['body'] = JSON.stringify(parametros)
+  }
+
   return new Promise(function(resolve, reject){
-    var r = new Request(url, {
-      method: tipo,
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'X-CSRFToken': csrf
-      },
-      body: JSON.stringify(parametros)
-    });
+    var r = new Request(url, config);
     fetch(r)
     .then((response) => {
       try{

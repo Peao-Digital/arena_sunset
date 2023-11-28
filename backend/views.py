@@ -107,6 +107,30 @@ class PacoteCrudView(View):
       res, status = PacoteSrv.deletar(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
+class ReservaNormalView(View):
+  def get(self, request):
+    pass
+
+  def post(self, request):
+    pass
+
+  def put(self, request):
+    pass
+
+  def delete(self, request, id):
+    pass
+
+class CancelamentoReservaView(View):
+  def put(self, request, id):
+    pass
+
+class ListaPresencaReservaView(View):
+  def get(self, request, id):
+    pass
+
+  def put(self, request, id):
+    pass
+
 class ReservaEspecialCrudView(View):
   
   def post(self, request):

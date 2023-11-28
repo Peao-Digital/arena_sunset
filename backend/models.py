@@ -123,16 +123,12 @@ class Agenda(models.Model):
     ]
   
   def existe(self):
-    c1 = len(
-      Agenda.objects.filter(
+    c1 = Agenda.objects.filter(
         data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim)
-      )
-    ) > 0
+      ).exists()
 
-    c2 = len(
-      Agenda.objects.filter(
+    c2 = Agenda.objects.filter(
         data=self.data, dia_inteiro='S'
-      )
-    ) > 0
+      ).exists()
 
     return c1 or c2
