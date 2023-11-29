@@ -1,0 +1,78 @@
+.modal-footer {
+  justify-content: space-evenly;
+}
+
+.divImageSelect{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.input-preview__src {
+  display: none;
+}
+
+.input-preview {
+  border: dashed #314473 0.175em;
+  border-radius: 0.5em;
+  width: 20vw;
+  height: 250px;
+  display: flex;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  position: relative;
+  transition: ease-in-out 750ms;
+  align-content: center;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-preview::before {
+  font-family: "Font Awesome 5 Free";
+  font-size: 4rem;
+  font-weight: 900;
+  content: "\f030";
+  position: absolute;
+  top: 14%;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  color: #314473;
+  cursor: pointer;
+}
+
+.input-preview::after {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 100%;
+  text-align: center;
+  transform: translateY(50%);
+  content: "Escolha a Foto do usuário...";
+  font-size: 1em;
+  color: #314473;
+  cursor: pointer;
+}
+
+.has-image::before {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgb(50 50 50 / 44%);
+  content: " ";
+  transition: ease-in-out 750ms;
+  cursor: pointer;
+}
+
+.has-image::after {
+  font-family: "Font Awesome 5 Free";
+  font-size: 4rem;
+  font-weight: 900;
+  content: "\f030";
+  color: #3144734f;
+  top: 15%;
+  cursor: pointer;
+}

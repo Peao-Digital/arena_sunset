@@ -1,7 +1,7 @@
 const _MESES = ['JANEIRO', 'FEREIRO', 'MARÇO', 'ABRIL', 'MAIO', 'JUNHO', 'JULHO', 'AGOSTO', 'SETEMBRO', 'OUTUBRO', 'NOVEMBRO', 'DEZEMBRO'];
 
 const removerAlertas = () => {
-  $(".alert").fadeTo(2000, 500).slideUp(500, function() {
+  $(".alert").fadeTo(2000, 500).slideUp(500, function () {
     $(".alert").slideUp(500);
   });
 }
@@ -20,36 +20,36 @@ const normal_request = (url, parametros = {}, tipo, csrf) => {
     config['body'] = JSON.stringify(parametros)
   }
 
-  return new Promise(function(resolve, reject){
+  return new Promise(function (resolve, reject) {
     var r = new Request(url, config);
     fetch(r)
-    .then((response) => {
-      try{
-        return response.json()
-      } catch(e) {
-        reject({'msg': 'Um erro aconteceu no servidor!', 'erro': e})
-      }
-      
-    })
-    .then((response) => {
-      resolve(response)
-    })
-    .catch((error) => {
-      reject({'msg': 'Um erro aconteceu no servidor!', 'erro': error})
-    })
+      .then((response) => {
+        try {
+          return response.json()
+        } catch (e) {
+          reject({ 'msg': 'Um erro aconteceu no servidor!', 'erro': e })
+        }
+
+      })
+      .then((response) => {
+        resolve(response)
+      })
+      .catch((error) => {
+        reject({ 'msg': 'Um erro aconteceu no servidor!', 'erro': error })
+      })
   })
 }
 
 const form_data_request = (url, formData, tipo, csrf) => {
-  return new Promise(function(resolve, reject){
+  return new Promise(function (resolve, reject) {
     $.ajax({
       url: url, type: tipo, data: formData, headers: {
         'X-CSRFToken': csrf
       },
       success: function (response) {
-        let json = (typeof response == "string") ? IsJsonString(response): response;
-        if(!json){
-          reject({'msg': 'Um erro aconteceu no servidor!', 'erro': e});
+        let json = (typeof response == "string") ? IsJsonString(response) : response;
+        if (!json) {
+          reject({ 'msg': 'Um erro aconteceu no servidor!', 'erro': e });
         } else {
           resolve(json)
         }
@@ -62,14 +62,14 @@ const form_data_request = (url, formData, tipo, csrf) => {
         return myXhr
       }
     })
-    .fail(function() {
-      let json = (typeof response == "string") ? IsJsonString(response): response;
-      if (json) {
-        reject({'msg': json.erro, 'erro': json.erro})
-      } else {
-        reject({'msg': 'Um erro aconteceu na requisição!'});
-      }
-    })
+      .fail(function () {
+        let json = (typeof response == "string") ? IsJsonString(response) : response;
+        if (json) {
+          reject({ 'msg': json.erro, 'erro': json.erro })
+        } else {
+          reject({ 'msg': 'Um erro aconteceu na requisição!' });
+        }
+      })
   })
 }
 
@@ -95,7 +95,7 @@ const get_args = () => {
 const validarMaxChar = obj => {
   var campo = $(obj)
   var valor = parseInt(campo.attr("maxlength") - campo.val().length)
-  if( $(".valida_caractere[for='" + campo.attr("id") + "']").attr("for") != undefined ){
+  if ($(".valida_caractere[for='" + campo.attr("id") + "']").attr("for") != undefined) {
     $(".valida_caractere[for='" + campo.attr("id") + "']").text(valor + " caracteres sobrando")
   }
 }
@@ -113,7 +113,7 @@ const download_file = file => {
 const selecionado_todos = (val, tam) => val[0] == "0" && tam > 1
 
 const converter_data = data => {
-  if(data == null || data == "") {
+  if (data == null || data == "") {
     return data
   }
 

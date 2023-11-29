@@ -11,5 +11,6 @@ urlpatterns = [
 
   path('administracao', views.index_administracao, name="administracao"),
   path('administracao/usuarios/criar', views.criar_usuario_view, name="Criar usuário"),
-  path('administracao/usuarios/atualizar/<int:id>', views.atualizar_usuario_view, name="Atualizar usuário")
+  path('administracao/usuarios/atualizar/<int:id>', views.atualizar_usuario_view, name="Atualizar usuário"),
+  path('administracao/pacotes/criar', views.criar_pacotes_view, name="Criar pacotes"),
 ]

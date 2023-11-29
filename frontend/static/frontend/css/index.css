@@ -1,0 +1,72 @@
+#calendar {
+  max-width: 1000px;
+  margin: 0px auto;
+}
+
+.fc-col-header-cell-cushion {
+  color: white;
+}
+
+.fc-daygrid-day-number,
+.fc-toolbar-title {
+  color: white;
+  text-decoration: none;
+}
+
+.fc-theme-standard .fc-scrollgrid,
+.fc-theme-standard td,
+.fc-theme-standard th {
+  border: 1px solid #314473;
+}
+
+.fc .fc-button-primary {
+  background-color: #0d1529;
+  border-color: #FF5722;
+  color: #FF5722;
+  font-weight: bold;
+}
+
+.fc .fc-button-primary:hover,
+.fc .fc-button-primary:focus {
+  background-color: #FF5722;
+  border-color: #FF5722;
+  color: #ffffff;
+  font-weight: bold;
+  outline: 0;
+  box-shadow: none;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  background-color: #FF5722;
+  border-color: #FF5722;
+  color: #fff;
+  font-weight: bold;
+}
+
+.fc .fc-button-primary:disabled {
+  background-color: #0d1529;
+  border-color: #FF5722;
+  color: #FF5722;
+}
+
+.fc .fc-toolbar {
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+@media screen and (max-width:991px) {
+
+  .fc-toolbar-chunk,
+  .fc-button-group {
+    width: 100%;
+  }
+
+  .fc-button-group,
+  .fc-toolbar-title {
+    text-align: center;
+    margin-bottom: 5px !important;
+  }
+}

@@ -1,0 +1,20 @@
+{% extends "frontend/template.html" %}
+{% load static %}
+
+{% block title %} Pacotes | Arena Sunset {% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/plans.css' %}">
+<script src="{% static 'frontend/js/plans.js' %}"></script>
+
+<div class="card custom-cards mt-4 me-3 ms-3">
+  <div class="card-body">
+    <div class="custom-card-body">
+      <h5>Pacotes de aula</h5>
+      <button class="btn btn-new" id="new_plans">Novo Pacote</button>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

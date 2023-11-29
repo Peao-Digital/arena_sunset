@@ -5,8 +5,17 @@
 
 {% block content %}
 
-  <div class="container mt-4">
-    <h1>Conteudo</h1>
+<script src="{% static 'frontend/js/libs/fullcalendar.js' %}"></script>
+<script src="{% static 'frontend/js/libs/fullcalendar.min.js' %}"></script>
+
+<script src="{% static 'frontend/js/home.js' %}"></script>
+
+<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/index.css' %}">
+
+<div class="card custom-cards mt-4 mb-4 me-1 ms-1">
+  <div class="card-body">
+    <div id='calendar'></div>
   </div>
+</div>
 
 {% endblock %}

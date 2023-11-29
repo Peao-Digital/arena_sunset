@@ -1,44 +1,58 @@
 {% load static %}
-<html>
+<html lang="en">
 
 <head>
-  <title>{% block title %}{% endblock %}</title>
   <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/bootstrap.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/libs/bootstrap.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/libs/all.min.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/libs/datatables.css' %}">
+  <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/libs/datatables.min.css' %}">
   <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/template.css' %}">
-  <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/all.min.css' %}">
-  <script src="{% static 'frontend/js/bootstrap.js' %}"></script>
-  <script src="{% static 'frontend/js/all.min.js' %}"></script>
-  <script src="{% static 'frontend/js/jquery.js' %}"></script>
-  <script src="{% static 'frontend/js/init.js' %}"></script>
 
-  <script src="{% static 'frontend/js/bootstrap.bundle.min.js' %}"></script>
+  <script src="{% static 'frontend/js/libs/jquery.js' %}"></script>
+  <script src="{% static 'frontend/js/libs/jquery.mask.js' %}"></script>
+  <script src="{% static 'frontend/js/libs/jquery.mask.min.js' %}"></script>
+
+  <script src="{% static 'frontend/js/libs/all.min.js' %}"></script>
+  <script src="{% static 'frontend/js/libs/bootstrap.js' %}"></script>
+  <script src="{% static 'frontend/js/libs/bootstrap.bundle.min.js' %}"></script>
+
+  <script src="{% static 'frontend/js/libs/datatables.js' %}"></script>
+  <script src="{% static 'frontend/js/libs/datatables.min.js' %}"></script>
+
+  <script src="{% static 'frontend/js/init.js' %}"></script>
+  <script src="{% static 'frontend/js/template.js' %}"></script>
+  
+  <title>{% block title %}{% endblock %}</title>
+
 </head>
 
 <body>
 
   <main>
     {% block sidebar %}
-    <div class="sidebar custom-sidebar show" id="navbarSupportedContent">
+    <nav class="custom-sidebar show" aria-label="sidebar">
 
-      <div class="toggle">
+      <div class="sidebar-header">
         <a class="btn-logo" href="/" title="Logo Arena Sunset">
           <img class="logo-nav" src="{% static 'frontend/img/logopadel.png' %}" alt="Logo Arena Sunset" />
         </a>
 
-        <button class="navbar-toggler" type="button" title="Barra Lateral" id="btn-toggle">
+        <button class="navbar-toggler btn-toggle" type="button" title="Barra Lateral" id="btn-toggle-sidebar">
           <i class="icons fa-solid fa-x"></i>
         </button>
       </div>
 
-      <div>
+      <div class="sidebar-body">
         <ul class="Btn-list">
 
           <li>
-            <a class="btn-list-sidebar active" href="#">
-              <i class="icons fa-solid fa-house"></i>
-              <span class="list-title">Início</span>
+            <a class="btn-list-sidebar active" href="/">
+              <i class="icons fa-solid fa-calendar-days"></i>
+              <span class="list-title">Agenda</span>
             </a>
           </li>
 
@@ -51,23 +65,16 @@
           </li>
 
           <li>
-            <a class="btn-list-sidebar" href="#">
+            <a class="btn-list-sidebar" href="{% url 'frontend:Criar pacotes' %}">
               <i class="icons fa-solid fa-file-invoice-dollar"></i>
-              <span class="list-title">Cadastro de Pacotes</span>
+              <span class="list-title">Pacotes</span>
             </a>
           </li>
 
           <li>
-            <a class="btn-list-sidebar" href="#">
-              <i class="icons fa-solid fa-chalkboard-user"></i>
-              <span class="list-title">Cadastro de Professores</span>
-            </a>
-          </li>
-
-          <li>
-            <a class="btn-list-sidebar" href="#">
+            <a class="btn-list-sidebar" href="{% url 'frontend:Criar usuário' %}">
               <i class="icons fa-solid fa-clipboard-user"></i>
-              <span class="list-title">Cadastro de Atendentes</span>
+              <span class="list-title">Colaboradores</span>
             </a>
           </li>
 
@@ -81,7 +88,7 @@
           {% elif perfil_atendimento %}
 
           <li>
-            <a class="btn-list-sidebar active" href="#">
+            <a class="btn-list-sidebar active" href="{% url 'frontend/usuarios:criar' %}">
               <i class="icons fa-solid fa-users"></i>
               <span class="list-title">Alunos</span>
             </a>
@@ -92,13 +99,18 @@
 
       </div>
 
-    </div>
+    </nav>
     {% endblock %}
 
-    <div class="divContent">
+    <div class="page-wrapper" id="content">
 
       {% block navbar %}
-      <nav class="navbar" data-bs-theme="dark">
+      <nav id="navbar" class="navbar navSideOpen" data-bs-theme="dark" aria-label="navbar">
+
+        <button class="navbar-toggler btn-toggle" type="button" title="Barra Lateral" id="btn-toggle-nav">
+          <i class="icons fa-solid fa-x"></i>
+        </button>
+
         <div class="btn-group me-3">
 
           <a class="myaccount dropdown-toggle" id="myaccount" role="button" data-bs-toggle="dropdown"
@@ -135,12 +147,11 @@
       </nav>
       {% endblock %}
 
-      <section class="container-fluid text-center">
+      <section class="container-fluid text-center" id="contentDiv">
 
         {% block content %}
         {% endblock %}
 
-        <!-- Modal -->
         <div class="modal fade" id="alertavel" tabindex="-1" aria-hidden="true">
           <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -151,7 +162,7 @@
               <div class="modal-body">
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>
               </div>
             </div>
           </div>
@@ -187,19 +198,6 @@
 
 
   <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      const sidebar = document.querySelector('.custom-sidebar');
-      const btnToggle = document.getElementById('btn-toggle');
-      const logo = document.querySelector('.btn-logo');
-
-      btnToggle.addEventListener('click', function () {
-        sidebar.classList.toggle('show');
-
-        const isSidebarVisible = sidebar.classList.contains('show');
-        btnToggle.innerHTML = `<i class="icons fa-solid ${isSidebarVisible ? 'fa-x' : 'fa-bars'}"></i>`;
-        logo.style.display = isSidebarVisible ? 'block' : 'none';
-      });
-    });
 
     removerAlertas()
   </script>

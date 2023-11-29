@@ -1,9 +1,11 @@
-
-
 .login-container {
   display: flex;
   align-items: center;
   height: 100%;
+}
+
+.full-page #contentDiv {
+  margin-top: 0px !important; 
 }
 
 /* Card*/
@@ -22,33 +24,6 @@
   background-color: transparent;
 }
 
-/* Form Inputs */
-
-.form-control,
-.form-control:focus {
-  display: block;
-  width: 100%;
-  padding: .375rem .75rem;
-  font-size: 1rem;
-  font-weight: 400;
-  line-height: 1.5;
-  color: #d0d6e1;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-color: #0d1529;
-  background-clip: padding-box;
-  border-color: #314473;
-  border-radius: 2px;
-  box-shadow: none;
-  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
-}
-
-.form-control::placeholder {
-  color: #4d5d78;
-  opacity: 1;
-}
-
 /* Botão de Recuperação de senha */
 
 .recover_password {
@@ -57,20 +32,4 @@
 
 .recover_password a {
   color: #4d5d78;
-}
-
-/* Botão de Login */
-
-.btn-login {
-  width: 100%;
-  color: #fff;
-  padding: 10px;
-  font-size: 18px;
-  border-radius: 2px;
-  background: linear-gradient(180deg, #FF6F02 0%, #FE5408 100%);
-}
-
-.btn-login:hover {
-  color: #fff;
-  background: linear-gradient(180deg, #FE5408 100%, #FF6F02 0%);
 }

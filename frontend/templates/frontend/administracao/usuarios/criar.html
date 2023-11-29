@@ -4,38 +4,101 @@
 {% block title %} Criar usuário | Arena Sunset {% endblock %}
 
 {% block content %}
-<form id="formulario" enctype="multipart/form-data">
 
-  <input id="usuario" name="usuario"><br>
-  <input id="senha" name="senha" type="password"><br>
-  <input id="foto" accept="image/*" name="foto" type="file"><br>
+<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/user.css' %}">
+<script src="{% static 'frontend/js/user.js' %}"></script>
 
-  {% csrf_token %}
+<div class="card custom-cards mt-4 mb-4 me-3 ms-3">
+  <div class="card-body">
+    <div class="custom-card-body">
+      <h5>Usuários</h5>
+      <button class="btn btn-new" id="new_user">Novo Usuário</button>
+    </div>
 
-  <button type="submit">Gravar</button>
+    <div class="table-users mt-3">
+      <table id="datatable-user" class="table-responsive display" aria-describedby="table-user" width:100%">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Grupo</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Athirson Lamonato</td>
+            <td>Administrador do Site</td>
+            <td><button class="btn btn-primary"><i class="fas fa-edit"></i></button></td>
+          </tr>
+          <tr>
+            <td>Athirson Lamonato</td>
+            <td>Administrador do Site</td>
+            <td><button class="btn btn-primary"><i class="fas fa-edit"></i></button></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-</form>
+  </div>
+</div>
 
-<script>
-  $(document).ready(function(){
+<div class="modal fade" id="modal-form" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Usuário</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form class="formulario" id="formulario" enctype="multipart/form-data">
+          <div class="mb-3">
+            <input class="form-control" type="text" name="usuario" placeholder="Informe o usuário" required>
+          </div>
 
-    const form = $("#formulario").submit(function(){
-      gravar(new FormData(this))
-      return false;
-    });
+          <div class="mb-3">
+            <input class="form-control" type="password" name="senha" placeholder="Informe a senha" required>
+          </div>
 
-    const gravar = (formData) => {
-      form_data_request('http://localhost:8000/backend/usuarios/criar', formData, 'POST', 'RAO10ESc4yj5VgUqjL1WXVVHPAYcqkpr')
-      .then(json => {
-        console.log(json)
-      })
-      .catch(e => {
-        console.log(e)
-      })
-    }
-  })
-  
-  
-</script>
+          <div class="mb-3">
+            <input class="form-control" type="text" name="nome" placeholder="Informe o nome" required>
+          </div>
+
+          <div class="mb-3">
+            <input class="form-control" type="text" name="sobrenome" placeholder="Informe o sobrenome" required>
+          </div>
+
+          <div class="mb-3">
+            <input class="form-control" type="text" name="email" placeholder="Informe o email" required>
+          </div>
+
+          <div class="mb-3">
+            <input id="cpf" class="form-control" type="text" name="cpf" placeholder="Informe o cpf" required>
+          </div>
+
+          <div class="mb-3">
+            <select class="form-select" name="grupo" aria-label="Selecione um grupo">
+              <option selected disabled>Selecione um grupo</option>
+              <option>Atendente</option>
+            </select>
+          </div>
+
+          <div class="divImageSelect">
+            <label class="input-preview" for="img">
+              <input class="input-preview__src" name="img" id="img" type="file" />
+            </label>
+          </div>
+
+          {% csrf_token %}
+
+        </form>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-new" id="Gravar">Gravar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
