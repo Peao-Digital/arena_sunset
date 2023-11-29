@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+$(document).ready(() => {
   const cpf = $('#cpf');
   const form = $("#formulario");
   const btnGravar = $("#Gravar");
@@ -8,8 +8,11 @@ document.addEventListener('DOMContentLoaded', function () {
   const fileImage = document.querySelector('.input-preview__src');
   const filePreview = document.querySelector('.input-preview');
 
-  cpf.mask('000.000.000-00', { reverse: true });
-  fileImage.onchange = function () {
+  cpf.mask('000.000.000-00');
+
+  // fileImage.onchange = function () { Esse funfa POR MOTIVOS DE NN SEI
+
+  fileImage.change(() => { // ESSE MORRE TUDO, JQUERY? NAO FAZ SENTIDO
     const reader = new FileReader();
 
     reader.onload = function (e) {
@@ -19,7 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     reader.readAsDataURL(this.files[0]);
-  };
+  });
 
   btnNewUser.click(() => {
     modal.modal("show");
@@ -30,7 +33,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   const gravar = (formData) => {
-    form_data_request('http://localhost:8000/backend/usuarios/criar', formData, 'POST', 'sRpbaf0oo4p5vc4MdIFA9TqRUJIQntws')
+    form_data_request('/backend/usuarios/criar', formData, 'POST', '8wm6lhhWqJSWnYjzMa8Qe2FS9CJyEcoyTNuqOFJ3yMToNsSTtipWZzbSUl6qXzWQ')
       .then(json => {
         console.log(json);
       })
@@ -40,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   const load_grupos = () => {
-    normal_request('http://localhost:8000/backend/grupos/buscar', {}, 'GET', 'sRpbaf0oo4p5vc4MdIFA9TqRUJIQntws')
+    normal_request('/backend/grupos/buscar', {}, 'GET', '8wm6lhhWqJSWnYjzMa8Qe2FS9CJyEcoyTNuqOFJ3yMToNsSTtipWZzbSUl6qXzWQ')
       .then(json => {
 
         console.log(json)
