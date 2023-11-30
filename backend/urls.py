@@ -18,6 +18,12 @@ urlpatterns = [
   path('professores/listar', ProfessorView.as_view(http_method_names=['get']), name="Listar os professores"),
   path('professores/<int:id>/horarios', ProfessorView.as_view(http_method_names=['get']), name="Listar os horarios do professor"),
 
+  path('alunos/ver/<int:id>', AlunoView.as_view(http_method_names=['get']), name="Ver aluno"),
+  path('alunos/listar', AlunoView.as_view(http_method_names=['get']), name="Buscar alunos"),
+  path('alunos/criar', AlunoView.as_view(http_method_names=['post']), name="Criar aluno"),
+  path('alunos/atualizar/<int:id>', AlunoView.as_view(http_method_names=['put']), name="Atualizar aluno"),
+  path('alunos/deletar/<int:id>', AlunoView.as_view(http_method_names=['delete']), name="Deletar aluno"),
+
   path('pacotes/ver/<int:id>', PacoteCrudView.as_view(http_method_names=['get']), name="Ver pacote"),
   path('pacotes/criar', PacoteCrudView.as_view(http_method_names=['post']), name="Criar pacote"),
   path('pacotes/atualizar/<int:id>', PacoteCrudView.as_view(http_method_names=['put']), name="Atualizar pacote"),

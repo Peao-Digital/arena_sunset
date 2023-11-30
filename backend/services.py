@@ -408,6 +408,115 @@ class PacoteSrv():
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
+class AlunoSrv():
+  
+  @staticmethod
+  def ver(request, id):
+    try:
+      dados = Aluno.objects.values('id', 'nome', 'cpf', 'celular', 'email', 'ativo').get(pk=id)
+
+      return {'dados': dados}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
+  def buscar(request):
+    try:
+      dados = Aluno.objects.values('id', 'nome', 'cpf', 'celular', 'email', 'ativo').all()
+
+      d_json = []
+      for dado in dados:
+        d_json.append(dado)
+
+      return {'dados': d_json}, 200
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
+  def criar(request):
+    try:
+      post_data = json.loads(request.body)
+      obj = Aluno()
+      obj.nome = post_data.get('nome', None)
+      obj.cpf = post_data.get('cpf', None)
+      obj.celular = post_data.get('celular', None)
+      obj.email = post_data.get('email', None)
+      obj.ativo = post_data.get('ativo', None)
+
+      obj.full_clean()
+      obj.save()
+
+      return {'id': obj.id}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
+  def atualizar(request, id):
+    try:
+      post_data = json.loads(request.body)
+      obj = Aluno.objects.get(pk=id)
+      obj.nome = post_data.get('nome', None)
+      obj.cpf = post_data.get('cpf', None)
+      obj.celular = post_data.get('celular', None)
+      obj.email = post_data.get('email', None)
+      obj.ativo = post_data.get('ativo', None)
+
+      obj.full_clean()
+      obj.save()
+
+      return {'id': obj.id}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
+  def deletar(request, id):
+    try:
+      obj = Aluno.objects.get(pk=id)
+      obj.delete()
+
+      return {'msg': 'O registro foi deletado com sucesso!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+class PacoteAlunoSrv():
+  @staticmethod
+  def listar(request):
+    pass
+
+  @staticmethod
+  def ver(request, id):
+    pass
+
+  @staticmethod
+  def criar(request):
+    pass
+
+  @staticmethod
+  def atualizar(request, id):
+    pass
+
+  @staticmethod
+  def deletar(request, id):
+    pass
+
 class AgendaSrv():
   
   '''

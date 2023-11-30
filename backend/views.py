@@ -79,6 +79,26 @@ class ProfessorView(View):
       res, status = ProfessorSrv.ver_horarios(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
+class AlunoView(View):
+  def get(self, request, id = None):
+    if id is None:
+      res, status = AlunoSrv.buscar(request)
+    else:
+      res, status = AlunoSrv.ver(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+  
+  def post(self, request):
+    res, status = AlunoSrv.criar(request)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+
+  def put(self, request, id):
+    res, status = AlunoSrv.atualizar(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+
+  def delete(self, request, id):
+    res, status = AlunoSrv.deletar(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+
 class PacoteCrudView(View):
   def get(self, request, id = None):
     res, status = apenas_administracao(request.user)
