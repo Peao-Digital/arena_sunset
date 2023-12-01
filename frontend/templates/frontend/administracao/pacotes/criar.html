@@ -6,13 +6,84 @@
 {% block content %}
 
 <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/plans.css' %}">
+
+<script src="{% static 'frontend/js/libs/datatables.js' %}"></script>
+<script src="{% static 'frontend/js/libs/datatables.min.js' %}"></script>
+<script src="{% static 'frontend/js/libs/jquery.mask.min.js' %}"></script>
 <script src="{% static 'frontend/js/plans.js' %}"></script>
 
-<div class="card custom-cards mt-4 me-3 ms-3">
+<div class="card custom-cards mt-4 mb-4 me-3 ms-3">
   <div class="card-body">
     <div class="custom-card-body">
-      <h5>Pacotes de aula</h5>
-      <button class="btn btn-new" id="new_plans">Novo Pacote</button>
+      <h5>Pacotes de Aula</h5>
+      <button class="btn btn-new" id="new_plan">Novo Pacote</button>
+    </div>
+
+    <div class="table-plans mt-3">
+      <table id="datatable-plan" class="row-border table-responsive display" aria-describedby="table-plan">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Qtd. Aulas</th>
+            <th>Qtd. Participantes</th>
+            <th>Valor</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody id="">
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal fade" id="modal-form" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Criação de Pacotes</h1>
+        <button type="button" class="btn-fechar" data-bs-dismiss="modal" aria-label="Close"><i
+            class="fa-solid fa-xmark"></i></button>
+      </div>
+
+      <div class="modal-body">
+
+        <form class="formulario" id="formulario" enctype="multipart/form-data">
+          <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome" required>
+            </div>
+
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <input id="valor" class="form-control" type="text" name="valor" placeholder="Valor" required>
+            </div>
+          </div>
+
+          <div class="row">
+
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <input id="qtd_aulas" class="form-control" type="number" name="qtd_aulas" placeholder="Aulas" required>
+            </div>
+
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <input id="qtd_participantes" class="form-control" type="number" name="participantes"
+                placeholder="Participantes" required autocomplete="username">
+            </div>
+          </div>
+
+          {% csrf_token %}
+
+        </form>
+
+        <div id="error-message" class="text-danger mt-2"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-new" id="Gravar">Gravar</button>
+      </div>
     </div>
   </div>
 </div>

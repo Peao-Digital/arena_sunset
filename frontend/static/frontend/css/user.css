@@ -1,8 +1,4 @@
-.modal-footer {
-  justify-content: space-evenly;
-}
-
-.divImageSelect{
+.divImageSelect {
   display: flex;
   justify-content: center;
   align-items: center;
