@@ -328,7 +328,7 @@ class PacoteSrv():
   @staticmethod
   def listar(request):
     try:
-      dados = Pacote.objects.values('id', 'nome', 'qtd_aulas_semana', 'qtd_participantes').all()
+      dados = Pacote.objects.values('id', 'nome', 'qtd_aulas_semana', 'qtd_participantes', 'valor', 'ativo').all()
       return {'dados': list(dados)}, 200
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
@@ -340,7 +340,7 @@ class PacoteSrv():
   @staticmethod
   def ver(request, id):
     try:
-      dados = Pacote.objects.values('id', 'nome', 'qtd_aulas_semana', 'qtd_participantes').get(pk=id)
+      dados = Pacote.objects.values('id', 'nome', 'qtd_aulas_semana', 'qtd_participantes', 'valor', 'ativo').get(pk=id)
       return {'dados': dados}, 200
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
