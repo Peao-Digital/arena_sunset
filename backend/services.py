@@ -49,8 +49,11 @@ class UsuarioSrv():
         grupos_id.append(grupo.id)
 
       foto = ''
+      cpf = ''
       if u.perfil:
-        foto = settings.UPLOAD_URL + 'usuarios/' + u.perfil.foto_perfil
+        cpf = u.perfil.cpf
+        #foto = settings.UPLOAD_URL + 'usuarios/' + u.perfil.foto_perfil
+
 
       d_json = {
         'id': u.id,
@@ -61,7 +64,8 @@ class UsuarioSrv():
         'ativo': u.is_active,
         'foto': foto,
         'grupos': grupos,
-        'grupos_id': grupos_id
+        'grupos_id': grupos_id,
+        'cpf': cpf
       }
 
       return {'dados': d_json}, 200
