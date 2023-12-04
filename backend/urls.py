@@ -23,12 +23,16 @@ urlpatterns = [
   path('alunos/criar', AlunoView.as_view(http_method_names=['post']), name="Criar aluno"),
   path('alunos/atualizar/<int:id>', AlunoView.as_view(http_method_names=['put']), name="Atualizar aluno"),
   path('alunos/deletar/<int:id>', AlunoView.as_view(http_method_names=['delete']), name="Deletar aluno"),
+  path('alunos/<int:id>/pacotes/buscar', AlunoPacoteView.as_view(http_method_names=['get']), name="Buscar os pacotes do aluno"),
 
   path('pacotes/ver/<int:id>', PacoteCrudView.as_view(http_method_names=['get']), name="Ver pacote"),
   path('pacotes/criar', PacoteCrudView.as_view(http_method_names=['post']), name="Criar pacote"),
   path('pacotes/atualizar/<int:id>', PacoteCrudView.as_view(http_method_names=['put']), name="Atualizar pacote"),
   path('pacotes/deletar/<int:id>', PacoteCrudView.as_view(http_method_names=['delete']), name="Deletar pacote"),
   path('pacotes/listar', PacoteCrudView.as_view(http_method_names=['get']), name="Buscar pacotes"),
+  path('pacotes/<int:id>/contratos/buscar', PacoteAlunoView.as_view(http_method_names=['get']), name="Buscar contratos do pacote"),
+  path('pacotes/<int:id>/contratar', PacoteAlunoView.as_view(http_method_names=['post']), name="Contratar pacote"),
+  path('pacotes/cancelar_contrato/<int:contrato>', PacoteAlunoView.as_view(http_method_names=['put']), name="Cancelar contrato"),
 
   path('agenda/reservar_especial/criar', ReservaEspecialCrudView.as_view(http_method_names=['post']), name="Reservar dia especial"),
   path('agenda/reservar_especial/<int:id>', ReservaEspecialCrudView.as_view(http_method_names=['delete']), name="Reservar dia especial"),

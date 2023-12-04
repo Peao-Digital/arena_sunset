@@ -10,6 +10,12 @@ def apenas_administracao(user):
   
   return {"erro": "Você não possui acesso para este módulo!"}, 400
 
+def logado(user):
+  if user.is_authenticated:
+    return None, None
+  
+  return {"erro": "Você não possui acesso para este módulo!"}, 400
+
 class GrupoView(View):
   def get(self, request):
     res, status = apenas_administracao(request.user)
@@ -99,6 +105,14 @@ class AlunoView(View):
     res, status = AlunoSrv.deletar(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
+class AlunoPacoteView(View):
+
+  def get(self, request, id):
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = PacoteAlunoSrv.buscar_por_aluno(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+
 class PacoteCrudView(View):
   def get(self, request, id = None):
     res, status = apenas_administracao(request.user)
@@ -127,18 +141,50 @@ class PacoteCrudView(View):
       res, status = PacoteSrv.deletar(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
+class PacoteAlunoView(View):
+
+  def get(self, request, id):
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = PacoteAlunoSrv.buscar_por_pacote(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+  
+  def post(self, request, id):
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = PacoteAlunoSrv.criar(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+
+  def put(self, request, contrato):
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = PacoteAlunoSrv.cancelar(request, contrato)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+
 class ReservaNormalView(View):
   def get(self, request):
-    pass
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.criar_reserva_normal(request)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
   def post(self, request):
-    pass
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.criar_reserva_normal(request)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
   def put(self, request):
-    pass
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.atualizar_reserva_normal(request)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
   def delete(self, request, id):
-    pass
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.deletar_reserva_normal(request)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
 class CancelamentoReservaView(View):
   def put(self, request, id):
@@ -152,6 +198,12 @@ class ListaPresencaReservaView(View):
     pass
 
 class ReservaEspecialCrudView(View):
+
+  def get(self, request):
+    res, status = apenas_administracao(request.user)
+    if status != 400:
+      res, status = AgendaSrv.ver_reserva_especial(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
   
   def post(self, request):
     res, status = apenas_administracao(request.user)

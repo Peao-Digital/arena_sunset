@@ -1,5 +1,7 @@
 import json
 import os
+import datetime
+from dateutil.relativedelta import relativedelta
 
 from django.core.exceptions import (ValidationError, ObjectDoesNotExist)
 from django.db import transaction
@@ -448,9 +450,9 @@ class AlunoSrv():
       post_data = json.loads(request.body)
       obj = Aluno()
       obj.nome = post_data.get('nome', None)
-      obj.cpf = post_data.get('cpf', None)
-      obj.celular = post_data.get('celular', None)
-      obj.email = post_data.get('email', None)
+      obj.cpf = post_data.get('cpf', '')
+      obj.celular = post_data.get('celular', '')
+      obj.email = post_data.get('email', '')
       obj.ativo = post_data.get('ativo', None)
 
       obj.full_clean()
@@ -470,9 +472,9 @@ class AlunoSrv():
       post_data = json.loads(request.body)
       obj = Aluno.objects.get(pk=id)
       obj.nome = post_data.get('nome', None)
-      obj.cpf = post_data.get('cpf', None)
-      obj.celular = post_data.get('celular', None)
-      obj.email = post_data.get('email', None)
+      obj.cpf = post_data.get('cpf', '')
+      obj.celular = post_data.get('celular', '')
+      obj.email = post_data.get('email', '')
       obj.ativo = post_data.get('ativo', None)
 
       obj.full_clean()
@@ -502,30 +504,101 @@ class AlunoSrv():
 
 class PacoteAlunoSrv():
   @staticmethod
-  def listar(request):
-    pass
+  def buscar_por_aluno(request, id):
+    try:
+      dados = AlunoPacote.objects.values(
+        'id', 'aluno', 'aluno__nome', 'pacote', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo',
+        'data_contratacao', 'data_validade'
+      ).filter(aluno=Aluno.objects.get(pk=id))
+
+      d_json = []
+      for dado in dados:
+        d_json.append(dado)
+
+      return {'dados': d_json}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
-  def ver(request, id):
-    pass
+  def buscar_por_pacote(request, id):
+    try:
+      dados = AlunoPacote.objects.values(
+        'id', 'aluno', 'aluno__nome', 'pacote', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo',
+        'data_contratacao', 'data_validade'
+      ).filter(pacote=Pacote.objects.get(pk=id))
+
+      d_json = []
+      for dado in dados:
+        d_json.append(dado)
+
+      return {'dados': d_json}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
-  def criar(request):
-    pass
+  def criar(request, id):
+    try:
+      post_data = json.loads(request.body)
+
+      data_inicio = post_data.get('data_contratacao', None)
+
+      obj = AlunoPacote()
+      obj.pacote = Pacote.objects.get(pk=id)
+      obj.ativo = post_data.get('ativo', None)
+      obj.aluno = Aluno.objects.get(pk=post_data.get('aluno', None))
+      obj.data_contratacao = data_inicio
+      obj.data_validade = datetime.strptime(data_inicio, '%Y-%m-%d').date() + relativedelta(months=1)
+      
+      obj.full_clean()
+      obj.save()
+
+      return {'id': obj.id}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
-  def atualizar(request, id):
-    pass
+  def cancelar(request, id):
+    try:
+      obj = AlunoPacote.objects.get(pk=id)
+      obj.ativo = 'N'
+      obj.desativado_em = datetime.now().date()
+      obj.desativado_por = request.user
 
-  @staticmethod
-  def deletar(request, id):
-    pass
+      obj.save()
+
+      return {'msg': 'Contrato cancelado com sucesso!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
 class AgendaSrv():
+
+  @staticmethod
+  def buscar_reservas(request):
+    pass
   
   '''
     -----------Reservar dias/horarios que não podem ser agendados (feriados, torneios, etc...)-----------
   '''
+  @staticmethod
+  def ver_reserva_especial(request, id):
+    pass
+
   @staticmethod
   def criar_reserva_especial(request):
     try:
@@ -584,3 +657,15 @@ class AgendaSrv():
   '''
     -----------Reservas normais-----------
   '''
+
+  @staticmethod
+  def criar_reserva_normal(request):
+    pass
+
+  @staticmethod
+  def atualizar_reserva_normal(request, id):
+    pass
+
+  @staticmethod
+  def deletar_reserva_normal(request, id):
+    pass

@@ -41,6 +41,7 @@ class AlunoAula(admin.StackedInline):
 class AlunoAdmin(admin.ModelAdmin):
   inlines = [AlunoAula, ]
 
+
 admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
 
@@ -49,6 +50,8 @@ admin.site.register(User, UserAdmin)
 
 admin.site.register(Aluno, AlunoAdmin)
 admin.site.register(Pacote)
+
+admin.site.register(AlunoPacote)
 
 admin.site.register(Agenda)
 admin.site.register(DiaReservado)

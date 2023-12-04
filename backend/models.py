@@ -56,8 +56,13 @@ class AlunoPacote(models.Model):
   pacote = models.ForeignKey(Pacote, on_delete=models.DO_NOTHING)
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
   criado_em = models.DateTimeField(auto_now_add=True, editable=False)
+  desativado_em = models.DateField(blank=True, null=True)
+  desativado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, blank=True, null=True)
   data_contratacao = models.DateField()
   data_validade = models.DateField()
+
+  class Meta:
+    verbose_name_plural = 'Aluno - Pacote'
 
 '''
   Classe de aula
