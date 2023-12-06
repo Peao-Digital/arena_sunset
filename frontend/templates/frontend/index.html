@@ -1,7 +1,7 @@
 {% extends "frontend/template.html" %}
 {% load static %}
 
-{% block title %} Arena Sunset {% endblock %}
+{% block title %} Agenda | Arena Sunset {% endblock %}
 
 {% block content %}
 
@@ -12,9 +12,11 @@
 
 <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/index.css' %}">
 
-<div class="card custom-cards mt-4 mb-4 me-1 ms-1">
-  <div class="card-body">
-    <div id='calendar'></div>
+<div id="agenda">
+  <div class="card custom-cards mt-4 mb-4 me-1 ms-1">
+    <div class="card-body">
+      <div id="calendar"></div>
+    </div>
   </div>
 </div>
 

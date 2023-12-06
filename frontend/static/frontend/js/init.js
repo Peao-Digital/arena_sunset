@@ -129,3 +129,19 @@ const converter_data = data => {
   let novaData = data.split(separador);
   return `${novaData[2]}${novo_separador}${novaData[1]}${novo_separador}${novaData[0]}`
 }
+
+const getCSRFToken = () => {
+  const name = 'csrftoken=';
+  const decodedCookie = decodeURIComponent(document.cookie);
+  const cookieArray = decodedCookie.split(';');
+
+  for (let i = 0; i < cookieArray.length; i++) {
+    let cookie = cookieArray[i].trim();
+    if (cookie.indexOf(name) === 0) {
+      return cookie.substring(name.length, cookie.length);
+    }
+  }
+
+  return null;
+}
+
