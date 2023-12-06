@@ -165,7 +165,7 @@ class ReservaNormalView(View):
   def get(self, request):
     res, status = logado(request.user)
     if status != 400:
-      res, status = AgendaSrv.criar_reserva_normal(request)
+      res, status = AgendaSrv.ver_reserva_normal(request)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
   def post(self, request):
@@ -199,7 +199,7 @@ class ListaPresencaReservaView(View):
 
 class ReservaEspecialCrudView(View):
 
-  def get(self, request):
+  def get(self, request, id):
     res, status = apenas_administracao(request.user)
     if status != 400:
       res, status = AgendaSrv.ver_reserva_especial(request, id)
@@ -215,4 +215,14 @@ class ReservaEspecialCrudView(View):
     res, status = apenas_administracao(request.user)
     if status != 400:
       res, status = AgendaSrv.deletar_reserva_especial(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+  
+class ReservaNormalCrudView(View):
+  pass
+
+class AgendaView(View):
+  def get(self, request):
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.buscar_reservas(request)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)

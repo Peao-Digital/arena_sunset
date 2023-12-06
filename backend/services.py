@@ -590,14 +590,54 @@ class AgendaSrv():
 
   @staticmethod
   def buscar_reservas(request):
-    pass
+    try:
+      data_inicial = request.GET.get('data_inicial', None)
+      data_final = request.GET.get('data_final', None)
+
+      dados = Agenda.objects.filter(data__range=(data_inicial, data_final), ativo='S')
+
+      d_json = []
+      for dado in dados:
+        pass
+
+      return {'dados': d_json}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
   
   '''
     -----------Reservar dias/horarios que não podem ser agendados (feriados, torneios, etc...)-----------
   '''
   @staticmethod
   def ver_reserva_especial(request, id):
-    pass
+    try:
+
+      reserva = DiaReservado.objects.get(pk=id)
+      agenda = Agenda.objects.get(reserva_especial=reserva)
+
+      d_json = {
+        'agenda_id': agenda.id,
+        'reserva_id': reserva.id,
+        'descricao': reserva.descricao,
+        'data': agenda.data,
+        'data_horario_ini': agenda.data_horario_fim,
+        'dia_inteiro': agenda.dia_inteiro,
+        'ativo': agenda.ativo,
+        'cancelado_por': agenda.cancelado_por,
+        'cancelado_em': agenda.cancelado_em,
+        'motivo_cancelamento': agenda.motivo_cancelamento
+      }
+
+      return {'dados': d_json}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
   def criar_reserva_especial(request):
@@ -667,5 +707,5 @@ class AgendaSrv():
     pass
 
   @staticmethod
-  def deletar_reserva_normal(request, id):
+  def cancelar_reserva_normal(request, id):
     pass

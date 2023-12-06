@@ -34,14 +34,15 @@ urlpatterns = [
   path('pacotes/<int:id>/contratar', PacoteAlunoView.as_view(http_method_names=['post']), name="Contratar pacote"),
   path('pacotes/cancelar_contrato/<int:contrato>', PacoteAlunoView.as_view(http_method_names=['put']), name="Cancelar contrato"),
 
-  path('agenda/reservar_especial/criar', ReservaEspecialCrudView.as_view(http_method_names=['post']), name="Reservar dia especial"),
-  path('agenda/reservar_especial/<int:id>', ReservaEspecialCrudView.as_view(http_method_names=['delete']), name="Reservar dia especial"),
+  path('agenda/reserva_especial/<int:id>', ReservaEspecialCrudView.as_view(http_method_names=['get']), name="Ver reserva especial"),
+  path('agenda/reserva_especial/criar', ReservaEspecialCrudView.as_view(http_method_names=['post']), name="Reservar reserva especial"),
+  path('agenda/reserva_especial/<int:id>', ReservaEspecialCrudView.as_view(http_method_names=['delete']), name="Reservar reserva especial"),
 
+  path('agenda/reserva/buscar', AgendaView.as_view(http_method_names=['get']), name="Buscar reservas"),
   path('agenda/reserva/criar', ReservaNormalView.as_view(http_method_names=['post']), name="Criar reserva"),
   path('agenda/reserva/atualizar/<int:id>', ReservaNormalView.as_view(http_method_names=['put']), name="Criar reserva"),
   path('agenda/reserva/deletar/<int:id>', ReservaNormalView.as_view(http_method_names=['delete']), name="Deletar reserva"),
-  path('agenda/reserva/ver/<int:id>', ReservaNormalView.as_view(http_method_names=['get']), name="Ver reserva"),
-  path('agenda/reserva/buscar', ReservaNormalView.as_view(http_method_names=['get']), name="Buscar reservas"),
+  path('agenda/reserva/ver/<int:id>', ReservaNormalView.as_view(http_method_names=['get']), name="Ver reserva"),  
   path('agenda/reserva/cancelar/<int:id>', CancelamentoReservaView.as_view(http_method_names=['put']), name="Cancelar reserva"),
   path('agenda/reserva/presenca/buscar/<int:id>', ListaPresencaReservaView.as_view(http_method_names=['get']), name="Buscar lista de presença"),
   path('agenda/reserva/presenca/confirmar/<int:id>', ListaPresencaReservaView.as_view(http_method_names=['put']), name="Confirmar presença")

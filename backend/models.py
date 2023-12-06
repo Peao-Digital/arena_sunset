@@ -74,14 +74,17 @@ class Aula(models.Model):
   ativa = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
 
   criado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aula_criado_por')
-  atualizado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aula_atualizado_por')
+  atualizado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aula_atualizado_por',null=True, blank=True)
 
   criado_em = models.DateTimeField(auto_now_add=True, editable=False)
   atualizado_em = models.DateTimeField(auto_now=True, editable=False)
 
-  cancelado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aula_cancelado_por')
-  cancelado_em = models.DateTimeField(null=True)
+  cancelado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aula_cancelado_por', null=True, blank=True)
+  cancelado_em = models.DateTimeField(null=True, blank=True)
   motivo_cancelamento = models.TextField(blank=True, null=True)
+
+  def pode_cadastrar(self):
+    pass
 
 '''
   Classe de Aula - Aluno
@@ -91,8 +94,8 @@ class AulaAluno(models.Model):
   aluno = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING)
   conferido = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
 
-  conferido_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aulaaluno_conferido_por', null=True)
-  conferido_em = models.DateTimeField(null=True)
+  conferido_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aulaaluno_conferido_por', null=True, blank=True)
+  conferido_em = models.DateTimeField(null=True, blank=True)
 
 '''
   Classe DiaReservado 
@@ -111,9 +114,14 @@ class Agenda(models.Model):
   data_horario_ini = models.DateTimeField()
   data_horario_fim = models.DateTimeField()
 
-  aula = models.ForeignKey(Aula, on_delete=models.CASCADE, null=True)
-  reserva_especial = models.ForeignKey(DiaReservado, on_delete=models.CASCADE, null=True)
+  aula = models.ForeignKey(Aula, on_delete=models.CASCADE, null=True, blank=True)
+  reserva_especial = models.ForeignKey(DiaReservado, on_delete=models.CASCADE, null=True, blank=True)
   dia_inteiro = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
+  ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO, default='S')
+
+  cancelado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
+  cancelado_em = models.DateTimeField(null=True, blank=True)
+  motivo_cancelamento = models.TextField(blank=True, null=True)
 
   class Meta:
     unique_together = ('data_horario_ini', 'data_horario_fim')
@@ -122,18 +130,18 @@ class Agenda(models.Model):
         name="%(app_label)s_%(class)s_aula_ou_especial",
         check=(
             models.Q(aula__isnull=True, reserva_especial__isnull=False)
-            | models.Q(aula__isnull=False, reserva_especial__isnull=True)
+            | models.Q(aula__isnull=False, reserva_especial__isnull=True, ativo='S')
         ),
       )
     ]
   
   def existe(self):
     c1 = Agenda.objects.filter(
-        data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim)
-      ).exists()
+      data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S'
+    ).exists()
 
     c2 = Agenda.objects.filter(
-        data=self.data, dia_inteiro='S'
-      ).exists()
+      data=self.data, dia_inteiro='S'
+    ).exists()
 
     return c1 or c2

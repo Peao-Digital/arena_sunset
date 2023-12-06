@@ -33,14 +33,6 @@ class GroupAdmin(GroupAdmin):
   @admin.display(ordering="tipo_grupo",description='Tipo')
   def get_tipo(self, obj):
     return Opcoes.get_desc(Opcoes.TIPO_GRUPO, obj.tipo_grupo.tipo)
-  
-class AlunoAula(admin.StackedInline):
-  model = AulaAluno
-  extra = 1
-
-class AlunoAdmin(admin.ModelAdmin):
-  inlines = [AlunoAula, ]
-
 
 admin.site.unregister(Group)
 admin.site.register(Group, GroupAdmin)
@@ -48,10 +40,13 @@ admin.site.register(Group, GroupAdmin)
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
 
-admin.site.register(Aluno, AlunoAdmin)
+admin.site.register(Aluno)
 admin.site.register(Pacote)
 
 admin.site.register(AlunoPacote)
+
+admin.site.register(Aula)
+admin.site.register(AulaAluno)
 
 admin.site.register(Agenda)
 admin.site.register(DiaReservado)
