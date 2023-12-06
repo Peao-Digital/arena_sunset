@@ -1,0 +1,170 @@
+{% extends "frontend/template.html" %}
+{% load static %}
+
+{% block title %} Criar usuário | Arena Sunset {% endblock %}
+
+{% block content %}
+
+<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/alunos.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/libs/select2.css' %}">
+
+<script src="{% static 'frontend/js/libs/datatables.js' %}"></script>
+<script src="{% static 'frontend/js/libs/datatables.min.js' %}"></script>
+<script src="{% static 'frontend/js/libs/jquery.mask.min.js' %}"></script>
+<script src="{% static 'frontend/js/libs/select2.js' %}"></script>
+<script src="{% static 'frontend/js/libs/select2.min.js' %}"></script>
+
+<script src="{% static 'frontend/js/alunos.js' %}"></script>
+
+<div class="card custom-cards mt-4 mb-4 me-3 ms-3">
+  <div class="card-body">
+    <div class="custom-card-body">
+      <h5>Alunos</h5>
+      <button class="btn btn-new" id="new_aluno">Novo Aluno</button>
+    </div>
+
+    <div class="table-aluno mt-3">
+      <table id="datatable-aluno" class="row-border table-responsive display" aria-describedby="table-aluno">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>CPF</th>
+            <th>Email</th>
+            <th>Celular</th>
+            <th>Status</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
+
+<div class="modal fade" id="modal-form" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Criação de Alunos</h1>
+        <button type="button" class="btn-fechar close-modal" data-bs-dismiss="modal" aria-label="Close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form class="formulario" enctype="multipart/form-data">
+          <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome" required>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <input id="cpf" class="form-control" type="text" name="cpf" placeholder="CPF" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <input id="celular" class="form-control" type="text" name="celular" placeholder="Celular" required>
+            </div>
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <input id="email" class="form-control" type="text" name="email" placeholder="Email" required
+                autocomplete="username">
+            </div>
+          </div>
+          {% csrf_token %}
+        </form>
+
+        <div id="error-message" class="text-danger mt-2"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-back close-modal" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-new" id="Gravar" value="-1">Gravar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-plans" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Vínculo de Alunos e Pacotes</h1>
+        <button type="button" class="btn-fechar close-modal" data-bs-dismiss="modal" aria-label="Close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <form class="formulario" enctype="multipart/form-data">
+          <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <input id="aluno_nome" class="form-control" type="text" name="nome" required disabled>
+            </div>
+
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <input id="validade" class="form-control" type="date" name="Data de Validade" required>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 mb-2">
+              <select id="pacotes" class="form-control" name="pacotes" required style="width: 100%">
+              </select>
+            </div>
+          </div>
+        </form>
+
+        <div id="error-message" class="text-danger mt-2"></div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-back close-modal" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-new" id="GravarVinculo" value="-1">Gravar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modal-view" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5"></h1>
+        <button type="button" class="btn-fechar close-modal" data-bs-dismiss="modal" aria-label="Close">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <fieldset>
+          <legend>Dados do Usuário</legend>
+          <div class="row divRowView" id="user-data">
+            <!-- Campos de dados do usuário serão adicionados aqui -->
+          </div>
+        </fieldset>
+
+        <fieldset class="mt-4">
+          <legend>Plano Atual</legend>
+          <div class="row divRowView" id="current-plan">
+            <!-- Campos do plano atual serão adicionados aqui -->
+          </div>
+        </fieldset>
+
+        <fieldset class="mt-4">
+          <legend>Histórico</legend>
+          <div class="row divRowView" id="history">
+            <!-- Campos do histórico serão adicionados aqui -->
+          </div>
+        </fieldset>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-back close-modal" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-new" id="Gravar" value="-1">Gravar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

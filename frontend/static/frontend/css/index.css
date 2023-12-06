@@ -3,13 +3,44 @@
   margin: 0px auto;
 }
 
+.custom-cards-agenda {
+  background-color: #0d1529;
+  border-radius: 2px;
+  border: 1px solid #314473;
+}
+
+.div-nome h2,
+.custom-cards-agenda {
+  color: #d0d6e1;
+}
+
+.div_voltar {
+  text-align: right;
+  margin-right: 25px;
+}
+
+.fc .fc-daygrid-day-frame {
+  min-height: 100%;
+  position: relative;
+  cursor: pointer;
+}
+
+.fc .fc-daygrid-day.fc-day-today {
+  background-color: #314473;
+}
+
 .fc-col-header-cell-cushion {
-  color: white;
+  color: #d0d6e1;
+  text-decoration: none;
+}
+
+.fc-daygrid-day-frame:hover {
+  background-color: #314473;
 }
 
 .fc-daygrid-day-number,
 .fc-toolbar-title {
-  color: white;
+  color: #d0d6e1;
   text-decoration: none;
 }
 

@@ -126,7 +126,7 @@ main .page-wrapper {
   visibility: visible;
 }
 
-/* BotÃµes Sidebar list */
+/* BotÃƒÂµes Sidebar list */
 
 .btn-list {
   padding: 25px 16px 50px;
@@ -340,7 +340,7 @@ ul.dropdown-menu.show::after {
 
 /* Btn confirm delete */
 
-.confirm-delete {
+.confirm-delete, .confirm-disabled {
   background: linear-gradient(180deg, #ef6767 0%, #ff1100 100%);
   color: #d0d6e1;
   font-weight: bold;
@@ -348,7 +348,7 @@ ul.dropdown-menu.show::after {
   border: none;
 }
 
-.confirm-delete:hover {
+.confirm-delete:hover, .confirm-disabled:hover {
   background: linear-gradient(180deg, #ff1100 0%, #ef6767 100%);
   color: #d0d6e1;
   font-weight: bold;
@@ -408,14 +408,18 @@ table.dataTable>thead>tr>td {
   outline: 0;
 }
 
+.btn-view,
 .btn-edit,
-.btn-delete {
+.btn-delete,
+.btn-plans {
   color: #d0d6e1;
   border: none;
 }
 
+.btn-view:hover,
 .btn-edit:hover,
-.btn-delete:hover {
+.btn-delete:hover,
+.btn-plans:hover {
   color: #314473;
   border: none;
 }
@@ -440,8 +444,6 @@ option:hover {
   color: #d0d6e1;
 }
 
-
-
 .error-icon {
   color: red;
 }
@@ -450,8 +452,7 @@ option:hover {
   color: green;
 }
 
-#datatable-user,
-#datatable-plan {
+.table-responsive {
   text-align: center;
   border: 1px solid rgb(49 68 115) !important;
 }
@@ -475,10 +476,10 @@ table.dataTable tfoot td {
 }
 
 .btn-inativo {
-  outline: 0 !Important;
-  color: #d0d6e1 !Important;
-  border: none !Important;
-  background-color: red;
+  outline: 0 !important;
+  color: #d0d6e1 !important;
+  border: none !important;
+  background: linear-gradient(180deg, #FF6F02 0%, #FE5408 100%);
   padding: 1px 3px 1px 3px;
   border-radius: 30px;
   font-weight: bold;
@@ -489,10 +490,10 @@ table.dataTable tfoot td {
 .btn-inativo:hover,
 .btn-inativo:focus,
 .btn-inativo:active {
-  outline: 0 !Important;
-  color: #d0d6e1 !Important;
-  border: none !Important;
-  background-color: #6a0505 !Important;
+  outline: 0 !important;
+  color: #d0d6e1 !important;
+  border: none !important;
+  background: linear-gradient(1deg, #FF6F02 0%, #FE5408 100%);
   padding: 1px;
   border-radius: 50px;
   font-weight: bold;
@@ -500,10 +501,10 @@ table.dataTable tfoot td {
 }
 
 .btn-ativo {
-  outline: 0 !Important;
-  color: #d0d6e1 !Important;
-  border: none !Important;
-  background-color: green !Important;
+  outline: 0 !important;
+  color: #d0d6e1 !important;
+  border: none !important;
+  background: linear-gradient(180deg, green 0%, #08440b 100%);
   padding: 1px;
   border-radius: 30px;
   font-weight: bold;
@@ -514,10 +515,10 @@ table.dataTable tfoot td {
 .btn-ativo:hover,
 .btn-ativo:focus,
 .btn-ativo:active {
-  outline: 0 !Important;
-  color: #d0d6e1 !Important;
-  border: none !Important;
-  background-color: #08440b !Important;
+  outline: 0 !important;
+  color: #d0d6e1 !important;
+  border: none !important;
+  background: linear-gradient(180deg, #08440b 0%, green 100%);
   padding: 1px;
   border-radius: 50px;
   font-weight: bold;
@@ -525,8 +526,20 @@ table.dataTable tfoot td {
 }
 
 .table-users,
-.table-plans {
+.table-plans,
+.table-aluno,
+.table-vinculos {
   overflow: auto;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+::-ms-reveal {
+  color: #d0d6e1;
+  filter: invert(1);
 }
 
 /* Media Query */
