@@ -18,8 +18,8 @@
   <script src="{% static 'frontend/js/libs/bootstrap.js' %}"></script>
   <script src="{% static 'frontend/js/libs/bootstrap.bundle.min.js' %}"></script>
 
-  <script src="{% static 'frontend/js/init.js' %}"></script>
   <script src="{% static 'frontend/js/template.js' %}"></script>
+  <script src="{% static 'frontend/js/init.js' %}"></script>
   <title>{% block title %}{% endblock %}</title>
 
 </head>
@@ -52,7 +52,7 @@
 
           {% if perfil_administrador %}
           <li>
-            <a class="btn-list-sidebar active" href="#">
+            <a class="btn-list-sidebar active" href="{% url 'frontend:Criar aluno' %}">
               <i class="icons fa-solid fa-users"></i>
               <span class="list-title">Alunos</span>
             </a>
@@ -60,7 +60,7 @@
 
           <li>
             <a class="btn-list-sidebar" href="{% url 'frontend:Criar pacotes' %}">
-              <i class="icons fa-solid fa-file-invoice-dollar"></i>
+              <i class="icons fa-solid fa-address-card"></i>
               <span class="list-title">Pacotes</span>
             </a>
           </li>
@@ -82,7 +82,7 @@
           {% elif perfil_atendimento %}
 
           <li>
-            <a class="btn-list-sidebar active" href="{% url 'frontend/usuarios:criar' %}">
+            <a class="btn-list-sidebar active" href="{% url 'frontend:Criar aluno' %}">
               <i class="icons fa-solid fa-users"></i>
               <span class="list-title">Alunos</span>
             </a>
@@ -151,13 +151,13 @@
             <div class="modal-content">
               <div class="modal-header">
                 <h1 class="modal-title fs-5" id="exampleModalLabel">Aviso</h1>
-                <button type="button" class="btn-fechar" data-bs-dismiss="modal" aria-label="Close"><i
+                <button type="button" class="btn-fechar close-modal" data-bs-dismiss="modal" aria-label="Close"><i
                     class="fa-solid fa-xmark"></i></button>
               </div>
               <div class="modal-body">
               </div>
               <div class="modal-footer">
-                <button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-back close-modal" data-bs-dismiss="modal">Fechar</button>
               </div>
             </div>
           </div>

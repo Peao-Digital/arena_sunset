@@ -1,0 +1,41 @@
+.custom-card-body-alunos {
+  display: flex;
+}
+
+.labels-view {
+  vertical-align: middle;
+  align-items: center;
+  display: flex;
+}
+
+.divRowView {
+  text-align: left;
+}
+
+fieldset {
+  display: block;
+  margin-inline-start: 2px;
+  margin-inline-end: 2px;
+  padding-block-start: 0.35em;
+  padding-inline-start: 0.75em;
+  padding-inline-end: 0.75em;
+  padding-block-end: 0.625em;
+  min-inline-size: min-content;
+  border-width: 1px;
+  border-style: groove;
+  border-color: rgb(24 34 57);
+  border-image: initial;
+}
+
+legend {
+  display: block;
+  padding-inline-start: 5px;
+  padding-inline-end: 5px;
+  border-width: initial;
+  border-style: none;
+  border-color: initial;
+  border-image: initial;
+  text-align: left;
+  font-weight: bold;
+  color: #d0d6e1;
+}
