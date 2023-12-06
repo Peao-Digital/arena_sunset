@@ -92,13 +92,4 @@ def criar_pacotes_view(request):
   else:
     messages.error(request, "Você não possui acesso para o módulo de administração!")
     return HttpResponseRedirect('/')
-
-@login_required(login_url="/login")
-def criar_alunos_view(request):
-  context = f_default_context(request.user)
-
-  if context['perfil_administrador']:
-    return render(request, 'frontend/alunos/criar.html', context)
-  else:
-    messages.error(request, "Você não possui acesso para o módulo de administração!")
-    return HttpResponseRedirect('/')
+  

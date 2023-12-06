@@ -258,17 +258,12 @@ class UsuarioSrv():
         grupos = []
         grupos_id = []
 
-        cpf = ''
-        if d.perfil:
-          cpf = d.perfil.cpf
-
         for grupo in d.groups.all():
           grupos.append(grupo.name)
           grupos_id.append(grupo.id)
 
         d_json.append({
           'id': d.id,
-          'cpf': cpf,
           'usuario': d.username,
           'nome': d.first_name,
           'sobrenome': d.last_name,
@@ -387,9 +382,9 @@ class PacoteSrv():
   def atualizar(request, id):
     try:
       post_data = json.loads(request.body)
+     
       pacote_obj = Pacote.objects.get(pk=id)
       pacote_obj.nome = post_data.get('nome', None)
-      pacote_obj.valor = post_data.get('valor', None)
       pacote_obj.qtd_aulas_semana = post_data.get('qtd_aulas_semana', None)
       pacote_obj.qtd_participantes = post_data.get('qtd_participantes', None)
       pacote_obj.ativo = post_data.get('ativo', None)
@@ -512,8 +507,8 @@ class PacoteAlunoSrv():
   def buscar_por_aluno(request, id):
     try:
       dados = AlunoPacote.objects.values(
-        'id', 'aluno', 'aluno__nome', 'pacote','pacote__nome', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo',
-        'data_contratacao', 'data_validade', 'desativado_em', 'desativado_por'
+        'id', 'aluno', 'aluno__nome', 'pacote', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo',
+        'data_contratacao', 'data_validade'
       ).filter(aluno=Aluno.objects.get(pk=id))
 
       d_json = []

@@ -5,15 +5,12 @@
 
 {% block content %}
 
-<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/pacotes.css' %}">
-<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/libs/select2.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/plans.css' %}">
 
 <script src="{% static 'frontend/js/libs/datatables.js' %}"></script>
 <script src="{% static 'frontend/js/libs/datatables.min.js' %}"></script>
 <script src="{% static 'frontend/js/libs/jquery.mask.min.js' %}"></script>
-<script src="{% static 'frontend/js/libs/select2.js' %}"></script>
-<script src="{% static 'frontend/js/libs/select2.min.js' %}"></script>
-<script src="{% static 'frontend/js/pacotes.js' %}"></script>
+<script src="{% static 'frontend/js/plans.js' %}"></script>
 
 <div class="card custom-cards mt-4 mb-4 me-3 ms-3">
   <div class="card-body">
@@ -34,7 +31,7 @@
             <th>Ações</th>
           </tr>
         </thead>
-        <tbody>
+        <tbody id="">
         </tbody>
       </table>
     </div>
@@ -47,7 +44,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title fs-5" id="exampleModalLabel">Criação de Pacotes</h1>
-        <button type="button" class="btn-fechar close-modal" data-bs-dismiss="modal" aria-label="Close"><i
+        <button type="button" class="btn-fechar" data-bs-dismiss="modal" aria-label="Close"><i
             class="fa-solid fa-xmark"></i></button>
       </div>
 
@@ -56,7 +53,7 @@
         <form class="formulario" id="formulario" enctype="multipart/form-data">
           <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome do Pacote" required>
+              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome" required>
             </div>
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
@@ -65,26 +62,14 @@
           </div>
 
           <div class="row">
+
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <select id="qtd_aulas" class="form-control" name="qtd_aulas" style="width: 100%" required>
-                <option selected disabled>Aulas Semanais</option>
-                <option value="1">Uma Aula</option>
-                <option value="2">Duas Aulas</option>
-                <option value="3">Três Aulas</option>
-                <option value="4">Quatro Aulas</option>
-                <option value="5">Cinco Aulas</option>
-                <option value="6">Seis Aulas</option>
-                <option value="7">Sete Aulas</option>
-              </select>
+              <input id="qtd_aulas" class="form-control" type="number" name="qtd_aulas" placeholder="Aulas" required>
             </div>
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <select id="qtd_participantes" class="form-control" name="participantes" style="width: 100%" required>
-                <option selected disabled>Participantes</option>
-                <option value="1">Individual</option>
-                <option value="2">Duplas</option>
-                <option value="3">Trios</option>
-              </select>
+              <input id="qtd_participantes" class="form-control" type="number" name="participantes"
+                placeholder="Participantes" required autocomplete="username">
             </div>
           </div>
 
@@ -96,8 +81,8 @@
       </div>
 
       <div class="modal-footer">
-        <button type="button" class="btn btn-back close-modal" data-bs-dismiss="modal">Fechar</button>
-        <button type="button" class="btn btn-new" id="Gravar" value="-1">Gravar</button>
+        <button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>
+        <button type="button" class="btn btn-new" id="Gravar">Gravar</button>
       </div>
     </div>
   </div>
