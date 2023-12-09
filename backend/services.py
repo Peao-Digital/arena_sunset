@@ -734,11 +734,19 @@ class AgendaSrv():
   def criar_reserva_normal(request):
     try:
 
+      def salvar_aulaAluno(aula, aluno):
+        obj_aulaAluno = AulaAluno()
+        obj_aulaAluno.aula = aula
+        obj_aulaAluno.conferido = 'N'
+        obj_aulaAluno.aluno = aluno
+        obj_aulaAluno.save()
+
       post_data = json.loads(request.body)
       with transaction.atomic():
         data = post_data.get('data', None)
         horarios = post_data.get('horarios', [])
         alunos = post_data.get('alunos', [])
+        participantes = post_data.get('participantes', [])
 
         for horario in horarios:
           obj_r = Aula()
@@ -761,11 +769,15 @@ class AgendaSrv():
               obj_r.save()
 
               for aluno in alunos:
-                obj_aulaAluno = AulaAluno()
-                obj_aulaAluno.aula = obj_r
-                obj_aulaAluno.conferido = 'N'
-                obj_aulaAluno.aluno = Aluno.objects.get(pk=aluno)
-                obj_aulaAluno.save()
+                salvar_aulaAluno(obj_r, Aluno.objects.get(pk=aluno))
+
+              for participante in participantes:
+                obj_p = Aluno()
+                obj_p.nome = participante[0]
+                obj_p.telefone = participante[1]
+                obj_p.save()
+
+                salvar_aulaAluno(obj_r, obj_p)
 
               obj_r.full_clean()
               obj_a.save()
@@ -810,17 +822,24 @@ class AgendaSrv():
       return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
-      
-
+  
   @staticmethod
   def atualizar_reserva_normal(request, id):
     try:
+
+      def salvar_aulaAluno(aula, aluno):
+        obj_aulaAluno = AulaAluno()
+        obj_aulaAluno.aula = aula
+        obj_aulaAluno.conferido = 'N'
+        obj_aulaAluno.aluno = aluno
+        obj_aulaAluno.save()
 
       post_data = json.loads(request.body)
       with transaction.atomic():
         data = post_data.get('data', None)
         horarios = post_data.get('horarios', [])
         alunos = post_data.get('alunos', [])
+        participantes = post_data.get('participantes', [])
 
         horario = horarios[0]
 
@@ -846,11 +865,15 @@ class AgendaSrv():
             AulaAluno.objects.filter(aula=obj_r).delete()
 
             for aluno in alunos:
-              obj_aulaAluno = AulaAluno()
-              obj_aulaAluno.aula = obj_r
-              obj_aulaAluno.conferido = 'N'
-              obj_aulaAluno.aluno = Aluno.objects.get(pk=aluno)
-              obj_aulaAluno.save()
+              salvar_aulaAluno(obj_r, Aluno.objects.get(pk=aluno))
+
+            for participante in participantes:
+              obj_p = Aluno()
+              obj_p.nome = participante[0]
+              obj_p.telefone = participante[1]
+              obj_p.save()
+
+              salvar_aulaAluno(obj_r, obj_p)
 
             obj_r.full_clean()
             obj_a.save()
