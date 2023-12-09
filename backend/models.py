@@ -43,9 +43,9 @@ class Pacote(models.Model):
 '''
 class Aluno(models.Model):
   nome = models.CharField(max_length=300)
-  cpf = models.CharField(max_length=11, blank=True)
-  celular = models.CharField(max_length=30, blank=True)
-  email = models.CharField(max_length=300, blank=True)
+  cpf = models.CharField(max_length=11, blank=True, null=True)
+  celular = models.CharField(max_length=30, blank=True, null=True)
+  email = models.CharField(max_length=300, blank=True, null=True)
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
 
 '''
@@ -79,12 +79,8 @@ class Aula(models.Model):
   criado_em = models.DateTimeField(auto_now_add=True, editable=False)
   atualizado_em = models.DateTimeField(auto_now=True, editable=False)
 
-  cancelado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aula_cancelado_por', null=True, blank=True)
-  cancelado_em = models.DateTimeField(null=True, blank=True)
-  motivo_cancelamento = models.TextField(blank=True, null=True)
-
   def pode_cadastrar(self):
-    pass
+    return True, ''
 
 '''
   Classe de Aula - Aluno
@@ -137,11 +133,11 @@ class Agenda(models.Model):
   
   def existe(self):
     c1 = Agenda.objects.filter(
-      data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S'
+      ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S',
     ).exists()
 
     c2 = Agenda.objects.filter(
-      data=self.data, dia_inteiro='S'
+      ~Q(pk=self.id), data=self.data, dia_inteiro='S'
     ).exists()
 
     return c1 or c2

@@ -22,6 +22,9 @@ def upload_file(f, name, dirpath):
   except Exception as e:
     return ''
 
+def ajustar_horario(horario_ini):
+  return str(horario_ini.hour) + ':' + str(horario_ini.minute)
+
 class GruposSrv():
 
   @staticmethod
@@ -599,11 +602,36 @@ class AgendaSrv():
       data_inicial = request.GET.get('data_inicial', None)
       data_final = request.GET.get('data_final', None)
 
-      dados = Agenda.objects.filter(data__range=(data_inicial, data_final), ativo='S')
+      if data_inicial is None:
+        dados = Agenda.objects.filter(ativo='S')
+      else:
+        dados = Agenda.objects.filter(data__range=(data_inicial, data_final), ativo='S')
 
       d_json = []
       for dado in dados:
-        pass
+        alunos = []
+        contratante = ''
+        professor = ''
+        tipo = ''
+        
+        if dado.aula is not None:
+          tipo = 'AULA'
+        else:
+          tipo = 'ESPECIAL'
+          descricao = dado.reserva_especial.descricao
+
+        d_json.append({
+          'id': dado.id,
+          'data': dado.data,
+          'horario_inicial': ajustar_horario(dado.data_horario_ini),
+          'horario_final': ajustar_horario(dado.data_horario_fim),
+          'dia_inteiro': dado.dia_inteiro,
+          'tipo': tipo,
+          'descricao': descricao,
+          'professor': professor,
+          'contratante': contratante,
+          'alunos': alunos
+        })
 
       return {'dados': d_json}, 200
     except ObjectDoesNotExist  as e:
@@ -620,15 +648,14 @@ class AgendaSrv():
   def ver_reserva_especial(request, id):
     try:
 
-      reserva = DiaReservado.objects.get(pk=id)
-      agenda = Agenda.objects.get(reserva_especial=reserva)
+      agenda = Agenda.objects.select_related().get(pk=id)
 
       d_json = {
         'agenda_id': agenda.id,
-        'reserva_id': reserva.id,
-        'descricao': reserva.descricao,
+        'descricao': agenda.reserva_especial.descricao,
         'data': agenda.data,
-        'data_horario_ini': agenda.data_horario_fim,
+        'horario_inicial': ajustar_horario(agenda.data_horario_ini),
+        'horario_final': ajustar_horario(agenda.data_horario_fim),
         'dia_inteiro': agenda.dia_inteiro,
         'ativo': agenda.ativo,
         'cancelado_por': agenda.cancelado_por,
@@ -705,12 +732,181 @@ class AgendaSrv():
 
   @staticmethod
   def criar_reserva_normal(request):
-    pass
+    try:
+
+      post_data = json.loads(request.body)
+      with transaction.atomic():
+        data = post_data.get('data', None)
+        horarios = post_data.get('horarios', [])
+        alunos = post_data.get('alunos', [])
+
+        for horario in horarios:
+          obj_r = Aula()
+          obj_r.pacote = post_data.get('pacote', None)
+          obj_r.contratante = post_data.get('contratante', None)
+          obj_r.professor = post_data.get('professor', None)
+          obj_r.ativa = 'S'
+          obj_r.criado_por = request.user
+
+          obj_a = Agenda()
+          obj_a.data = data
+          obj_a.data_horario_ini = conveter_datahorario(data, horario[0])
+          obj_a.data_horario_fim = conveter_datahorario(data, horario[1])
+          obj_a.aula = obj_r
+
+          if obj_a.existe() is False:
+            pode_cadastrar, msg_erro = obj_r.pode_cadastrar()
+            if pode_cadastrar == '':
+              obj_r.full_clean()
+              obj_r.save()
+
+              for aluno in alunos:
+                obj_aulaAluno = AulaAluno()
+                obj_aulaAluno.aula = obj_r
+                obj_aulaAluno.conferido = 'N'
+                obj_aulaAluno.aluno = Aluno.objects.get(pk=aluno)
+                obj_aulaAluno.save()
+
+              obj_r.full_clean()
+              obj_a.save()
+            else:
+              return {'msg': msg_erro}, 400
+          else:
+            return {'msg': 'Um registro com esta data/horário já existe!'}, 400
+      
+      return {'msg': 'Registro gravado com sucesso!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
+  def ver_reserva_normal(request, id):
+    try:
+
+      agenda = Agenda.objects.select_related().get(pk=id)
+
+      d_json = {
+        'agenda_id': agenda.id,
+        'data': agenda.data,
+        'horario_inicial': ajustar_horario(agenda.data_horario_ini),
+        'horario_final': ajustar_horario(agenda.data_horario_fim),
+        'dia_inteiro': agenda.dia_inteiro,
+        'ativo': agenda.ativo,
+        'cancelado_por': agenda.cancelado_por,
+        'cancelado_em': agenda.cancelado_em,
+        'motivo_cancelamento': agenda.motivo_cancelamento,
+        'professor': '',
+        'alunos': '',
+        'contratante': ''
+      }
+
+      return {'dados': d_json}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+      
 
   @staticmethod
   def atualizar_reserva_normal(request, id):
-    pass
+    try:
+
+      post_data = json.loads(request.body)
+      with transaction.atomic():
+        data = post_data.get('data', None)
+        horarios = post_data.get('horarios', [])
+        alunos = post_data.get('alunos', [])
+
+        horario = horarios[0]
+
+        obj_r = Aula.objects.get(pk=id)
+        obj_r.pacote = post_data.get('pacote', None)
+        obj_r.contratante = post_data.get('contratante', None)
+        obj_r.professor = post_data.get('professor', None)
+        obj_r.ativa = 'S'
+        obj_r.criado_por = request.user
+
+        obj_a = obj_r.aula
+        obj_a.data = data
+        obj_a.data_horario_ini = conveter_datahorario(data, horario[0])
+        obj_a.data_horario_fim = conveter_datahorario(data, horario[1])
+        obj_a.aula = obj_r
+
+        if obj_a.existe() is False:
+          pode_cadastrar, msg_erro = obj_r.pode_cadastrar()
+          if pode_cadastrar == '':
+            obj_r.full_clean()
+            obj_r.save()
+
+            AulaAluno.objects.filter(aula=obj_r).delete()
+
+            for aluno in alunos:
+              obj_aulaAluno = AulaAluno()
+              obj_aulaAluno.aula = obj_r
+              obj_aulaAluno.conferido = 'N'
+              obj_aulaAluno.aluno = Aluno.objects.get(pk=aluno)
+              obj_aulaAluno.save()
+
+            obj_r.full_clean()
+            obj_a.save()
+          else:
+            return {'msg': msg_erro}, 400
+        else:
+          return {'msg': 'Um registro com esta data/horário já existe!'}, 400
+    
+      return {'msg': 'Registro gravado com sucesso!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
   def cancelar_reserva_normal(request, id):
-    pass
+    try:
+      post_data = json.loads(request.body)
+
+      with transaction.atomic():
+        agenda_obj = Agenda.objects.get(pk=id)
+
+        agenda_obj.ativo = 'N'
+        agenda_obj.cancelado_por = request.user
+        agenda_obj.cancelado_em = datetime.now().date()
+        agenda_obj.motivo_cancelamento = post_data.get('motivo', '')
+
+      return {'msg': 'Reserva cancelada!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+  
+  @staticmethod
+  def confirmar_alunos(request, id):
+    try:
+      post_data = json.loads(request.body)
+      with transaction.atomic():
+        alunos = post_data.get('alunos', [])
+        agenda = Agenda.objects.filter(pk=id)
+
+        for aluno in alunos:
+          aluno_obj = Aluno.objects.get(pk=aluno)
+          aulaAluno_obj = AulaAluno.objects.get(aula=agenda.aula, aluno=aluno_obj)
+          aulaAluno_obj.conferido = 'S'
+          aulaAluno_obj.conferido_por = request.user
+          aulaAluno_obj.conferido_em = datetime.now().date()
+
+      return {'msg': 'Participações confirmadas!!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
