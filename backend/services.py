@@ -594,6 +594,16 @@ class PacoteAlunoSrv():
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
+  def pode_reservar(pacote, contratante, data):
+    contratacao = AlunoPacote.objects.filter(ativo='S', aluno = contratante, data_contratacao__gte=data, data_validade__lte=data)
+
+    if contratacao.exists():
+      qtd = len(Agenda.objects.filter(
+        aula__contratante=contratante, aula__pacote=pacote, data__range=(contratacao.data_contratacao, contratacao.data_validade))
+      )
+      return pacote.qtd_aulas_semana > qtd
+    
+    return False
 class AgendaSrv():
 
   @staticmethod
@@ -616,6 +626,13 @@ class AgendaSrv():
         
         if dado.aula is not None:
           tipo = 'AULA'
+          professor = {'id': dado.aula.professor.id, 'nome': f_nome_usuario(dado.aula.professor)}
+          contratante = {'id': dado.aula.contratante.id, 'nome': dado.aula.contratante.nome}
+
+          alunosQuery = AulaAluno.objects.select_related().filter(aula = dado.aula)
+          alunos = [
+            {'id': d.aluno.id, 'nome': d.aluno.nome} for d in alunosQuery
+          ]
         else:
           tipo = 'ESPECIAL'
           descricao = dado.reserva_especial.descricao
@@ -747,12 +764,18 @@ class AgendaSrv():
         horarios = post_data.get('horarios', [])
         alunos = post_data.get('alunos', [])
         participantes = post_data.get('participantes', [])
+        professor = User.objects.get(pk=post_data.get('professor', None))
+        contratante = Aluno.objects.get(pk=post_data.get('contratante', None))
+        pacote = Pacote.objects.get(pk=post_data.get('pacote', None))
+
+        if PacoteAlunoSrv.pode_reservar(pacote, contratante, data) is False:
+          return {"erro": "O usuário não possui mais reservas para o período no pacote selecionado!", "e": str(e), "tipo_erro": "validacao"}, 400
 
         for horario in horarios:
           obj_r = Aula()
-          obj_r.pacote = post_data.get('pacote', None)
-          obj_r.contratante = post_data.get('contratante', None)
-          obj_r.professor = post_data.get('professor', None)
+          obj_r.pacote = pacote
+          obj_r.contratante = contratante
+          obj_r.professor = professor
           obj_r.ativa = 'S'
           obj_r.criado_por = request.user
 
@@ -763,8 +786,10 @@ class AgendaSrv():
           obj_a.aula = obj_r
 
           if obj_a.existe() is False:
-            pode_cadastrar, msg_erro = obj_r.pode_cadastrar()
-            if pode_cadastrar == '':
+            professor_bloqueado = obj_a.professor_horario_bloqueado(professor)
+            if professor_bloqueado:
+              return {'msg': 'O professor selecionado ja possui um agendamente neste horário!'}, 400
+            else:
               obj_r.full_clean()
               obj_r.save()
 
@@ -781,8 +806,6 @@ class AgendaSrv():
 
               obj_r.full_clean()
               obj_a.save()
-            else:
-              return {'msg': msg_erro}, 400
           else:
             return {'msg': 'Um registro com esta data/horário já existe!'}, 400
       
@@ -800,6 +823,11 @@ class AgendaSrv():
 
       agenda = Agenda.objects.select_related().get(pk=id)
 
+      alunosQuery = AulaAluno.objects.select_related().filter(aula = agenda.aula)
+      alunos = [
+        {'id': d.aluno.id, 'nome': d.aluno.nome} for d in alunosQuery
+      ]
+
       d_json = {
         'agenda_id': agenda.id,
         'data': agenda.data,
@@ -810,9 +838,9 @@ class AgendaSrv():
         'cancelado_por': agenda.cancelado_por,
         'cancelado_em': agenda.cancelado_em,
         'motivo_cancelamento': agenda.motivo_cancelamento,
-        'professor': '',
-        'alunos': '',
-        'contratante': ''
+        'professor': {'id': agenda.aula.professor.id, 'nome': f_nome_usuario(agenda.aula.professor)},
+        'contratante': {'id': agenda.aula.contratante.id, 'nome': agenda.aula.contratante.nome},
+        'alunos': alunos,
       }
 
       return {'dados': d_json}, 200
@@ -840,13 +868,19 @@ class AgendaSrv():
         horarios = post_data.get('horarios', [])
         alunos = post_data.get('alunos', [])
         participantes = post_data.get('participantes', [])
+        professor = User.objects.get(pk=post_data.get('professor', None))
+        contratante = Aluno.objects.get(pk=post_data.get('contratante', None))
+        pacote = Pacote.objects.get(pk=post_data.get('pacote', None))
+
+        if PacoteAlunoSrv.pode_reservar(pacote, contratante, data) is False:
+          return {"erro": "O usuário não possui mais reservas para o período no pacote selecionado!", "e": str(e), "tipo_erro": "validacao"}, 400
 
         horario = horarios[0]
 
         obj_r = Aula.objects.get(pk=id)
-        obj_r.pacote = post_data.get('pacote', None)
-        obj_r.contratante = post_data.get('contratante', None)
-        obj_r.professor = post_data.get('professor', None)
+        obj_r.pacote = pacote
+        obj_r.contratante = contratante
+        obj_r.professor = professor
         obj_r.ativa = 'S'
         obj_r.criado_por = request.user
 
@@ -857,28 +891,28 @@ class AgendaSrv():
         obj_a.aula = obj_r
 
         if obj_a.existe() is False:
-          pode_cadastrar, msg_erro = obj_r.pode_cadastrar()
-          if pode_cadastrar == '':
-            obj_r.full_clean()
-            obj_r.save()
+            professor_bloqueado = obj_a.professor_horario_bloqueado(professor)
+            if professor_bloqueado:
+              return {'msg': 'O professor selecionado ja possui um agendamente neste horário!'}, 400
+            else:
+              obj_r.full_clean()
+              obj_r.save()
 
-            AulaAluno.objects.filter(aula=obj_r).delete()
+              AulaAluno.objects.filter(aula=obj_r).delete()
 
-            for aluno in alunos:
-              salvar_aulaAluno(obj_r, Aluno.objects.get(pk=aluno))
+              for aluno in alunos:
+                salvar_aulaAluno(obj_r, Aluno.objects.get(pk=aluno))
 
-            for participante in participantes:
-              obj_p = Aluno()
-              obj_p.nome = participante[0]
-              obj_p.telefone = participante[1]
-              obj_p.save()
+              for participante in participantes:
+                obj_p = Aluno()
+                obj_p.nome = participante[0]
+                obj_p.telefone = participante[1]
+                obj_p.save()
 
-              salvar_aulaAluno(obj_r, obj_p)
+                salvar_aulaAluno(obj_r, obj_p)
 
-            obj_r.full_clean()
-            obj_a.save()
-          else:
-            return {'msg': msg_erro}, 400
+              obj_r.full_clean()
+              obj_a.save()
         else:
           return {'msg': 'Um registro com esta data/horário já existe!'}, 400
     
@@ -911,6 +945,29 @@ class AgendaSrv():
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
   
+  @staticmethod
+  def ver_lista_presenca(request, id):
+    try:
+
+      agenda = Agenda.objects.filter(pk=id)
+      dados = AulaAluno.objects.select_related().get(aula=agenda.aula)
+
+      d_json = []
+      for dado in dados:
+        d_json.append({
+          'id': dado.aluno.id,
+          'nome': dado.aluno.nome,
+          'conferido': dado.aluno.conferido
+        })
+
+      return {'dados': d_json}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
   @staticmethod
   def confirmar_alunos(request, id):
     try:

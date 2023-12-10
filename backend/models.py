@@ -79,9 +79,6 @@ class Aula(models.Model):
   criado_em = models.DateTimeField(auto_now_add=True, editable=False)
   atualizado_em = models.DateTimeField(auto_now=True, editable=False)
 
-  def pode_cadastrar(self):
-    return True, ''
-
 '''
   Classe de Aula - Aluno
 '''
@@ -141,3 +138,8 @@ class Agenda(models.Model):
     ).exists()
 
     return c1 or c2
+  
+  def professor_horario_bloqueado(self, professor):
+    return Agenda.objects.filter(
+      ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S', aula__professor=professor
+    ).exists()

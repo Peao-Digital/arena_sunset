@@ -162,10 +162,10 @@ class PacoteAlunoView(View):
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
 class ReservaNormalView(View):
-  def get(self, request):
+  def get(self, request, id):
     res, status = logado(request.user)
     if status != 400:
-      res, status = AgendaSrv.ver_reserva_normal(request)
+      res, status = AgendaSrv.ver_reserva_normal(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
   def post(self, request):
@@ -188,14 +188,23 @@ class ReservaNormalView(View):
 
 class CancelamentoReservaView(View):
   def put(self, request, id):
-    pass
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.cancelar_reserva_normal(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
 class ListaPresencaReservaView(View):
   def get(self, request, id):
-    pass
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.ver_lista_presenca(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
   def put(self, request, id):
-    pass
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.confirmar_alunos(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
 class ReservaEspecialCrudView(View):
 
@@ -218,7 +227,29 @@ class ReservaEspecialCrudView(View):
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
   
 class ReservaNormalCrudView(View):
-  pass
+  def post(self, request):
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.criar_reserva_normal(request)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+  
+  def put(self, request, id):
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.atualizar_reserva_normal(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+  
+  def get(self, request, id):
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.ver_reserva_normal(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+  
+  def delete(self, request, id):
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AgendaSrv.cancelar_reserva_normal(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
 class AgendaView(View):
   def get(self, request):

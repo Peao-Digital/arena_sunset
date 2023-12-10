@@ -41,7 +41,7 @@ urlpatterns = [
   path('agenda/reserva/buscar', AgendaView.as_view(http_method_names=['get']), name="Buscar reservas"),
   path('agenda/reserva/criar', ReservaNormalView.as_view(http_method_names=['post']), name="Criar reserva"),
   path('agenda/reserva/atualizar/<int:id>', ReservaNormalView.as_view(http_method_names=['put']), name="Criar reserva"),
-  path('agenda/reserva/deletar/<int:id>', ReservaNormalView.as_view(http_method_names=['delete']), name="Deletar reserva"),
+  path('agenda/reserva/cancelar/<int:id>', ReservaNormalView.as_view(http_method_names=['delete']), name="Deletar reserva"),
   path('agenda/reserva/ver/<int:id>', ReservaNormalView.as_view(http_method_names=['get']), name="Ver reserva"),  
   path('agenda/reserva/cancelar/<int:id>', CancelamentoReservaView.as_view(http_method_names=['put']), name="Cancelar reserva"),
   path('agenda/reserva/presenca/buscar/<int:id>', ListaPresencaReservaView.as_view(http_method_names=['get']), name="Buscar lista de presença"),
