@@ -19,7 +19,7 @@ $(document).ready(() => {
     placeholder: "Aulas Semanais"
   })
 
-  input_valor.mask("#.##0,00", { reverse: true });
+  input_valor.mask("###0,00", { reverse: true });
 
   const datatable = $("#datatable-plan").DataTable({
     searching: true,
@@ -106,14 +106,14 @@ $(document).ready(() => {
         const dados = response.dados;
 
         input_nome.val(dados.nome);
-        input_valor.val(dados.valor).unmask();
+        input_valor.val(dados.valor);
         select_qtd_aulas_semana.val(dados.qtd_aulas_semana).trigger("change");
         select_qtd_participantes.val(dados.qtd_participantes).trigger("change");
 
         btnGravar.val(dados.id);
         modal.modal("show");
 
-        input_valor.mask('000.000.000.000.000,00', { reverse: true });
+        input_valor.mask("###0,00", { reverse: true });
       })
       .catch(handleError);
   };
@@ -155,11 +155,10 @@ $(document).ready(() => {
     const formsData = [input_nome, input_valor, select_qtd_aulas_semana, select_qtd_participantes];
 
     alertError.hide();
-
     if (validateForm(formsData)) {
       normal_request('/backend/pacotes/criar', {
         nome: input_nome.val(),
-        valor: input_valor.val().replace(',', '.').replace(',', '.'),
+        valor: input_valor.val().replace(',', '.'),
         qtd_aulas_semana: select_qtd_aulas_semana.val(),
         qtd_participantes: select_qtd_participantes.val(),
         ativo: 'S'
@@ -213,7 +212,6 @@ $(document).ready(() => {
    * Manipula o clique no botão "Gravar" para adicionar ou editar um pacote.
    * @param {Event} event - O objeto de evento associado ao clique no botão.
   */
-
   const btnGravarClickHandler = (event) => {
     const { value } = event.target;
     value != -1 ? editarFormPlan(value) : gravarFormPlan();
@@ -240,20 +238,20 @@ $(document).ready(() => {
    * Altera o status (ativo/inativo) de um usuário.
    * @param {number} planId - O ID do usuário cujo status será alterado.
    * @param {boolean} activate - Define se o usuário deve ser ativado (true) ou desativado (false).
-
+  */
   const changeStatus = (planId, activate) => {
-    const endpoint = `/backend/usuarios/ativar_desativar/${planId}`;
+    const endpoint = `/backend/pacotes/ativar_desativar/${planId}`;
     const token = csrftoken;
-    const requestData = { ativar: activate };
+    const requestData = { ativar: activate ? 'S' : 'N' };
 
-    normal_request(endpoint, { requestData }, 'PUT', token)
+    normal_request(endpoint, requestData, 'PUT', token)
       .then(response => {
-        const successMessage = response.msg || ''
+        const successMessage = response.msg || '';
 
-        if (successMessage.includes('Usuário ativado') || successMessage.includes('Usuário desativado')) {
+        if (successMessage.includes('Pacote ativado') || successMessage.includes('Pacote desativado')) {
           carregar_dados();
         } else {
-          console.error('Erro ao ativar/desativar usuário:', response.msg);
+          console.error('Erro ao ativar/desativar pacote:', response.msg);
         }
       })
       .catch(handleError);
@@ -261,10 +259,10 @@ $(document).ready(() => {
 
   datatable.on("click", ".btn-ativo, .btn-inativo", function () {
     const planId = $(this).data("id");
-    const activate = !$(this).hasClass("btn-ativo"); // Inverte o estado atual
+    const activate = !$(this).hasClass("btn-ativo");
 
     changeStatus(planId, activate);
-  });*/
+  });
 
   datatable.on("click", ".btn-delete", function () {
     const planId = $(this).data("id");

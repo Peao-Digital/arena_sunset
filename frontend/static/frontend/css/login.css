@@ -5,7 +5,11 @@
 }
 
 .full-page #contentDiv {
-  margin-top: 0px !important; 
+  margin-top: 0px !important;
+}
+
+.btn-login {
+  padding: 10px;
 }
 
 /* Card*/
@@ -27,7 +31,7 @@
 /* Botão de Recuperação de senha */
 
 .recover_password {
-  text-align: right;
+  text-align: left;
 }
 
 .recover_password a {

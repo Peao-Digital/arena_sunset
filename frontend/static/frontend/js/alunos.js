@@ -18,7 +18,7 @@ $(document).ready(() => {
     placeholder: "Pacotes",
   }).change(function () {
     btnGravarVinculo.val($(this).val());
-  })
+  });
 
   const datatable = $("#datatable-aluno").DataTable({
     searching: true,
@@ -35,8 +35,7 @@ $(document).ready(() => {
     console.error(error);
   };
 
-  /** Função de carregamento dos grupos e select de grupos.*/
-
+  /** Função de carregamento dos pacotes e select de pacotes.*/
   const carregar_pacotes = () => {
     const defaultOption = $('<option>', {
       value: '',
@@ -47,35 +46,36 @@ $(document).ready(() => {
 
     normal_request('/backend/pacotes/listar', {}, 'GET', csrftoken)
       .then(json => {
-
         let option;
         select_pacotes.empty().append(defaultOption);
-        json.dados.forEach(val => {
+
+        json.dados.filter(val => val.ativo !== 'N').forEach(val => {
           option = $("<option>").val(val.id).text(val.nome);
-          select_pacotes.append(option)
+          select_pacotes.append(option);
         });
       })
       .catch(handleError);
   };
 
-  /**
-   * Função de carregamento dos dados e tabela datatable
-   */
+  /* Função para carregar os dados e preencher a tabela datatable */
   const carregar_dados = () => {
+
     normal_request('/backend/alunos/listar', {}, 'GET', csrftoken)
       .then(json => {
-        datatable.clear();
+        datatable.clear(); // Limpa a tabela
 
         json.dados.forEach(data => {
+
           const acoes = `
-            <button class="btn btn-view" data-id="${data.id}" title="Ver Dados"><i class="fas fa-eye"></i></button>
-            <button class="btn btn-edit" data-id="${data.id}" title="Editar"><i class="fas fa-edit"></i></button>
-            <button class="btn btn-delete" data-id="${data.id}" title="Deletar"><i class="fas fa-trash"></i></button>
-            <button class="btn btn-plans" data-id="${data.id}" data-nome="${data.nome}" title="Ver Pacotes"><i class="fa-solid fa-address-card"></i></button>`;
+          <button class="btn btn-view" data-id="${data.id}" title="Ver Dados"><i class="fas fa-eye"></i></button>
+          <button class="btn btn-edit" data-id="${data.id}" title="Editar"><i class="fas fa-edit"></i></button>
+          <button class="btn btn-delete" data-id="${data.id}" title="Deletar"><i class="fas fa-trash"></i></button>
+          <button class="btn btn-plans" data-id="${data.id}" data-nome="${data.nome}" title="Ver Pacotes"><i class="fa-solid fa-gift"></i></button>`;
 
           const status = data.ativo === 'S' ? `<button class="btn btn-ativo" data-id="${data.id}" title="Mudar status para Inativo">Ativo</button>` : `<button class="btn btn-inativo" data-id="${data.id}" title="Mudar status para Ativo">Inativo</button>`;
+
           const cpf = data.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-          const celular = data.celular.replace(/(\d{2})(\d{1})(\d{4})(\d{4})/, '($1) $2 $3-$4');
+          const celular = data.celular.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2 $3-$4');
 
           datatable.row.add([
             data.nome,
@@ -87,8 +87,10 @@ $(document).ready(() => {
           ]);
         });
 
+        // Desenha a tabela
         datatable.draw();
 
+        // Adiciona eventos de clique aos botões
         $('.btn-edit').click(function () {
           const alunoId = $(this).data('id');
           openEditModal(alunoId);
@@ -102,7 +104,6 @@ $(document).ready(() => {
         $('.btn-plans').click(function () {
           const alunoId = $(this).data('id');
           const alunoNome = $(this).data('nome');
-          console.log(alunoNome);
           openPlansModal(alunoId, alunoNome);
         });
       })
@@ -110,13 +111,15 @@ $(document).ready(() => {
   };
 
   /**
-   * Puxa os dados de pacotes através da ID do usuário.
-   * @param {number} alunoId - O ID do usuário a ser enviado.
+   * Abre o modal de pacotes com base no ID do usuário.
+   * @param {number} alunoId - O ID do usuário.
+   * @param {string} alunoNome - O nome do usuário.
    */
   const openPlansModal = (alunoId, alunoNome) => {
     modal_plans.find('.modal-title').text(`Vínculo de Pacotes do usuário #${alunoId}`);
 
     carregar_pacotes();
+
     $("#aluno_nome").attr('data-id', alunoId).val(alunoNome);
 
     let pacoteId = $("#pacote").val();
@@ -126,64 +129,80 @@ $(document).ready(() => {
   };
 
   /**
-   * Puxa os dados do usuário através da ID existente no backend para visualização.
-   * @param {number} alunoId - O ID do usuário a ser visualizado.
-   */
+ * Abre o modal de visualização dos dados do aluno.
+ * @param {number} alunoId - O ID do aluno a ser visualizado.
+ */
   const openViewModal = (alunoId) => {
     modal_view.find('.modal-title').text(`Dados do Aluno #${alunoId}`);
+
     $('#current-plan').empty();
     $('#history').empty();
 
+    // Função para criar campos de visualização
     const createField = (label, value, classes) => `
     <div class="labels-view ${classes}">
       <label><b>${label}:</b> ${value}</label>
     </div>`;
 
+    // Requisição para obter os dados do aluno
     normal_request(`/backend/alunos/ver/${alunoId}`, {}, 'GET', csrftoken)
       .then(response => {
         const dados = response.dados;
 
         const userData = `
-          ${createField('Nome', dados.nome, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-          ${createField('CPF', dados.cpf, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-          ${createField('Celular', dados.celular, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-          ${createField('Email', dados.email, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-        `;
+        ${createField('Nome', dados.nome, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        ${createField('CPF', dados.cpf, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        ${createField('Celular', dados.celular, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        ${createField('Email', dados.email, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+      `;
 
         $('#user-data').html(userData);
         modal_view.modal("show");
-      }).catch(handleError);
+      })
+      .catch(handleError);
 
+    // Requisição para obter os pacotes do aluno
     normal_request(`/backend/alunos/${alunoId}/pacotes/buscar`, {}, 'GET', csrftoken)
       .then(response => {
         const dados = response.dados;
 
-        const currentPlan = dados.filter(pacote => pacote.ativo === 'S' && pacote.desativado_em === null).map(pacote => `
-            ${createField('Pacote', pacote.pacote__nome, "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
-            ${createField('Data de Validade', converter_data(pacote.data_validade), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
-            <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2">
-              <button class="btn btn-new desativar_pacote" id="desativar_pacote" type="button" data-id="${pacote.id}">Desativar</button>
-            </div>
-          `).join('');
+        // Filtra os pacotes ativos que não foram desativados
+        const activePlans = dados.filter(pacote => pacote.ativo === 'S' && pacote.desativado_em === null);
 
-        const history = dados.filter(pacote => pacote.desativado_em !== null).map(pacote => `
-            ${createField('Nome', pacote.pacote__nome, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-            ${createField('Finalizado em', converter_data(pacote.desativado_em), "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-          `).join('');
+        // Mapeia os pacotes ativos para o formato HTML
+        const activePlansHTML = activePlans.map(pacote => `
+          ${createField('Pacote', pacote.pacote__nome, "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
+          ${createField('Data de Validade', converter_data(pacote.data_validade), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
+          <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2">
+            <button class="btn btn-new desativar_pacote" id="desativar_pacote" type="button" data-id="${pacote.id}">Desativar</button>
+          </div>
+        `).join('');
 
-        if (currentPlan.length > 0) {
-          $('#current-plan').html(currentPlan);
-        } else {
-          $('#current-plan').html('<div class="col-12 text-center">Sem Pacotes Vinculados</div>');
-        }
+        const historyPlans = dados.filter(pacote => pacote.desativado_em !== null);
 
-        if (history.length > 0) {
-          $('#history').html(history);
-        } else {
-          $('#history').html('<div class="col-12 text-center">Sem Pacotes Anteriores</div>');
-        }
+        const historyPlansHTML = historyPlans.map(pacote => `
+          ${createField('Nome', pacote.pacote__nome, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+          ${createField('Finalizado em', converter_data(pacote.desativado_em), "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        `).join('');
+
+        displaySection('#current-plan', activePlansHTML, 'Sem Pacotes Vinculados');
+        displaySection('#history', historyPlansHTML, 'Sem Pacotes Anteriores');
       })
       .catch(handleError);
+  };
+
+  /**
+   * Exibe a seção especificada com os dados fornecidos ou uma mensagem padrão.
+   * @param {string} sectionId - O ID da seção a ser atualizada.
+   * @param {string} content - O conteúdo a ser exibido na seção.
+   * @param {string} defaultMessage - A mensagem padrão a ser exibida se o conteúdo estiver vazio.
+   */
+  const displaySection = (sectionId, content, defaultMessage) => {
+    if (content.length > 0) {
+      $(sectionId).html(content);
+    } else {
+      $(sectionId).html(`<div class="col-12 text-center">${defaultMessage}</div>`);
+    }
   };
 
   /**
@@ -232,7 +251,8 @@ $(document).ready(() => {
             alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
             carregar_dados();
           } else {
-            console.error('Erro ao deletar aluno:', response.message);
+            alertavel.find('.modal-body').html('Não foi possível remover o cadastro do aluno', response.msg);
+            alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
           }
         })
         .catch(handleError);
@@ -263,7 +283,7 @@ $(document).ready(() => {
             alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
             carregar_dados();
           } else {
-            console.error('Erro ao cancelar contrato:', response.message);
+            console.error('Erro ao cancelar contrato:', response.msg);
           }
         })
         .catch(handleError);
@@ -373,7 +393,6 @@ $(document).ready(() => {
     }
   }
 
-
   /**
    * Manipula o clique no botão "Gravar" para adicionar ou editar um Aluno.
    * @param {Event} event - O objeto de evento associado ao clique no botão.
@@ -406,6 +425,36 @@ $(document).ready(() => {
 
     modal.modal("show");
   };
+
+  /**
+   * Altera o status (ativo/inativo) de um usuário.
+   * @param {number} planId - O ID do usuário cujo status será alterado.
+   * @param {boolean} activate - Define se o usuário deve ser ativado (true) ou desativado (false).
+  */
+  const changeStatus = (alunoId, activate) => {
+    const endpoint = `/backend/alunos/ativar_desativar/${alunoId}`;
+    const token = csrftoken;
+    const requestData = { ativar: activate ? 'S' : 'N' };
+
+    normal_request(endpoint, requestData, 'PUT', token)
+      .then(response => {
+        const successMessage = response.msg || '';
+
+        if (successMessage.includes('Aluno ativado') || successMessage.includes('Aluno desativado')) {
+          carregar_dados();
+        } else {
+          console.error('Erro ao ativar/desativar aluno:', response.msg);
+        }
+      })
+      .catch(handleError);
+  };
+
+  datatable.on("click", ".btn-ativo, .btn-inativo", function () {
+    const alunoId = $(this).data("id");
+    const activate = !$(this).hasClass("btn-ativo");
+
+    changeStatus(alunoId, activate);
+  });
 
   datatable.on("click", ".btn-delete", function () {
     const userId = $(this).data("id");

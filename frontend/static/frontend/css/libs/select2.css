@@ -4,8 +4,8 @@
   margin: 0;
   position: relative;
   vertical-align: middle;
-  z-index: 9999;
   text-align: left;
+  z-index: 9999;
 }
 
 textarea::placeholder {
@@ -16,7 +16,7 @@ textarea::placeholder {
   box-sizing: border-box;
   cursor: pointer;
   display: block;
-  height: 37px;
+  height: 38px;
   user-select: none;
   -webkit-user-select: none;
   width: 100%;
@@ -133,7 +133,8 @@ textarea::placeholder {
 
 .select2-search--dropdown {
   display: block;
-  padding: 4px
+  padding: 4px;
+  background-color: #0d1529;
 }
 
 .select2-search--dropdown .select2-search__field {
@@ -380,6 +381,9 @@ textarea::placeholder {
 
 .select2-container--default .select2-search--dropdown .select2-search__field {
   border: 1px solid #314473;
+  background-color: #0d1529;
+  outline: 0;
+  color: #d0d6e1;
 }
 
 .select2-container--default .select2-search--inline .select2-search__field {

@@ -4,18 +4,63 @@
 {% block title %} Agenda | Arena Sunset {% endblock %}
 
 {% block content %}
+<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/libs/select2.css' %}">
+<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/index.css' %}">
+
 
 <script src="{% static 'frontend/js/libs/fullcalendar.js' %}"></script>
 <script src="{% static 'frontend/js/libs/fullcalendar.min.js' %}"></script>
-
+<script src="{% static 'frontend/js/libs/jquery.mask.min.js' %}"></script>
+<script src="{% static 'frontend/js/libs/select2.js' %}"></script>
+<script src="{% static 'frontend/js/libs/select2.min.js' %}"></script>
 <script src="{% static 'frontend/js/home.js' %}"></script>
 
-<link rel="stylesheet" type="text/css" href="{% static 'frontend/css/index.css' %}">
 
 <div id="agenda">
-  <div class="card custom-cards mt-4 mb-4 me-1 ms-1">
-    <div class="card-body">
-      <div id="calendar"></div>
+  <div id="divCalendario">
+    <h2 class="text-center mb-3 mt-4">Plataforma de Gestão de Aula</h2>
+    <div class="card custom-cards mt-4 mb-3 me-1 ms-1">
+      <div class="card-body">
+        <div id="calendar"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="divProfessores" style="display: none;">
+    <div class="col-12 mb-3">
+      <h2 class="text-center mb-3 mt-4">Escolha o professor</h2>
+      <div class="div_voltar">
+        <button class="btn btn-new" id="btn-voltar-agenda">Voltar para a Agenda</button>
+      </div>
+    </div>
+    <div id="card-professores" class="row"></div>
+  </div>
+
+  <div id="divReserva" class="text-center" style="display: none;">
+    <h2 class="text-center mb-3 mt-4">Informe os Participantes</h2>
+    <div class="card custom-cards-agenda row mt-4 mb-4 me-1 ms-1">
+      <div class="col-12 mb-3 mt-2">
+        <div class="div_voltar">
+          <button class="btn btn-new" id="btn-voltar-professores">Selecionar Professores</button>
+        </div>
+      </div>
+
+      <div id="formulario_reserva" class="row col-lg-6 col-md-12 col-sm-12 col-xs-12">
+
+        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-1">
+          <select id="pagante" class="form-control" style="width: 100%;" required></select>
+        </div>
+
+        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+          <select id="pacotes" class="form-control" style="width: 100%;" required></select>
+        </div>
+
+        <div id="participantesFieldset" style="display: none;"></div>
+
+        <div class="div-btn-reserva mt-3 mb-3">
+          <button class="btn btn-new" id="btn-reserva" type="button">Reservar</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

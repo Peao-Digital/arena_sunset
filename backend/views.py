@@ -105,6 +105,13 @@ class AlunoView(View):
     res, status = AlunoSrv.deletar(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
+class AlunoAtivacaoView(View):
+  def put(self, request, id):
+    res, status = logado(request.user)
+    if status != 400:
+      res, status = AlunoSrv.ativar_desativar(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+
 class AlunoPacoteView(View):
 
   def get(self, request, id):
@@ -139,6 +146,13 @@ class PacoteCrudView(View):
     res, status = apenas_administracao(request.user)
     if status != 400:
       res, status = PacoteSrv.deletar(request, id)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+
+class PacoteAtivacaoView(View):
+  def put(self, request, id):
+    res, status = apenas_administracao(request.user)
+    if status != 400:
+      res, status = PacoteSrv.ativar_desativar(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
 class PacoteAlunoView(View):
