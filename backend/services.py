@@ -384,6 +384,28 @@ class PacoteSrv():
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
   
   @staticmethod
+  def ativar_desativar(request, id):
+    try:
+      pacote = Pacote.objects.get(pk=id)
+
+      if pacote.ativo == 'N':
+          pacote.ativo = 'S'
+          msg = 'Pacote ativado!'
+      else:
+          pacote.ativo = 'N'
+          msg = 'Pacote desativado!'
+      
+      pacote.save(update_fields=['ativo'])
+      
+      return {'msg': msg}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
   def criar(request):
     try:
       post_data = json.loads(request.body)
@@ -489,6 +511,27 @@ class AlunoSrv():
       obj.save()
 
       return {'id': obj.id}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  def ativar_desativar(request, id):
+    try:
+      aluno = Aluno.objects.get(pk=id)
+
+      if aluno.ativo == 'N':
+          aluno.ativo = 'S'
+          msg = 'Aluno ativado!'
+      else:
+          aluno.ativo = 'N'
+          msg = 'Aluno desativado!'
+      
+      aluno.save(update_fields=['ativo'])
+      
+      return {'msg': msg}, 200
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:

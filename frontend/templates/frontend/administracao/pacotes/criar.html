@@ -17,13 +17,13 @@
 
 <div class="card custom-cards mt-4 mb-4 me-3 ms-3">
   <div class="card-body">
-    <div class="custom-card-body">
+    <div class="header_card">
       <h5>Pacotes de Aula</h5>
-      <button class="btn btn-new" id="new_plan">Novo Pacote</button>
+      <button class="btn btn-new" id="new_plan" type="button">Novo Pacote</button>
     </div>
 
-    <div class="table-plans mt-3">
-      <table id="datatable-plan" class="row-border table-responsive display" aria-describedby="table-plan">
+    <div class="table tabela_dados table-plans mt-3">
+      <table id="datatable-plan" class="table table-dark table-responsive display nowrap" aria-describedby="table-plan">
         <thead>
           <tr>
             <th>Nome</th>
@@ -56,11 +56,16 @@
         <form class="formulario" id="formulario" enctype="multipart/form-data">
           <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome do Pacote" required>
+              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome do Pacote" required
+                maxlength="50">
             </div>
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="valor" class="form-control" type="text" name="valor" placeholder="Valor" required>
+              <div class="input-group">
+                <span class="input-group-text" id="addon_valor">R$</span>
+                <input id="valor" class="form-control" type="text" name="valor" placeholder="Valor"
+                  aria-describedby="addon_valor" required maxlength="20">
+              </div>
             </div>
           </div>
 

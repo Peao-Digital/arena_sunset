@@ -23,6 +23,8 @@ $(document).ready(() => {
 
   const datatable = $("#datatable-user").DataTable({
     searching: true,
+    responsive: true,
+    rowReorder: true,
     language: {
       url: dataTablePT_BR,
     },
@@ -158,7 +160,7 @@ $(document).ready(() => {
     alertavel.find('.modal-body').empty();
     alertavel.find('.modal-footer').empty();
 
-    alertavel.find('.modal-body').html("Tem certeza que deseja deletar o usuário ?");
+    alertavel.find('.modal-body').html("Tem certeza que deseja remover o colaborador ?");
     alertavel.find('.modal-footer').html(`<button class="btn confirm-delete">Deletar</button>`);
     alertavel.modal("show");
 
@@ -254,7 +256,7 @@ $(document).ready(() => {
   };
 
   /**
-  * Manipula o clique no botão "Novo Usuário" para abrir o modal de criação de usuários.
+  * Manipula o clique no botão "Novo Usuário" para abrir o modal de Criação de colaboradores.
   * @param {Event} event - O objeto de evento associado ao clique no botão.
   */
   const btnNewUserClickHandler = (event) => {
@@ -262,7 +264,7 @@ $(document).ready(() => {
     carregar_grupos();
 
     modal.find('input, select').val('');
-    modal.find('.modal-title').text('Criação de usuários');
+    modal.find('.modal-title').text('Criação de colaboradores');
 
     btnGravar.val("-1");
     $('#senha, #conf_senha').prop('disabled', false);
@@ -301,7 +303,7 @@ $(document).ready(() => {
 
   datatable.on("click", ".btn-ativo, .btn-inativo", function () {
     const userId = $(this).data("id");
-    const activate = !$(this).hasClass("btn-ativo"); // Inverte o estado atual
+    const activate = !$(this).hasClass("btn-ativo");
 
     changeStatus(userId, activate);
   });

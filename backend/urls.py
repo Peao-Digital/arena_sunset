@@ -18,6 +18,8 @@ urlpatterns = [
   path('professores/listar', ProfessorView.as_view(http_method_names=['get']), name="Listar os professores"),
   path('professores/<int:id>/horarios', ProfessorView.as_view(http_method_names=['get']), name="Listar os horarios do professor"),
 
+
+  path('alunos/ativar_desativar/<int:id>', AlunoAtivacaoView.as_view(http_method_names=['put']), name="Ativar/desativar aluno"),
   path('alunos/ver/<int:id>', AlunoView.as_view(http_method_names=['get']), name="Ver aluno"),
   path('alunos/listar', AlunoView.as_view(http_method_names=['get']), name="Buscar alunos"),
   path('alunos/criar', AlunoView.as_view(http_method_names=['post']), name="Criar aluno"),
@@ -25,6 +27,7 @@ urlpatterns = [
   path('alunos/deletar/<int:id>', AlunoView.as_view(http_method_names=['delete']), name="Deletar aluno"),
   path('alunos/<int:id>/pacotes/buscar', AlunoPacoteView.as_view(http_method_names=['get']), name="Buscar os pacotes do aluno"),
 
+  path('pacotes/ativar_desativar/<int:id>', PacoteAtivacaoView.as_view(http_method_names=['put']), name="Ativar/desativar pacote"),
   path('pacotes/ver/<int:id>', PacoteCrudView.as_view(http_method_names=['get']), name="Ver pacote"),
   path('pacotes/criar', PacoteCrudView.as_view(http_method_names=['post']), name="Criar pacote"),
   path('pacotes/atualizar/<int:id>', PacoteCrudView.as_view(http_method_names=['put']), name="Atualizar pacote"),

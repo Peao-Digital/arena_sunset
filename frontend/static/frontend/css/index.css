@@ -1,22 +1,71 @@
 #calendar {
-  max-width: 1000px;
   margin: 0px auto;
 }
 
-.custom-cards-agenda {
+.btn-horario {
+  margin: 1px;
+  border: 1px solid #ff6b03;
+  color: #fe5607;
+  font-weight: bold;
+  outline: 0;
+}
+
+.btn-horario:hover,
+.btn-horario:focus,
+.btn-horario:active,
+.btn-horario.active {
+  outline: 0;
+  margin: 1px;
+  color: #ffffff;
+  font-weight: bold;
+  border: 1px solid #ff6b03 !important;
+  background: linear-gradient(180deg, #FF6F02 0%, #FE5408 100%) !important;
+}
+
+.campos-participante {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
+#formulario_reserva {
+  display: flex;
+  justify-content: center;
+}
+
+.custom-cards-agenda,
+.custom-cards-professores {
   background-color: #0d1529;
   border-radius: 2px;
   border: 1px solid #314473;
 }
 
-.div-nome h2,
+.h2,
+h2 {
+  font-size: calc(1.325rem + .9vw);
+}
+
+.div-foto img {
+  width: 200px;
+  height: 200px;
+  border-radius: 10%;
+  overflow: hidden;
+  object-fit: cover;
+}
+
+.div-nome {
+  color: #d0d6e1;
+}
+
 .custom-cards-agenda {
   color: #d0d6e1;
+  min-height: 55vh;
+  display: flex;
+  align-items: center;
 }
 
 .div_voltar {
   text-align: right;
-  margin-right: 25px;
 }
 
 .fc .fc-daygrid-day-frame {
@@ -89,6 +138,17 @@
 }
 
 @media screen and (max-width:991px) {
+
+
+  .campos-participante {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  .input_aluno {
+    margin-left: 0 !important;
+  }
 
   .fc-toolbar-chunk,
   .fc-button-group {

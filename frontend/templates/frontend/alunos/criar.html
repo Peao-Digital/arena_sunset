@@ -8,8 +8,6 @@
 <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/alunos.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/libs/select2.css' %}">
 
-<script src="{% static 'frontend/js/libs/datatables.js' %}"></script>
-<script src="{% static 'frontend/js/libs/datatables.min.js' %}"></script>
 <script src="{% static 'frontend/js/libs/jquery.mask.min.js' %}"></script>
 <script src="{% static 'frontend/js/libs/select2.js' %}"></script>
 <script src="{% static 'frontend/js/libs/select2.min.js' %}"></script>
@@ -18,13 +16,13 @@
 
 <div class="card custom-cards mt-4 mb-4 me-3 ms-3">
   <div class="card-body">
-    <div class="custom-card-body">
+    <div class="header_card">
       <h5>Alunos</h5>
-      <button class="btn btn-new" id="new_aluno">Novo Aluno</button>
+      <button class="btn btn-new" id="new_aluno" type="button">Novo Aluno</button>
     </div>
 
-    <div class="table-aluno mt-3">
-      <table id="datatable-aluno" class="row-border table-responsive display" aria-describedby="table-aluno">
+    <div class="table tabela_dados  table-aluno mt-3">
+      <table id="datatable-aluno" class="table table-dark table-responsive display nowrap" aria-describedby="table-aluno">
         <thead>
           <tr>
             <th>Nome</th>
@@ -57,7 +55,7 @@
         <form class="formulario" enctype="multipart/form-data">
           <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome" required>
+              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome" required maxlength="50">
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
               <input id="cpf" class="form-control" type="text" name="cpf" placeholder="CPF" required>
@@ -68,8 +66,8 @@
               <input id="celular" class="form-control" type="text" name="celular" placeholder="Celular" required>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="email" class="form-control" type="text" name="email" placeholder="Email" required
-                autocomplete="username">
+              <input id="email" class="form-control" type="email" name="email" placeholder="Email" required
+                maxlength="50">
             </div>
           </div>
           {% csrf_token %}

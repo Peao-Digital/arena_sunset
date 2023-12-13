@@ -17,13 +17,14 @@
 
 <div class="card custom-cards mt-4 mb-4 me-3 ms-3">
   <div class="card-body">
-    <div class="custom-card-body">
-      <h5>Usuários</h5>
-      <button class="btn btn-new" id="new_user">Novo Usuário</button>
+    <div class="header_card">
+      <h5>Colaboradores</h5>
+      <button class="btn btn-new" id="new_user" type="button">Novo Colaborador</button>
     </div>
 
-    <div class="table-users mt-3">
-      <table id="datatable-user" class="row-border table-responsive display" aria-describedby="table-user">
+    <div class="table tabela_dados table-users mt-3">
+      <table id="datatable-user" class="table table-dark table-responsive display nowrap"
+        aria-describedby="table-user">
         <thead>
           <tr>
             <th>Nome</th>
@@ -36,7 +37,6 @@
         </tbody>
       </table>
     </div>
-
   </div>
 </div>
 
@@ -44,7 +44,7 @@
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
-        <h1 class="modal-title fs-5" id="exampleModalLabel">Criação de usuários</h1>
+        <h1 class="modal-title fs-5" id="exampleModalLabel">Criação de colaboradores</h1>
         <button type="button" class="btn-fechar close-modal" data-bs-dismiss="modal" aria-label="Close"><i
             class="fa-solid fa-xmark"></i></button>
       </div>
@@ -54,11 +54,12 @@
         <form class="formulario" id="formulario" enctype="multipart/form-data">
           <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome" required>
+              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome" required maxlength="50">
             </div>
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="sobrenome" class="form-control" type="text" name="sobrenome" placeholder="Sobrenome" required>
+              <input id="sobrenome" class="form-control" type="text" name="sobrenome" placeholder="Sobrenome" required
+                maxlength="50">
             </div>
           </div>
 
@@ -66,24 +67,24 @@
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
               <input id="usuario" class="form-control" type="text" name="usuario" placeholder="Usuário de login"
-                required>
+                required maxlength="50">
             </div>
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="email" class="form-control" type="text" name="email" placeholder="Email" required
-                autocomplete="username">
+              <input id="email" class="form-control" type="email" name="email" placeholder="Email"
+                autocomplete="username" required maxlength="50">
             </div>
           </div>
 
           <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
               <input id="senha" class="form-control" type="password" name="senha" placeholder="Senha de login" required
-                autocomplete="new-password">
+                autocomplete="new-password" maxlength="50">
             </div>
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
               <input id="conf_senha" class="form-control" type="password" name="conf_senha"
-                placeholder="Confirmação de senha" required autocomplete="new-password">
+                placeholder="Confirmação de senha" required autocomplete="new-password" maxlength="50">
             </div>
           </div>
 
