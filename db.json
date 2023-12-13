@@ -35,7 +35,7 @@
   "model": "auth.user",
   "pk": 1,
   "fields": {
-    "password": "pbkdf2_sha256$390000$VsXqHoSNxx4NyMEwTMPoE3$wA1Q4aJ98qK0ZkmaepiTFbQwvOSecf5aI862O+1/m6A=",
+    "password": "pbkdf2_sha256$390000$Oby7sAliJSjaKkgnlOEDHa$qH52BTAvyhAycYEZhYPcX5LglkwNcyZ9m2UqqBOJm7Y=",
     "last_login": "2023-11-17T18:18:14.105Z",
     "is_superuser": true,
     "username": "admin_django",

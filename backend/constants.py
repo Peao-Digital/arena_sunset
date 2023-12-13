@@ -6,6 +6,15 @@ class Opcoes:
     ('ATENDIMENTO', 'Atendimento'),
     ('ALUNOS', 'Aluno')
   ]
+  TIPO_PACOTE = [
+    ('AVULSO', 'Avulso'),
+    ('NORMAL', 'Normal')
+  ]
+  TIPO_SEXO = [
+    ('F', 'Feminino'),
+    ('M', 'Masculino'),
+    ('N', 'Não informado')
+  ]
 
   @staticmethod
   def get_desc(var, idx):

@@ -16,6 +16,8 @@ class Perfil(models.Model):
   celular = models.CharField(max_length=30, blank=True)
   foto_perfil = models.CharField(max_length=200, blank=True)
   bio = models.TextField(blank=True)
+  sexo = models.CharField(max_length=1, choices=Opcoes.TIPO_SEXO)
+  nascimento = models.DateField(null=True, blank=True)
 
   def __str__(self):
     return self.user.username
@@ -37,6 +39,7 @@ class Pacote(models.Model):
   qtd_aulas_semana = models.IntegerField()
   qtd_participantes = models.IntegerField()
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
+  tipo = models.CharField(max_length=10, choices=Opcoes.TIPO_PACOTE)
 
 '''
   Classe de aluno
@@ -47,6 +50,9 @@ class Aluno(models.Model):
   celular = models.CharField(max_length=30, blank=True, null=True)
   email = models.CharField(max_length=300, blank=True, null=True)
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
+  sexo = models.CharField(max_length=1, choices=Opcoes.TIPO_SEXO, null=True, blank=True)
+  nascimento = models.DateField(null=True, blank=True)
+  responsavel = models.ForeignKey("Aluno", on_delete=models.SET_NULL, null=True, blank=True)
 
 '''
   Classe AlunoPacote
@@ -68,8 +74,6 @@ class AlunoPacote(models.Model):
   Classe de aula
 '''
 class Aula(models.Model):
-  pacote = models.ForeignKey(Pacote, on_delete=models.DO_NOTHING)
-  contratante = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING, related_name='aula_contratante')
   professor = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aula_professor')
   ativa = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
 
@@ -80,13 +84,16 @@ class Aula(models.Model):
   atualizado_em = models.DateTimeField(auto_now=True, editable=False)
 
 '''
-  Classe de Aula - Aluno
+  Classe AulaParticipante 
 '''
-class AulaAluno(models.Model):
-  aula = models.ForeignKey(Aula, on_delete=models.CASCADE)
-  aluno = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING)
-  conferido = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
 
+class AulaParticipante(models.Model):
+  aula = models.ForeignKey(Aula, on_delete=models.DO_NOTHING)
+  pacote = models.ForeignKey(Pacote, on_delete=models.DO_NOTHING)
+  contratante = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING, related_name='aula_contratante')
+  participante = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING, related_name='aula_participante')
+
+  conferido = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
   conferido_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aulaaluno_conferido_por', null=True, blank=True)
   conferido_em = models.DateTimeField(null=True, blank=True)
 
@@ -100,46 +107,40 @@ class DiaReservado(models.Model):
     verbose_name_plural = 'Dias de reserva especiais'
 
 '''
-  Classe Agenda 
+  Classe Reserva
 '''
-class Agenda(models.Model):
-  data = models.DateField()
-  data_horario_ini = models.DateTimeField()
-  data_horario_fim = models.DateTimeField()
+class Reserva(models.Model):
+  data = models.DateField(null=True, blank=True)
+  data_horario_ini = models.DateTimeField(null=True, blank=True)
+  data_horario_fim = models.DateTimeField(null=True, blank=True)
 
-  aula = models.ForeignKey(Aula, on_delete=models.CASCADE, null=True, blank=True)
-  reserva_especial = models.ForeignKey(DiaReservado, on_delete=models.CASCADE, null=True, blank=True)
+  dia_semana = models.IntegerField(null=True, blank=True)
   dia_inteiro = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
-  ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO, default='S')
+  ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
+  aula = models.ForeignKey(Aula, on_delete=models.CASCADE, null=True, blank=True)
+  especial = models.ForeignKey(DiaReservado, on_delete=models.CASCADE, null=True, blank=True)
 
   cancelado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
   cancelado_em = models.DateTimeField(null=True, blank=True)
   motivo_cancelamento = models.TextField(blank=True, null=True)
 
   class Meta:
-    unique_together = ('data_horario_ini', 'data_horario_fim')
-    constraints = [
-      models.CheckConstraint(
-        name="%(app_label)s_%(class)s_aula_ou_especial",
-        check=(
-            models.Q(aula__isnull=True, reserva_especial__isnull=False)
-            | models.Q(aula__isnull=False, reserva_especial__isnull=True, ativo='S')
-        ),
-      )
-    ]
-  
-  def existe(self):
-    c1 = Agenda.objects.filter(
-      ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S',
-    ).exists()
+    pass
 
-    c2 = Agenda.objects.filter(
-      ~Q(pk=self.id), data=self.data, dia_inteiro='S'
-    ).exists()
+  def horario_disponivel(self):
+    pass
+    #c1 = Agenda.objects.filter(
+    #  ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S',
+    #).exists()
 
-    return c1 or c2
-  
-  def professor_horario_bloqueado(self, professor):
-    return Agenda.objects.filter(
-      ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S', aula__professor=professor
-    ).exists()
+    #c2 = Agenda.objects.filter(
+    #  ~Q(pk=self.id), data=self.data, dia_inteiro='S'
+    #).exists()
+
+    #return c1 or c2
+
+  def professor_disponivel(self, professor):
+    pass
+    #return Agenda.objects.filter(
+    #  ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S', aula__professor=professor
+    #).exists()

@@ -46,7 +46,7 @@ admin.site.register(Pacote)
 admin.site.register(AlunoPacote)
 
 admin.site.register(Aula)
-admin.site.register(AulaAluno)
+admin.site.register(AulaParticipante)
 
-admin.site.register(Agenda)
+admin.site.register(Reserva)
 admin.site.register(DiaReservado)
