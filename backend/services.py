@@ -55,14 +55,9 @@ class UsuarioSrv():
 
       foto = ''
       cpf = ''
-      nascimento = ''
-      sexo = ''
       if u.perfil:
         cpf = u.perfil.cpf
-        nascimento = u.nascimento
-        sexo = u.sexo
         #foto = settings.UPLOAD_URL + 'usuarios/' + u.perfil.foto_perfil
-
 
       d_json = {
         'id': u.id,
@@ -74,9 +69,7 @@ class UsuarioSrv():
         'foto': foto,
         'grupos': grupos,
         'grupos_id': grupos_id,
-        'cpf': cpf,
-        'sexo': sexo,
-        'nascimento': nascimento
+        'cpf': cpf
       }
 
       return {'dados': d_json}, 200
@@ -99,8 +92,6 @@ class UsuarioSrv():
         sobrenome = post_data.get('sobrenome', '')
         email = post_data.get('email', '')
         cpf = post_data.get('cpf', '')
-        nascimento = post_data.get('nascimento', None)
-        sexo = post_data.get('sexo', 'N')
         grupo = post_data.get('grupo', None)
 
         if len(User.objects.filter(username=usuario)):
@@ -115,8 +106,6 @@ class UsuarioSrv():
         u_obj.last_name = sobrenome
         u_obj.email = email
         u_obj.username = usuario
-        u_obj.sexo = sexo
-        u_obj.nascimento = nascimento
         u_obj.set_password(senha)
 
         u_obj.save()
@@ -160,8 +149,6 @@ class UsuarioSrv():
         email = post_data.get('email', '')
         grupo = post_data.get('grupo', None)
         cpf = post_data.get('cpf', '')
-        nascimento = post_data.get('nascimento', None)
-        sexo = post_data.get('sexo', 'N')
 
         if len(User.objects.filter(~Q(pk=id), username=usuario)):
           return {"erro": "Uma conta com este mesmo usuário ({}) ja existe!".format(usuario), "tipo_erro": "validacao"}, 400
@@ -175,8 +162,6 @@ class UsuarioSrv():
         u_obj.last_name = sobrenome
         u_obj.email = email
         u_obj.username = usuario
-        u_obj.sexo = sexo
-        u_obj.nascimento = nascimento
         
         if senha != '':
           u_obj.set_password(senha)
@@ -276,12 +261,8 @@ class UsuarioSrv():
         grupos_id = []
 
         cpf = ''
-        nascimento = ''
-        sexo = ''
         if d.perfil:
           cpf = d.perfil.cpf
-          nascimento = d.perfil.nascimento
-          sexo = d.perfil.sexo
 
         for grupo in d.groups.all():
           grupos.append(grupo.name)
@@ -295,8 +276,6 @@ class UsuarioSrv():
           'sobrenome': d.last_name,
           'email': d.email,
           'ativo': d.is_active,
-          'nascimento': nascimento,
-          'sexo': sexo,
           'grupos': grupos,
           'grupos_id': grupos_id
         })
@@ -587,7 +566,7 @@ class PacoteAlunoSrv():
       ).filter(aluno=Aluno.objects.get(pk=id))
       
       dados = AlunoPacote.objects.values(
-        'pacote','pacote__nome', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo'
+        'aluno','aluno__nome', 'pacote__id', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo', 'data_contratacao', 'data_validade'
       ).filter(aluno=Aluno.objects.get(pk=id), ativo='S').distinct()
 
       d_historico = []
@@ -610,14 +589,18 @@ class PacoteAlunoSrv():
   def buscar_por_pacote(request, id):
     try:
 
-      historicos = AlunoPacote.objects.values(
-        'id', 'aluno', 'aluno__nome', 'pacote','pacote__nome', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo',
-        'data_contratacao', 'data_validade', 'desativado_em', 'desativado_por'
-      ).filter(pacote=Pacote.objects.get(pk=id))
+      historicos = AlunoPacoteHistorico.objects.values(
+        'aluno_pacote__aluno__id', 'aluno_pacote__aluno__nome', 
+        'aluno_pacote__pacote__id', 'aluno_pacote__pacote__nome', 
+        'aluno_pacote__pacote__qtd_aulas_semana', 
+        'aluno_pacote__pacote__qtd_participantes',
+        'aluno_pacote__ativo',
+        'data_contratacao', 'data_validade'
+      ).filter(aluno_pacote__pacote=Pacote.objects.get(pk=id))
       
       dados = AlunoPacote.objects.values(
-        'aluno','aluno__nome', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo'
-      ).filter(pacote=Pacote.objects.get(pk=id), ativo='S').distinct()
+        'aluno','aluno__nome', 'pacote__id', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo', 'data_contratacao', 'data_validade'
+      ).filter(pacote=Pacote.objects.get(pk=id), ativo='S')
 
       d_historico = []
       for dado in historicos:
@@ -638,22 +621,36 @@ class PacoteAlunoSrv():
   @staticmethod
   def criar(request, id):
     try:
-      post_data = json.loads(request.body)
 
-      data_inicio = post_data.get('data_contratacao', None)
-      dt = data_inicio.split('-')
-      ano, mes = dt[0], dt[1]
-      dia = calendar.monthrange(ano, mes)[1]
+      with transaction.atomic():
+        post_data = json.loads(request.body)
 
-      obj = AlunoPacote()
-      obj.pacote = Pacote.objects.get(pk=id)
-      obj.ativo = post_data.get('ativo', None)
-      obj.aluno = Aluno.objects.get(pk=post_data.get('aluno', None))
-      obj.data_contratacao = data_inicio
-      obj.data_validade = '{}-{}-{}'.format(ano, mes, dia)
-      
-      obj.full_clean()
-      obj.save()
+        data_inicio = post_data.get('data_contratacao', None)
+        dt = data_inicio.split('-')
+        ano, mes = dt[0], dt[1]
+        dia = calendar.monthrange(int(ano), int(mes))[1]
+        aluno = Aluno.objects.get(pk=post_data.get('aluno', None))
+        pacote = Pacote.objects.get(pk=id)
+
+        obj = AlunoPacote.objects.filter(pacote=pacote, aluno=aluno)
+        if obj.exists():
+          obj = obj[0]
+        else:
+          obj = AlunoPacote()
+        obj.pacote = pacote
+        obj.ativo = 'S'
+        obj.aluno = aluno
+        obj.data_contratacao = data_inicio
+        obj.data_validade = '{}-{}-{}'.format(ano, mes, dia)
+
+        obj.full_clean()
+        obj.save()
+
+        obj_historico = AlunoPacoteHistorico()
+        obj_historico.aluno_pacote = obj
+        obj_historico.data_contratacao = data_inicio
+        obj_historico.data_validade = '{}-{}-{}'.format(ano, mes, dia)
+        obj_historico.save()
 
       return {'id': obj.id}, 200
     except ObjectDoesNotExist  as e:
@@ -666,12 +663,17 @@ class PacoteAlunoSrv():
   @staticmethod
   def cancelar(request, id):
     try:
-      obj = AlunoPacote.objects.get(pk=id)
-      obj.ativo = 'N'
-      obj.desativado_em = datetime.now().date()
-      obj.desativado_por = request.user
 
-      obj.save()
+      with transaction.atomic():
+        obj = AlunoPacote.objects.get(pk=id)
+        obj_historico = AlunoPacoteHistorico(aluno_pacote=obj)
+
+        obj.ativo = 'N'
+        obj_historico.desativado_em = datetime.now().date()
+        obj_historico.desativado_por = request.user
+
+        obj.save()
+        obj_historico.save()
 
       return {'msg': 'Contrato cancelado com sucesso!'}, 200
     except ObjectDoesNotExist  as e:

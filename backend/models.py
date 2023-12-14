@@ -16,8 +16,6 @@ class Perfil(models.Model):
   celular = models.CharField(max_length=30, blank=True)
   foto_perfil = models.CharField(max_length=200, blank=True)
   bio = models.TextField(blank=True)
-  sexo = models.CharField(max_length=1, choices=Opcoes.TIPO_SEXO)
-  nascimento = models.DateField(null=True, blank=True)
 
   def __str__(self):
     return self.user.username
@@ -39,7 +37,6 @@ class Pacote(models.Model):
   qtd_aulas_semana = models.IntegerField()
   qtd_participantes = models.IntegerField()
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
-  tipo = models.CharField(max_length=10, choices=Opcoes.TIPO_PACOTE)
 
 '''
   Classe de aluno
@@ -52,7 +49,6 @@ class Aluno(models.Model):
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
   sexo = models.CharField(max_length=1, choices=Opcoes.TIPO_SEXO, null=True, blank=True)
   nascimento = models.DateField(null=True, blank=True)
-  responsavel = models.ForeignKey("Aluno", on_delete=models.SET_NULL, null=True, blank=True)
 
 '''
   Classe AlunoPacote
@@ -60,7 +56,20 @@ class Aluno(models.Model):
 class AlunoPacote(models.Model):
   aluno = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING)
   pacote = models.ForeignKey(Pacote, on_delete=models.DO_NOTHING)
+  data_contratacao = models.DateField()
+  data_validade = models.DateField()
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
+
+  class Meta:
+    verbose_name_plural = 'Aluno - Pacote'
+    unique_together = ('aluno', 'pacote')
+
+'''
+  Classe AlunoPacoteHistorico
+'''
+
+class AlunoPacoteHistorico(models.Model):
+  aluno_pacote = models.ForeignKey(AlunoPacote, on_delete=models.DO_NOTHING)
   criado_em = models.DateTimeField(auto_now_add=True, editable=False)
   desativado_em = models.DateField(blank=True, null=True)
   desativado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, blank=True, null=True)
@@ -68,7 +77,7 @@ class AlunoPacote(models.Model):
   data_validade = models.DateField()
 
   class Meta:
-    verbose_name_plural = 'Aluno - Pacote'
+    verbose_name_plural = 'Aluno - Pacote | Histórico'
 
 '''
   Classe de aula
@@ -89,7 +98,7 @@ class Aula(models.Model):
 
 class AulaParticipante(models.Model):
   aula = models.ForeignKey(Aula, on_delete=models.DO_NOTHING)
-  pacote = models.ForeignKey(Pacote, on_delete=models.DO_NOTHING)
+  pacote = models.ForeignKey(Pacote, on_delete=models.DO_NOTHING, null=True, blank=True)
   contratante = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING, related_name='aula_contratante')
   participante = models.ForeignKey(Aluno, on_delete=models.DO_NOTHING, related_name='aula_participante')
 
