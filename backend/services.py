@@ -682,3 +682,9 @@ class PacoteAlunoSrv():
       return {"erro":  str(e), "tipo_erro": "validacao"}, 400
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+class RecorrenciaSrv():
+  pass
+
+class ReservaSrv():
+  pass

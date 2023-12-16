@@ -95,7 +95,6 @@ class Aula(models.Model):
 '''
   Classe AulaParticipante 
 '''
-
 class AulaParticipante(models.Model):
   aula = models.ForeignKey(Aula, on_delete=models.DO_NOTHING)
   pacote = models.ForeignKey(Pacote, on_delete=models.DO_NOTHING, null=True, blank=True)
@@ -116,25 +115,41 @@ class DiaReservado(models.Model):
     verbose_name_plural = 'Dias de reserva especiais'
 
 '''
+  Classe Recorrencia
+'''
+class Recorrencia(models.Model):
+  aula = models.ForeignKey(Aula, on_delete=models.CASCADE, null=True, blank=True)
+  dia_semana = models.IntegerField(null=True, blank=True)
+  horario_ini = models.CharField(max_length=5)
+  horario_fim = models.CharField(max_length=5)
+  dia_inteiro = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
+  ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
+
+  def horario_disponivel(self):
+    pass
+
+  def professor_disponivel(self):
+    pass
+
+  class Meta:
+    verbose_name_plural = "Recorrencia de aulas"
+  
+'''
   Classe Reserva
 '''
 class Reserva(models.Model):
   data = models.DateField(null=True, blank=True)
   data_horario_ini = models.DateTimeField(null=True, blank=True)
   data_horario_fim = models.DateTimeField(null=True, blank=True)
-
-  dia_semana = models.IntegerField(null=True, blank=True)
   dia_inteiro = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
-  aula = models.ForeignKey(Aula, on_delete=models.CASCADE, null=True, blank=True)
+  
+  aula_unica = models.ForeignKey(Aula, on_delete=models.CASCADE, null=True, blank=True)
   especial = models.ForeignKey(DiaReservado, on_delete=models.CASCADE, null=True, blank=True)
 
   cancelado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
   cancelado_em = models.DateTimeField(null=True, blank=True)
   motivo_cancelamento = models.TextField(blank=True, null=True)
-
-  class Meta:
-    pass
 
   def horario_disponivel(self):
     pass
