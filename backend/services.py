@@ -580,6 +580,7 @@ class PacoteAlunoSrv():
       d_json = []
       for dado in dados:
         dado['vencido'] = 'S' if datetime.now().date() > dado['data_validade'] else 'N'
+        dado['dias_vencimento'] = (dado['data_validade'] - datetime.now().date()).days
         d_json.append(dado)
 
       return {'historico': d_historico, 'dados': d_json}, 200
@@ -614,6 +615,7 @@ class PacoteAlunoSrv():
       d_json = []
       for dado in dados:
         dado['vencido'] = 'S' if datetime.now().date() > dado['data_validade'] else 'N'
+        dado['dias_vencimento'] = (dado['data_validade'] - datetime.now().date()).days
         d_json.append(dado)
       
       return {'historico': d_historico, 'dados': d_json}, 200
