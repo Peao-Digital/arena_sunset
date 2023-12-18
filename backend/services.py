@@ -560,10 +560,14 @@ class PacoteAlunoSrv():
   @staticmethod
   def buscar_por_aluno(request, id):
     try:
-      historicos = AlunoPacote.objects.values(
-        'id', 'aluno', 'aluno__nome', 'pacote','pacote__nome', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo',
-        'data_contratacao', 'data_validade', 'desativado_em', 'desativado_por'
-      ).filter(aluno=Aluno.objects.get(pk=id))
+      historicos = AlunoPacoteHistorico.objects.values(
+        'aluno_pacote__aluno__id', 'aluno_pacote__aluno__nome', 
+        'aluno_pacote__pacote__id', 'aluno_pacote__pacote__nome', 
+        'aluno_pacote__pacote__qtd_aulas_semana', 
+        'aluno_pacote__pacote__qtd_participantes',
+        'aluno_pacote__ativo',
+        'data_contratacao', 'data_validade'
+      ).filter(aluno_pacote__aluno=Aluno.objects.get(pk=id))
       
       dados = AlunoPacote.objects.values(
         'aluno','aluno__nome', 'pacote__id', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo', 'data_contratacao', 'data_validade'
@@ -683,8 +687,114 @@ class PacoteAlunoSrv():
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
-class RecorrenciaSrv():
-  pass
+class AgendaSrv():
 
-class ReservaSrv():
+  @staticmethod
+  def buscar_reservas(request):
+    pass
+
+  '''
+    -----------Reservar dias/horarios que não podem ser agendados (feriados, torneios, etc...)-----------
+  '''
+  
+  @staticmethod
+  def ver_reserva_especial(request, id):
+    pass
+
+  @staticmethod
+  def criar_reserva_especial(request):
+    try:
+      post_data = json.loads(request.body)
+
+      with transaction.atomic():
+        data = post_data.get('data', None)
+        hora_ini = post_data.get('hora_ini', '00:00')
+        hora_fim = post_data.get('hora_fim', '23:59')
+
+        obj_diaReservado = DiaReservado()
+        obj_diaReservado.descricao = post_data.get('descricao', '')
+        obj_diaReservado.dia_inteiro = post_data.get('dia_inteiro', None)
+
+        obj_reserva = Reserva()
+        obj_reserva.data = data
+        obj_reserva.data_horario_ini = conveter_datahorario(data, hora_ini)
+        obj_reserva.data_horario_fim = conveter_datahorario(data, hora_fim)
+        obj_reserva.reserva_especial = obj_diaReservado
+
+        pode_salvar = obj_reserva.horario_disponivel(True)
+        if pode_salvar is False:
+          obj_diaReservado.full_clean()
+          obj_diaReservado.save()
+
+          obj_diaReservado.full_clean()
+          obj_reserva.save()
+        else:
+          return {'msg': 'Um registro com esta data/horário já existe!'}, 400
+
+      return {'id': obj_reserva.id}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
+  def deletar_reserva_especial(request, id):
+    try:
+      with transaction.atomic():
+        obj_diaReservado = DiaReservado.objects.filter(pk=id)
+        obj_reserva = Reserva.objects.filter(especial=obj_diaReservado)
+
+        obj_reserva.delete()
+        obj_diaReservado.delete()
+      return {'msg': 'Registro deletado com sucesso!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  '''
+    -----------Reservas únicas (sem pacote/recorrencia)-----------
+  '''
+
+  @staticmethod
+  def ver_reserva_unica(request, id):
+    pass
+
+  @staticmethod
+  def criar_reserva_unica(request):
+    pass
+
+  @staticmethod
+  def atualizar_reserva_unica(request, id):
+    pass
+
+  @staticmethod
+  def cancelar_reserva_unica(request, id):
+    pass
+
+  '''
+    -----------Reservas normais (com pacote/recorrencia)-----------
+  '''
+
+  @staticmethod
+  def ver_reserva_normal(request, id):
+    pass
+
+  @staticmethod
+  def criar_reserva_normal(request):
+    pass
+
+  @staticmethod
+  def atualizar_reserva_normal(request, id):
+    pass
+
+  @staticmethod
+  def cancelar_reserva_normal(request, id):
+    pass
+
+class RelatoriosSrv():
   pass

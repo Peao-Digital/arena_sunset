@@ -151,8 +151,21 @@ class Reserva(models.Model):
   cancelado_em = models.DateTimeField(null=True, blank=True)
   motivo_cancelamento = models.TextField(blank=True, null=True)
 
-  def horario_disponivel(self):
-    pass
+  def horario_disponivel(self, apenas_especial = False):
+    if apenas_especial:
+      a1 = Reserva.objects.filter(
+        ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S', especial__isnull=False
+      ).exists()
+
+      a2 = False
+    else:
+      a1 = Reserva.objects.filter(
+        ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S'
+      ).exists()
+
+      a2 = False
+
+    return a1 or a2
     #c1 = Agenda.objects.filter(
     #  ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S',
     #).exists()
