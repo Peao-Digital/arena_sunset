@@ -570,7 +570,7 @@ class PacoteAlunoSrv():
       ).filter(aluno_pacote__aluno=Aluno.objects.get(pk=id))
       
       dados = AlunoPacote.objects.values(
-        'aluno','aluno__nome', 'pacote__id', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo', 'data_contratacao', 'data_validade'
+        'id', 'aluno','aluno__nome', 'pacote__id', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo', 'data_contratacao', 'data_validade'
       ).filter(aluno=Aluno.objects.get(pk=id), ativo='S').distinct()
 
       d_historico = []
@@ -603,7 +603,7 @@ class PacoteAlunoSrv():
       ).filter(aluno_pacote__pacote=Pacote.objects.get(pk=id))
       
       dados = AlunoPacote.objects.values(
-        'aluno','aluno__nome', 'pacote__id', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo', 'data_contratacao', 'data_validade'
+        'id', 'aluno','aluno__nome', 'pacote__id', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo', 'data_contratacao', 'data_validade'
       ).filter(pacote=Pacote.objects.get(pk=id), ativo='S')
 
       d_historico = []
@@ -670,7 +670,7 @@ class PacoteAlunoSrv():
 
       with transaction.atomic():
         obj = AlunoPacote.objects.get(pk=id)
-        obj_historico = AlunoPacoteHistorico(aluno_pacote=obj)
+        obj_historico = AlunoPacoteHistorico.objects.filter(aluno_pacote=obj).order_by('-id')[0]
 
         obj.ativo = 'N'
         obj_historico.desativado_em = datetime.now().date()
@@ -699,7 +699,28 @@ class AgendaSrv():
   
   @staticmethod
   def ver_reserva_especial(request, id):
-    pass
+    try:
+      reserva = Reserva.objects.select_related().get(pk=id)
+
+      dados = {
+        'id': reserva.id,
+        'data': reserva.data,
+        'horario_inicial': ajustar_horario(reserva.data_horario_ini),
+        'horario_final': ajustar_horario(reserva.data_horario_fim),
+        'dia_inteiro': reserva.dia_inteiro,
+        'ativo': reserva.ativo,
+        'descricao': reserva.especial.descricao,
+        'tipo': 'ESPECIAL',
+        'pode_editar': f_usuario_possui_grupo(request.user, 'ADM_SITE') or f_usuario_possui_grupo(request.user, 'ATENDIMENTO')
+      }
+      
+      return {'dados': dados}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
   def criar_reserva_especial(request):
@@ -762,19 +783,85 @@ class AgendaSrv():
 
   @staticmethod
   def ver_reserva_unica(request, id):
-    pass
+    try:
+      reserva = Reserva.objects.select_related().get(pk=id)
+
+      participantes = AulaParticipante.objects.filter(aula=reserva.aula)
+      alunos = [
+        {'id': d.aluno.id, 'nome': d.aluno.nome,
+         'contratante_id': d.contratante.id,
+         'contratante_nome': d.contratante.nome} for d in participantes
+      ]
+
+      pode_editar = f_usuario_possui_grupo(request.user, 'ADM_SITE') or f_usuario_possui_grupo(request.user, 'ATENDIMENTO') or reserva.aula.professor.id == request.user.id
+
+      dados = {
+        'id': reserva.id,
+        'data': reserva.data,
+        'horario_inicial': ajustar_horario(reserva.data_horario_ini),
+        'horario_final': ajustar_horario(reserva.data_horario_fim),
+        'dia_inteiro': reserva.dia_inteiro,
+        'ativo': reserva.ativo,
+        'cancelado_por': reserva.cancelado_por,
+        'cancelado_em': reserva.cancelado_em,
+        'motivo_cancelamento': reserva.motivo_cancelamento,
+        'professor': {'id': reserva.aula.professor.id, 'nome': f_nome_usuario(agenda.aula.professor)},
+        'alunos': alunos,
+        'tipo': 'UNICA',
+        'pode_editar': pode_editar
+      }
+
+      return {'dados': dados}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
   def criar_reserva_unica(request):
-    pass
+    try:
+      pass
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
   def atualizar_reserva_unica(request, id):
-    pass
+    try:
+      pass
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
   def cancelar_reserva_unica(request, id):
-    pass
+    try:
+      post_data = json.loads(request.body)
+
+      with transaction.atomic():
+        reserva_obj = Reserva.objects.get(pk=id)
+
+        reserva_obj.ativo = 'N'
+        reserva_obj.cancelado_por = request.user
+        reserva_obj.cancelado_em = datetime.now().date()
+        reserva_obj.motivo_cancelamento = post_data.get('motivo', '')
+
+        reserva_obj.save()
+
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   '''
     -----------Reservas normais (com pacote/recorrencia)-----------
@@ -782,7 +869,38 @@ class AgendaSrv():
 
   @staticmethod
   def ver_reserva_normal(request, id):
-    pass
+    try:
+      recorrencia = Recorrencia.objects.select_related().get(pk=id)
+
+      pode_editar = f_usuario_possui_grupo(request.user, 'ADM_SITE') or f_usuario_possui_grupo(request.user, 'ATENDIMENTO') or recorrencia.aula.professor.id == request.user.id
+
+      participantes = AulaParticipante.objects.filter(aula=recorrencia.aula)
+      alunos = [
+        {'id': d.aluno.id, 'nome': d.aluno.nome,
+         'contratante_id': d.contratante.id,
+         'contratante_nome': d.contratante.nome} for d in participantes
+      ]
+
+      dados = {
+        'id': recorrencia.id,
+        'data': recorrencia.dia_semana,
+        'horario_inicial': ajustar_horario(recorrencia.data_horario_ini),
+        'horario_final': ajustar_horario(recorrencia.data_horario_fim),
+        'dia_inteiro': recorrencia.dia_inteiro,
+        'ativo': recorrencia.ativo,
+        'professor': {'id': recorrencia.aula.professor.id, 'nome': f_nome_usuario(recorrencia.aula.professor)},
+        'alunos': alunos,
+        'tipo': 'NORMAL',
+        'pode_editar': pode_editar
+      }
+
+      return {'dados': dados}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
   def criar_reserva_normal(request):
@@ -794,7 +912,19 @@ class AgendaSrv():
 
   @staticmethod
   def cancelar_reserva_normal(request, id):
-    pass
+    try:
+
+      with transaction.atomic():
+        reserva_obj = Recorrencia.objects.get(pk=id)
+        reserva_obj.ativo = 'N'
+        reserva_obj.save()
+
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
 class RelatoriosSrv():
   pass

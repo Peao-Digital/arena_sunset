@@ -84,7 +84,6 @@ class AlunoPacoteHistorico(models.Model):
 '''
 class Aula(models.Model):
   professor = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aula_professor')
-  ativa = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
 
   criado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aula_criado_por')
   atualizado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, related_name='aula_atualizado_por',null=True, blank=True)
