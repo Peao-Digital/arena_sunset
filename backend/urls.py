@@ -42,14 +42,12 @@ urlpatterns = [
   path('agenda/reserva_especial/criar', ReservaEspecialCrudView.as_view(http_method_names=['post']), name="Criar reserva especial"),
   path('agenda/reserva_especial/deletar/<int:id>', ReservaEspecialCrudView.as_view(http_method_names=['delete']), name="Deletar reserva especial"),
 
-  path('agenda/reserva_unica/ver/<int:id>', ReservaEspecialCrudView.as_view(http_method_names=['get']), name="Ver reserva única"),
-  path('agenda/reserva_unica/criar', ReservaEspecialCrudView.as_view(http_method_names=['post']), name="Criar reserva única"),
-  path('agenda/reserva_unica/atualizar/<int:id>', ReservaEspecialCrudView.as_view(http_method_names=['put']), name="Atualizar reserva única"),
-  path('agenda/reserva_unica/cancelar/<int:id>', ReservaEspecialCrudView.as_view(http_method_names=['delete']), name="Cancelar reserva única"),
+  path('agenda/reserva_unica/ver/<int:id>', ReservaUnica.as_view(http_method_names=['get']), name="Ver reserva única"),
+  path('agenda/reserva_unica/criar', ReservaUnica.as_view(http_method_names=['post']), name="Criar reserva única"),
+  path('agenda/reserva_unica/cancelar/<int:id>', ReservaUnica.as_view(http_method_names=['put']), name="Cancelar reserva única"),
 
   path('agenda/reserva_normal/ver/<int:id>', ReservaNormal.as_view(http_method_names=['get']), name="Ver reserva normal"),
   path('agenda/reserva_normal/criar', ReservaNormal.as_view(http_method_names=['post']), name="Criar reserva normal"),
-  path('agenda/reserva_normal/atualizar/<int:id>', ReservaNormal.as_view(http_method_names=['put']), name="Atualizar reserva normal"),
-  path('agenda/reserva_normal/cancelar/<int:id>', ReservaNormal.as_view(http_method_names=['delete']), name="Cancelar reserva normal"),
+  path('agenda/reserva_normal/cancelar/<int:id>', ReservaNormal.as_view(http_method_names=['put']), name="Cancelar reserva normal"),
   
 ]

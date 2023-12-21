@@ -2,8 +2,6 @@ from django.db import models
 from django.contrib.auth.models import (User, Group)
 from django.db.models import Q
 
-from backend.functions import conveter_datahorario
-
 from .constants import *
 from .models import *
 
@@ -124,12 +122,6 @@ class Recorrencia(models.Model):
   dia_inteiro = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
 
-  def horario_disponivel(self):
-    pass
-
-  def professor_disponivel(self):
-    pass
-
   class Meta:
     verbose_name_plural = "Recorrencia de aulas"
   
@@ -149,34 +141,3 @@ class Reserva(models.Model):
   cancelado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)
   cancelado_em = models.DateTimeField(null=True, blank=True)
   motivo_cancelamento = models.TextField(blank=True, null=True)
-
-  def horario_disponivel(self, apenas_especial = False):
-    if apenas_especial:
-      a1 = Reserva.objects.filter(
-        ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S', especial__isnull=False
-      ).exists()
-
-      a2 = False
-    else:
-      a1 = Reserva.objects.filter(
-        ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S'
-      ).exists()
-
-      a2 = False
-
-    return a1 or a2
-    #c1 = Agenda.objects.filter(
-    #  ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S',
-    #).exists()
-
-    #c2 = Agenda.objects.filter(
-    #  ~Q(pk=self.id), data=self.data, dia_inteiro='S'
-    #).exists()
-
-    #return c1 or c2
-
-  def professor_disponivel(self, professor):
-    pass
-    #return Agenda.objects.filter(
-    #  ~Q(pk=self.id), data_horario_ini__range=(self.data_horario_ini, self.data_horario_fim), ativo='S', aula__professor=professor
-    #).exists()

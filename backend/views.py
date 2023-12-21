@@ -212,12 +212,6 @@ class ReservaUnica(View):
   def put(self, request, id):
     res, status = logado(request.user)
     if status != 400:
-      res, status = AgendaSrv.atualizar_reserva_unica(request, id)
-    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
-
-  def delete(self, request, id):
-    res, status = logado(request.user)
-    if status != 400:
       res, status = AgendaSrv.cancelar_reserva_unica(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
@@ -237,13 +231,7 @@ class ReservaNormal(View):
   def put(self, request, id):
     res, status = logado(request.user)
     if status != 400:
-      res, status = AgendaSrv.atualizar_reserva_normal(request, id)
-    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
-
-  def delete(self, request, id):
-    res, status = logado(request.user)
-    if status != 400:
-      res, status = AgendaSrv.deletar_reserva_normal(request, id)
+      res, status = AgendaSrv.cancelar_reserva_normal(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
 class AgendaView(View):

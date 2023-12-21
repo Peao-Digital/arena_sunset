@@ -50,3 +50,5 @@ admin.site.register(AulaParticipante)
 
 admin.site.register(Reserva)
 admin.site.register(DiaReservado)
+admin.site.register(Recorrencia)
+

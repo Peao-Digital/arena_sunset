@@ -104,7 +104,9 @@ TIME_ZONE = 'America/Sao_Paulo'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_L10N = True
+
+USE_TZ = False
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 
@@ -122,4 +124,5 @@ if int(env('SSL_ON')) == 1:
   SESSION_COOKIE_SECURE = int(env('SSL_ON')) == 1
   CSRF_COOKIE_SECURE = int(env('SSL_ON')) == 1
   SECURE_HSTS_SECONDS = 31536000
-  CSRF_TRUSTED_ORIGINS = ['']
+  CSRF_TRUSTED_ORIGINS = ['http://plataforma.arenasunsetpadel.com.br']
+  ALLOWED_HOSTS = ['http://plataforma.arenasunsetpadel.com.br']
