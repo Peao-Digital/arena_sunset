@@ -563,11 +563,11 @@ class PacoteAlunoSrv():
         'aluno_pacote__pacote__qtd_aulas_semana', 
         'aluno_pacote__pacote__qtd_participantes',
         'aluno_pacote__ativo',
-        'data_contratacao', 'data_validade'
+        'data_contratacao', 'data_validade', 'desativado_em'
       ).filter(aluno_pacote__aluno=Aluno.objects.get(pk=id))
       
       dados = AlunoPacote.objects.values(
-        'id', 'aluno','aluno__nome', 'pacote__id', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo', 'data_contratacao', 'data_validade'
+        'id', 'aluno','aluno__nome', 'pacote__id', 'pacote__nome', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo', 'data_contratacao', 'data_validade'
       ).filter(aluno=Aluno.objects.get(pk=id), ativo='S').distinct()
 
       d_historico = []
@@ -598,11 +598,11 @@ class PacoteAlunoSrv():
         'aluno_pacote__pacote__qtd_aulas_semana', 
         'aluno_pacote__pacote__qtd_participantes',
         'aluno_pacote__ativo',
-        'data_contratacao', 'data_validade'
+        'data_contratacao', 'data_validade', 'desativado_em'
       ).filter(aluno_pacote__pacote=Pacote.objects.get(pk=id))
       
       dados = AlunoPacote.objects.values(
-        'id', 'aluno','aluno__nome', 'pacote__id', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo', 'data_contratacao', 'data_validade'
+        'id', 'aluno','aluno__nome', 'pacote__id', 'pacote__nome', 'pacote__qtd_aulas_semana', 'pacote__qtd_participantes', 'ativo', 'data_contratacao', 'data_validade'
       ).filter(pacote=Pacote.objects.get(pk=id), ativo='S')
 
       d_historico = []
