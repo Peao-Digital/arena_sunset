@@ -799,9 +799,6 @@ class AgendaSrv():
         'tipo': 'ESPECIAL',
         'pode_editar': f_usuario_possui_grupo(request.user, 'ADM_SITE') or f_usuario_possui_grupo(request.user, 'ATENDIMENTO')
       }
-
-      print(reserva.data_horario_ini)
-      print(reserva.data_horario_fim)
       
       return {'dados': dados}, 200
     except ObjectDoesNotExist  as e:
@@ -965,7 +962,8 @@ class AgendaSrv():
             for participante in participantes:
               obj_p = Aluno()
               obj_p.nome = participante[0]
-              obj_p.telefone = participante[1]
+              obj_p.celular = participante[1]
+              obj_p.ativo = 'S'
               obj_p.save()
 
               AgendaSrv.salvar_aulaAluno(obj_aula, pacote_obj, contratante_obj, obj_p)
@@ -1100,7 +1098,8 @@ class AgendaSrv():
             for participante in participantes:
               obj_p = Aluno()
               obj_p.nome = participante[0]
-              obj_p.telefone = participante[1]
+              obj_p.celular = participante[1]
+              obj_p.ativo = 'S'
               obj_p.save()
 
               AgendaSrv.salvar_aulaAluno(obj_aula, pacote_obj, contratante_obj, obj_p)
