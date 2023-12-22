@@ -762,7 +762,7 @@ class AgendaSrv():
       for reserva in reservas_unicas:
         dados.append({
           'id': reserva.id,
-          'data': reserva_especial.data,
+          'data': reserva.data,
           'horario_ini': ajustar_horario(reserva.data_horario_ini),
           'horario_fim': ajustar_horario(reserva.data_horario_fim),
           'descricao': '',
@@ -952,6 +952,8 @@ class AgendaSrv():
             pacote_obj = Pacote.objects.filter(pk=contratante['pacote'])
             if pacote_obj.exists():
               pacote_obj = pacote_obj[0]
+            else:
+              pacote_obj = None
 
             #CONFERIR SE O CONTRATANTE PODE RESERVAR
             if PacoteAlunoSrv.pode_reservar(pacote_obj, contratante_obj, data, None) is False:
