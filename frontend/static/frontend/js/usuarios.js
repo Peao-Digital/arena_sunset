@@ -18,7 +18,7 @@ $(document).ready(() => {
 
   const select_grupo = $("#grupo").select2({
     minimumResultsForSearch: Infinity,
-    placeholder: "Grupo"
+    placeholder: "Selecione o Grupo"
   });
 
   const datatable = $("#datatable-user").DataTable({

@@ -22,7 +22,8 @@
     </div>
 
     <div class="table tabela_dados  table-aluno mt-3">
-      <table id="datatable-aluno" class="table table-dark table-responsive display nowrap" aria-describedby="table-aluno">
+      <table id="datatable-aluno" class="table table-dark table-responsive display nowrap"
+        aria-describedby="table-aluno">
         <thead>
           <tr>
             <th>Nome</th>
@@ -55,19 +56,42 @@
         <form class="formulario" enctype="multipart/form-data">
           <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome" required maxlength="50">
+              <label for="nome" class="form-label"><b>Nome</b></label>
+              <input id="nome" class="form-control" type="text" name="nome" placeholder="Digite o Nome" required
+                maxlength="50">
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="cpf" class="form-control" type="text" name="cpf" placeholder="CPF" required>
+              <label for="cpf" class="form-label"><b>CPF</b></label>
+              <input id="cpf" class="form-control" type="text" name="cpf" placeholder="Digite o CPF">
             </div>
           </div>
+
           <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="celular" class="form-control" type="text" name="celular" placeholder="Celular" required>
+              <label for="data_nasc" class="form-label"><b>Data de Nascimento</b></label>
+              <input id="data_nasc" class="form-control" type="date" name="data_nasc"
+                placeholder="Digite a Data de Nascimento">
+            </div>
+
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <label for="sexo" class="form-label"><b>Sexo</b></label>
+              <select id="sexo" class="form-control" style="width: 100%">
+                <option selected disabled>Selecione o Sexo</option>
+                <option value="M">Masculino</option>
+                <option value="F">Feminino</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <label for="email" class="form-label"><b>Email</b></label>
+              <input id="email" class="form-control" type="email" name="email" placeholder="Digite o Email"
+                maxlength="50">
             </div>
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="email" class="form-control" type="email" name="email" placeholder="Email" required
-                maxlength="50">
+              <label for="celular" class="form-label"><b>Celular</b></label>
+              <input id="celular" class="form-control" type="text" name="celular" placeholder="Digite o Celular">
             </div>
           </div>
           {% csrf_token %}
@@ -98,16 +122,20 @@
         <form class="formulario" enctype="multipart/form-data">
           <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="aluno_nome" class="form-control" type="text" name="nome" required disabled>
+              <label for="aluno_nome" class="form-label"><b>Nome</b></label>
+              <input id="aluno_nome" class="form-control" type="text" name="nome" placeholder="Nome" required disabled>
             </div>
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="validade" class="form-control" type="date" name="Data de Validade" required>
+              <label for="contratacao" class="form-label"><b>Data de Contratação</b></label>
+              <input id="contratacao" class="form-control" type="date" name="Data de Contratação" required>
             </div>
           </div>
           <div class="row">
             <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 mb-2">
+              <label for="pacotes" class="form-label"><b>Pacotes</b></label>
               <select id="pacotes" class="form-control" name="pacotes" required style="width: 100%">
+                <option selected disabled>Selecione o Pacote</option>
               </select>
             </div>
           </div>

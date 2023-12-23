@@ -3,31 +3,41 @@ $(document).ready(function () {
   const handleError = console.error;
 
   const modal = $("#modal-form");
+  const modalEvento = $("#eventoModal");
   const alertavel = $("#alertavel");
-  const divReserva = $("#divReserva");
-  const divCalendario = $("#divCalendario");
-  const formulario = $("#formulario_reserva");
-  const divProfessores = $("#divProfessores");
+
+  const tiporeserva_card = $("#card-tipo-aula");
   const professores_card = $("#card-professores");
-  const divParticipantes = $("#participantesFieldset");
+
+  const divCalendario = $("#divCalendario");
+  const divTipoReserva = $("#divTipoReserva");
+  const divProfessores = $("#divProfessores");
+  const divReservaAvulsa = $("#divReservaAvulsa");
+  const divReservaRegular = $("#divReservaRegular");
+
+  const horarios_Avulsos = $("#horarios_avulsos");
+  const horarios_regular = $("#horarios_regular");
+
   const calendarEl = document.getElementById('calendar');
   calendarEl.style.width = '100%';
 
-  const horarios = [
-    { hora_ini: '06:00', hora_fim: '07:00' },
-    { hora_ini: '07:00', hora_fim: '08:00' },
-    { hora_ini: '08:00', hora_fim: '09:00' },
-    { hora_ini: '09:00', hora_fim: '10:00' },
-    { hora_ini: '10:00', hora_fim: '11:00' },
-    { hora_ini: '11:00', hora_fim: '12:00' },
-    { hora_ini: '14:00', hora_fim: '15:00' },
-    { hora_ini: '15:00', hora_fim: '16:00' },
-    { hora_ini: '16:00', hora_fim: '17:00' },
-    { hora_ini: '17:00', hora_fim: '18:00' },
-  ];
-
   const storedInfo = {};
 
+  $(".nr_pagantes").select2({
+    minimumResultsForSearch: Infinity,
+    placeholder: "Selecione o Número de Pagantes",
+  }).change(function () {
+    const value = $(this).val();
+    const tipo = $(this).data('id');
+    carregar_campos_selects(value, tipo);
+    carregar_horarios(tipo);
+  });
+
+  /**
+   * Função de carregamento dos cards de professores no fluxo de reservas
+   * @param {*} professor 
+   * @returns 
+   */
   const card_professores = (professor) => {
     return `
       <div class="col-md-6 col-lg-4 col-sm-12 mb-3">
@@ -48,31 +58,42 @@ $(document).ready(function () {
     `;
   };
 
-  const initializeSelect = (selector, placeholder, onChangeCallback) => {
-
-    const $select = $(`#${selector}`).select2({
-      minimumResultsForSearch: Infinity,
-      placeholder: placeholder
-    });
-
-    if (onChangeCallback) {
-      $select.change(function () {
-        const selectedValue = $(this).val();
-        storedInfo[selector] = selectedValue;
-        onChangeCallback(selectedValue);
-      });
-    }
-
-    return $select;
+  /**
+   * Função de carregamento dos cards de tipos de aulas no fluxo de reservas
+   * @param {*} tipo_aula 
+   * @returns 
+   */
+  const card_aulas = (tipo_aula) => {
+    return `
+      <div class="col-md-6 col-lg-4 col-sm-12 mb-3">
+        <div class="card custom-cards-professores">
+          <div class="card-body">
+            <div class="div-nome mt-4">
+              <h4>${tipo_aula.nome}</h4>
+            </div>
+            <div class="div-texto row mt-4">
+              <div class="col-lg-10 col-md-12 col-sm-12 ">
+                <i class="fas fa-check icone-check"></i> <b>Cobrança: </b>
+                <p class="ms-4">${tipo_aula.agendamento}</p>
+                <i class="fas fa-check icone-check"></i> <b>Agendamento: </b>
+                <p class="ms-4">${tipo_aula.recorrencia}</p>
+              </div>
+            </div>
+            <div class="selecionavel mt-4 mb-4">
+              <button class="btn btn-new btn-select-aula w-100" type="button" value="${tipo_aula.value}">Selecionar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
   };
 
   /**
    * Função de Inicialização do calendário
    * @returns FullCalendar
    */
-  const initializeCalendar = () => {
+  const initializeCalendar = (evento) => {
     return new FullCalendar.Calendar(calendarEl, {
-
       buttonText: {
         prevYear: "&nbsp;&lt;&lt;&nbsp;",
         nextYear: "&nbsp;&gt;&gt;&nbsp;",
@@ -91,8 +112,6 @@ $(document).ready(function () {
         const dataAtual = new Date();
         const dataClicada = new Date(info.date);
 
-        console.log(info);
-
         dataAtual.setHours(0, 0, 0, 0);
         dataClicada.setHours(0, 0, 0, 0);
 
@@ -100,124 +119,33 @@ $(document).ready(function () {
           alertavel.find(".modal-body").text("Selecione uma data válida!");
           alertavel.modal("show");
         } else {
-          storedInfo.data = info.dateStr;
+          storedInfo.data = info.date;
           selecao_professores();
           modal.modal("show");
         }
       },
+      eventClick: function (info) {
+        buscar_reserva_individual(info.event.id, info.event.groupId);
+      },
+      events: evento,
       dayMaxEventRows: true, // Adicione essa linha para limitar o número de eventos por linha
       eventTextColor: '#fff', // Defina a cor do texto do evento como branco
       contentHeight: 'auto', // Adicione essa linha para ajustar automaticamente a altura do calendário
       eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' }, // Adicione essa linha para formatar o horário do evento
       eventDisplay: 'block', // Adicione essa linha para exibir os eventos em blocos
       hiddenDays: [0],
-      allDayText: 'Horário',
+      allDayText: 'Dia Todo',
       slotDuration: '01:00',
       slotMinTime: '06:00',
       slotMaxTime: '18:00',
     });
   };
 
-  const createOption = (value, text, selected = false, disabled = false) => {
-    return $('<option>', { value, text, selected, disabled });
-  };
-
-  const carregar_pagantes = () => {
-    showDiv(divReserva, [divCalendario, divProfessores]);
-
-    const defaultOption = createOption('', 'Pagante', true, true);
-    normal_request('/backend/alunos/listar', {}, 'GET', csrftoken)
-      .then(json => {
-        const options = json.dados
-          .filter(val => val.ativo !== 'N')
-          .map(val => createOption(val.id, val.nome));
-
-        select_pagante.empty().append([defaultOption, ...options]);
-      })
-      .catch(handleError);
-  };
-
-  const carregar_pacotes = (idPagante) => {
-    const defaultOption = createOption('', 'Pacotes', true, true);
-    normal_request(`backend/alunos/${idPagante}/pacotes/buscar`, {}, 'GET', csrftoken)
-      .then(json => {
-        const options = json.dados
-          .filter(val => val.ativo !== 'N')
-          .map(val => createOption(val.pacote, val.pacote__nome));
-
-        select_pacotes.empty().append([defaultOption, ...options]);
-      })
-      .catch(handleError);
-  };
-
-  const carregar_alunos = (select_alunos) => {
-    const defaultOption = createOption('', 'Pacotes', true, true);
-    normal_request('/backend/alunos/listar', {}, 'GET', csrftoken)
-      .then(json => {
-        let option;
-        select_alunos.empty().append(defaultOption);
-
-        json.dados.filter(val => val.ativo !== 'N').forEach(val => {
-          option = createOption(val.id, val.nome);
-          select_alunos.append(option);
-        });
-      });
-  };
-
-  const carregar_participantes = (idPacote) => {
-    divParticipantes.empty();
-
-    normal_request(`/backend/pacotes/ver/${idPacote}`, {}, 'GET', csrftoken)
-      .then(response => {
-        let html = '';
-
-        storedInfo.qtd_participantes = response.dados.qtd_participantes;
-
-        for (let i = 0; i < response.dados.qtd_participantes; i++) {
-          html += `
-            <fieldset class="mt-1 mb-2">
-                <legend>Participante #${i + 1}</legend>
-                <div id="divFieldset-${i}">
-                  <div class="select_cadastro">
-                    <select id="possui_cadastro_${i}" data-id="${i}" class="form-control possui_cadastro">
-                        <option selected disabled>Possui cadastro ?</option>
-                        <option value="S">Sim</option>
-                        <option value="N">Não</option>
-                    </select>
-                  </div>
-                </div>
-            </fieldset>`;
-        }
-
-        let divHorarios = $('<div id="divHorarios"></div>');
-        let horariosHtml = '';
-
-        for (const horario of horarios) {
-          horariosHtml += `
-            <button class="btn btn-horario" data-hora_ini="${horario.hora_ini}" data-hora_fim="${horario.hora_fim}" type="button">${horario.hora_ini}</button>
-          `;
-        }
-
-        divHorarios.append(horariosHtml);
-
-        divParticipantes.empty().append([html, divHorarios]);
-        divParticipantes.show();
-      })
-      .catch(handleError);
-  };
-
-  const calendar = initializeCalendar();
-  const select_pagante = initializeSelect("pagante", "Pagante", carregar_pacotes);
-  const select_pacotes = initializeSelect("pacotes", "Pacotes", carregar_participantes);
-
-  const showDiv = (divToShow, divsToHide) => {
-    divsToHide.forEach(div => div.hide());
-    divToShow.show();
-  };
-
+  /** Função de inicialização de tela de Seleção de professores no fluxo de reservas */
   const selecao_professores = () => {
     professores_card.empty();
-    showDiv(divProfessores, [divCalendario, divReserva]);
+
+    showDiv(divProfessores, [divCalendario, divTipoReserva, divReservaAvulsa, divReservaRegular]);
     normal_request('/backend/professores/listar', {}, 'GET', csrftoken)
       .then(response => {
         response.dados.forEach((professor) => {
@@ -225,95 +153,633 @@ $(document).ready(function () {
         });
 
         $(".btn-select-professor").click((event) => {
-          carregar_pagantes();
-        });
+          const { value } = event.target;
+          storedInfo.professor = value;
 
-        $("#btn-voltar-agenda").click((event) => {
-          showDiv(divCalendario, [divProfessores, divReserva]);
+          showDiv(divTipoReserva, [divCalendario, divProfessores, divReservaAvulsa, divReservaRegular]);
+          selecao_tipo_aula();
         });
       })
       .catch(handleError);
   };
 
-  const selecao_participantes = () => {
-    showDiv(divCalendario, [divReserva, divProfessores]);
+  /** Função de inicialização de tela de Seleção de tipos de aulas no fluxo de reservas */
+  const selecao_tipo_aula = () => {
+    tiporeserva_card.empty();
 
-    $("#btn-voltar-professores").click((event) => {
-      showDiv(divProfessores, [divCalendario, divReserva]);
+    const tipos = [{
+      value: 'avulsa',
+      nome: 'Aula Avulsa',
+      agendamento: '- Cobrança única',
+      recorrencia: '- Realizado apenas na data escolhida.'
+    }, {
+      value: 'regular',
+      nome: 'Aula Regular',
+      agendamento: '- Descontado do pacote',
+      recorrencia: '- Realizado com base no pacote vinculado.'
+    }];
+
+    tipos.forEach((aulas) => {
+      tiporeserva_card.append(card_aulas(aulas));
+    });
+
+    $(".btn-select-aula").click(function (event) {
+      if ($(this).val() === 'avulsa') {
+        showDiv(divReservaAvulsa, [divCalendario, divProfessores, divTipoReserva, divReservaRegular]);
+      } else {
+        showDiv(divReservaRegular, [divCalendario, divProfessores, divTipoReserva, divReservaAvulsa]);
+      }
     });
   };
 
-  divParticipantes.on("change", ".possui_cadastro", function () {
-    let campos = '';
-    const index = $(this).data("id");
-    const fieldset = $(`#divFieldset-${index}`);
+  /**
+ * Função de carregamento dos pagantes
+ * @param {*} $form Formulário jQuery onde os selects serão carregados
+ */
+  const carregar_pagantes = async ($form) => {
+    try {
+      const defaultOption = createOption('', 'Pagante', true, true);
 
-    fieldset.find(".campos-participante").remove();
+      // Requisição assíncrona para obter a lista de alunos
+      const response = await normal_request('/backend/alunos/listar', {}, 'GET', csrftoken);
+      const dadosFiltrados = response.dados.filter(val => val.ativo !== 'N');
 
-    if ($(this).val() === 'S') {
-      campos = `
-        <div class="select_aluno mt-1" style="width:100%">
-          <select id="nome_participante_${index}" nome="aluno-${index}" class="form-control alunos" style="width:100%">
-            <option selected disable>Aluno</option>
-          </select>
-        </div>`;
-    } else {
-      campos = `
-        <div class="input_aluno mt-1" style="width:100%">
-          <input id="nome_participante_${index}" nome="nome_participante_${index}" data-id="${index}" class="form-control" type="text" placeholder="Nome"/>
-        </div>`;
+      // Atualiza cada select de pagante no formulário
+      $form.find('.select-pagante').each(function () {
+        const $select = $(this).empty().append(defaultOption.clone());
+
+        // Adiciona cada aluno filtrado como uma opção do select
+        dadosFiltrados.forEach(val => {
+          $select.append(createOption(val.id, val.nome));
+        });
+      });
+    } catch (error) {
+      handleError(error);
+    }
+  };
+
+  /**
+   * Carrega e exibe pacotes disponíveis baseados no ID do aluno.
+   * @param {string} id - ID do aluno.
+   * @param {number} posicao - Posição do select no formulário.
+   */
+  const carregar_pacotes = (id, posicao) => {
+    const defaultOption = createOption('', 'Pacotes', true, true);
+    const selectPacotes = $(`.select-pacote-${posicao}`);
+
+    // Requisição para obter pacotes do aluno
+    normal_request(`/backend/alunos/${id}/pacotes/buscar`, {}, 'GET', csrftoken)
+      .then(json => {
+        const options = json.dados
+          .filter(({ ativo }) => ativo !== 'N')
+          .map(({ pacote__id, pacote__nome, pacote__qtd_participantes }) => ({
+            valor: pacote__id,
+            nome: pacote__nome,
+            qtdParticipantes: pacote__qtd_participantes,
+          }));
+
+        // Limpa as opções anteriores e adiciona a opção padrão
+        selectPacotes.empty();
+        selectPacotes.append(defaultOption);
+
+        console.log(options);
+
+        // Adiciona as novas opções
+        options.forEach(option => {
+          const optionElement = createOption(option.valor, option.nome);
+          optionElement.attr('data-qtd-participantes', option.qtdParticipantes);
+          selectPacotes.append(optionElement);
+        });
+
+      })
+      .catch(handleError); // Tratamento de erros
+  };
+
+  /**
+ * Carrega a lista de alunos em um elemento de seleção (dropdown).
+ * @param {jQuery} selectElement O elemento de seleção (dropdown) jQuery.
+ */
+  const carregar_alunos = async (selectElement) => {
+    try {
+      // Inicializa o select2 no elemento de seleção
+      selectElement.select2({
+        minimumResultsForSearch: Infinity,
+        placeholder: "Selecione o Participante",
+      });
+
+      // Opção padrão para o select
+      const defaultOption = createOption('', 'Selecione o Participante', true, true);
+      selectElement.empty().append(defaultOption);
+
+      // Requisição para buscar alunos ativos
+      const response = await normal_request('/backend/alunos/listar', {}, 'GET', csrftoken);
+      const { dados } = response;
+
+      // Verifica se os dados recebidos são válidos
+      if (!dados || !Array.isArray(dados)) {
+        throw new Error("Dados inválidos recebidos do servidor");
+      }
+
+      // Filtra e adiciona alunos ativos ao select
+      dados.filter(({ ativo }) => ativo !== 'N').forEach(({ id, nome }) => {
+        const option = createOption(id, nome);
+        selectElement.append(option);
+      });
+    } catch (error) {
+      // Manipulação de erros
+      handleError(error);
+    }
+  };
+
+  /**
+   * Função de carregamento dos horários das aulas
+   * @param {*} tipo 
+   */
+  const carregar_horarios = (tipo) => {
+    const horarios = [
+      { horario_inicial: '06:00', horario_final: '07:00' },
+      { horario_inicial: '07:00', horario_final: '08:00' },
+      { horario_inicial: '08:00', horario_final: '09:00' },
+      { horario_inicial: '09:00', horario_final: '10:00' },
+      { horario_inicial: '10:00', horario_final: '11:00' },
+      { horario_inicial: '11:00', horario_final: '12:00' },
+      { horario_inicial: '14:00', horario_final: '15:00' },
+      { horario_inicial: '15:00', horario_final: '16:00' },
+      { horario_inicial: '16:00', horario_final: '17:00' },
+      { horario_inicial: '17:00', horario_final: '18:00' },
+    ];
+
+    let BtnHorarios = "";
+
+    for (const horario of horarios) {
+      BtnHorarios += `
+        <button class="btn btn-horario" data-hora_ini="${horario.horario_inicial}" data-hora_fim="${horario.horario_final}" type="button">${horario.horario_inicial}</button>
+      `;
     }
 
-    campos += `
-      <div class="input_aluno mt-1 ms-1 mb-1" style="width:100%">
-        <input id="celular_participante_${index}" nome="celular_participante_${index}" data-id="${index}" class="form-control celular" type="text" placeholder="Celular"/>
-      </div>`;
+    if (tipo === 'avulsa') {
+      horarios_Avulsos.empty().append(BtnHorarios);
+    } else {
+      horarios_regular.empty().append(BtnHorarios);
+    }
 
-    fieldset.append(`<div class="campos-participante">${campos}`);
+    $(".btn-horario").click(function () {
+      // Remova a classe "disabled" de todos os botões de horário
+      $(".btn-horario").removeClass("disabled");
 
-    const select_alunos = $(`#nome_participante_${index}`).closest(".select_aluno").find(".alunos").select2({
-      placeholder: "Aluno"
+      // Adicione a classe "disabled" apenas ao botão de horário clicado
+      $(this).addClass("disabled");
+
+      // Salve as horas iniciais e finais no storedInfo
+      storedInfo.hora_ini = $(this).data("hora_ini");
+      storedInfo.hora_fim = $(this).data("hora_fim");
+    });
+  }
+
+  /**
+   * Função de carregamento dos campos de pagantes/quantidades/pacotes
+   * @param {*} numero_pagantes 
+   * @param {*} tipo 
+   */
+  const carregar_campos_selects = (numero_pagantes, tipo) => {
+    const $form = tipo === "avulsa" ? $('#campos_avulsos') : $('#campos_regular');
+    $form.empty();
+
+    for (let i = 0; i < numero_pagantes; i++) {
+
+      const $divRow = $(`<div class="row selects-${i}"></div>`);
+
+      const $divPagante = $(
+        `<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12">
+          <label class="form-label mb-2 mt-2">Pagante #${i + 1}</label>
+        </div>
+      `);
+
+      const $paganteSelect = $('<select style="width:100%;">')
+        .addClass('form-control select-pagante')
+        .attr('id', `select-pagante-${i}`)
+        .attr('name', 'pagante')
+        .attr('data-id', i);
+
+      $divPagante.append($paganteSelect);
+
+      if (tipo === "avulsa") {
+        const $divQuantidade = $(`<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12"><label class="form-label mb-2 mt-2">Total Participantes - Pagante #${i + 1}</label></div>`);
+        const $quantidadeSelect = $('<select style="width:100%;">')
+          .addClass('form-control quantidade-participantes')
+          .attr('id', `quantidade-participantes-${i}`)
+          .attr('name', 'quantidade-participantes')
+          .attr('data-id', i);
+
+        $quantidadeSelect.append('<option value="" disabled selected>Selecione a quantidade de participantes</option>');
+
+        for (let j = 1; j <= 4; j++) {
+          $quantidadeSelect.append(`<option value="${j}">${j}</option>`);
+        }
+
+        $divQuantidade.append($quantidadeSelect);
+        $divRow.append($divPagante);
+        $divRow.append($divQuantidade);
+      } else {
+        const $divPacote = $(`<div class="col-lg-6 col-md-6 col-sm-12 col-xs-12"><label class="form-label mb-2 mt-2">Pacote - Pagante ${i + 1}</label></div>`);
+        const $pacoteSelect = $('<select style="width:100%;">')
+          .addClass(`form-control select-pacotes select-pacote-${i}`)
+          .attr('id', `select-pacotes-${i}`)
+          .attr('name', 'pacote')
+          .attr('data-id', i);
+        $divPacote.append($pacoteSelect);
+        $divRow.append($divPagante);
+        $divRow.append($divPacote);
+      }
+
+      $divRow.appendTo($form);
+    }
+
+    for (let i = 0; i < numero_pagantes; i++) {
+      const $fieldset = $(`
+        <fieldset class="mt-1 mb-2" id="fieldset-${i}">
+          <legend>Pagante #${i + 1}</legend>
+          <div id="divFieldsetPagante-${i}" class="row"></div>
+        </fieldset>`
+      );
+
+      $form.append($fieldset);
+    }
+
+    $('.select-pagante').select2({
+      minimumResultsForSearch: Infinity,
+      placeholder: `Selecione o Pagante`,
+    }).change(function () {
+      const selectedPagante = $(this).val();
+      const selectedPaganteNome = $(this).find('option:selected').text();
+      const paganteIndex = $(this).data('id');
+
+      if (tipo === 'regular') {
+        carregar_pacotes(selectedPagante, paganteIndex);
+      }
+
+      $(`#fieldset-${paganteIndex} legend`).text(selectedPaganteNome);
     });
 
-    $(".celular").mask('(00) 0 0000-0000');
+    $(`.quantidade-participantes`).select2({
+      minimumResultsForSearch: Infinity,
+      placeholder: "Selecione a Quantidade de Participantes",
+    }).change(function () {
+      const numeroParticipantes = $(this).val();
+      const paganteIndex = $(this).data('id');
+      renderizarFieldsets(numeroParticipantes, paganteIndex);
+    });
 
-    carregar_alunos(select_alunos);
-  });
+    $(`.select-pacotes`).select2({
+      minimumResultsForSearch: Infinity,
+      placeholder: "Selecione o Pacote",
+    }).change(function () {
+      const qtdParticipantes = $(this).find('option:selected').data('qtd-participantes');
+      const paganteIndex = $(this).data('id');
 
-  formulario.on("click", '#btn-reserva', function () {
-    console.log("clicou");
-    const participantesInfo = [];
+      renderizarFieldsets(qtdParticipantes, paganteIndex);
+    });
 
+    carregar_pagantes($form);
+  };
 
+  const renderizarFieldsets = (qtdParticipantes, paganteIndex) => {
+    const divFieldset = $(`#divFieldsetPagante-${paganteIndex}`);
+    divFieldset.empty();
+    for (let i = 0; i < qtdParticipantes; i++) {
 
-    for (let i = 0; i < storedInfo.qtd_participantes; i++) {
-      const nomeParticipante = $(`#nome_participante_${i}`).val();
-      const celularParticipante = $(`#celular_participante_${i}`).val();
+      const participanteHtml = `<div class="col-lg-9 col-md-9 col-sm-12 row" id="dados_${paganteIndex}_${i}"></div>`;
 
-      participantesInfo.push({
-        nome: nomeParticipante || '', // Evita que o valor seja undefined
-        celular: celularParticipante || '' // Evita que o valor seja undefined
-      });
+      const selectHtml = `
+        <div class="col-lg-3 col-md-3 col-sm-12 mb-2">
+          <select id="possui_cadastro_${paganteIndex}_${i}" class="form-control possui_cadastro" data-pagante="${paganteIndex}" data-participante="${i}">
+            <option selected disabled>Possui cadastro?</option>
+            <option value="S">Sim</option>
+            <option value="N">Não</option>
+          </select>
+        </div>`;
+
+      divFieldset.append(selectHtml).append(participanteHtml);
     }
 
-    storedInfo.participantes = participantesInfo;
-    console.log(storedInfo);
+    $(".possui_cadastro").select2({
+      minimumResultsForSearch: Infinity,
+      placeholder: "Possui Cadastro ?",
+    }).change(function () {
+      const paganteIndex = $(this).data('pagante');
+      const participanteIndex = $(this).data('participante');
+      carregar_dados_participantes($(this).val(), paganteIndex, participanteIndex);
+    });
+  };
+
+  const carregar_dados_participantes = (status, paganteIndex, participanteIndex) => {
+    const divFieldsetDados = $(`#dados_${paganteIndex}_${participanteIndex}`);
+    divFieldsetDados.empty();
+
+    if (status === 'S') {
+
+      const selectParticipante = $(`
+        <div class="col-lg-6 col-md-6 col-sm-12 mb-2">
+          <select class="form-control nome_participantes participante-${paganteIndex}" id="participante_${paganteIndex}_${participanteIndex}" style="width:100%;">
+            <option selected disabled>Selecione o Participante</option>
+          </select>
+        </div>`);
+
+      const inputCelular = $(`
+        <div class="col-lg-6 col-md-6 col-sm-12 mb-2">
+          <input type="text" class="form-control celular_aluno_${paganteIndex}_${participanteIndex}" placeholder="Celular" id="celular_aluno_${paganteIndex}_${participanteIndex}">
+        </div>`);
+
+      inputCelular.find('input').mask('(00) 0 0000-0000');
+
+      divFieldsetDados.append(selectParticipante, inputCelular);
+      carregar_alunos($(`#participante_${paganteIndex}_${participanteIndex}`));
+    } else {
+      const inputNome = $(`
+      <div class="col-lg-6 col-md-6 col-sm-12 mb-2">
+        <input type="text" class="form-control" placeholder="Nome do Participante">
+      </div`);
+
+      const inputCelular = $(`
+        <div class="col-lg-6 col-md-6 col-sm-12 mb-2" >
+          <input type="text" class="form-control celular_participante_${paganteIndex}_${participanteIndex}" placeholder="Celular" id="celular_participante_${paganteIndex}_${participanteIndex}">
+        </div>`);
+
+      inputCelular.find('input').mask('(00) 0 0000-0000');
+
+      divFieldsetDados.append(inputNome).append(inputCelular);
+    }
+
+    console.log('entrou aqui');
+  };
+
+  const buscar_reservas = () => {
+    let dataInicial = new Date();
+    let dataFinal = new Date();
+    dataFinal.setMonth(dataInicial.getMonth() + 1);
+
+    // Formata as datas para 'YYYY-MM-DD'
+    let dataInicialStr = dataInicial.toISOString().split('T')[0];
+    let dataFinalStr = dataFinal.toISOString().split('T')[0];
+
+    // Constrói a URL com os parâmetros de consulta
+    let url = `/backend/agenda/buscar?data_inicial=${dataInicialStr}&data_final=${dataFinalStr}`;
+
+    normal_request(url, {}, 'GET', csrftoken)
+      .then(response => {
+        criarEventosNoCalendario(response);
+      })
+      .catch(handleError);
+  }
+
+  const buscar_reserva_individual = (id, tipo) => {
+    const url = `/backend/agenda/reserva_${tipo === 'UNICA' ? 'unica' : 'normal'}/ver/${id}`;
+
+    normal_request(url, {}, 'GET', csrftoken)
+      .then(response => {
+
+        console.log(response)
+
+      })
+      .catch(handleError);
+
+    modalEvento.modal('show');
+  }
+
+  const criarEventosNoCalendario = (resposta) => {
+
+    const eventos = resposta.dados.map((reserva) => {
+      const formattedStartTime = formatTime(reserva.horario_ini);
+      const formattedEndTime = formatTime(reserva.horario_fim);
+
+      const startDateTime = `${reserva.data}T${formattedStartTime}`;
+      const endDateTime = `${reserva.data}T${formattedEndTime}`;
+
+      return {
+        id: reserva.id,
+        groupId: reserva.tipo,
+        textColor: '#fff',
+        backgroundColor: reserva.tipo === 'UNICA' ? '#0073e6' : '#FF5722',
+        borderColor: reserva.tipo === 'UNICA' ? '#0073e6' : '#FF5722',
+        end: new Date(endDateTime),
+        title: reserva.professor.nome,
+        start: new Date(startDateTime),
+        allDay: false,
+      };
+    });
+
+    const calendar = initializeCalendar(eventos);
+    calendar.render();
+  };
+
+  // Função para reservar aula regular
+  const reservar_aula_regular = () => {
+    const data = new Date(storedInfo.data);
+    data_formatada = data.getDay();
+
+    console.log('DATA ARMAZENADA', storedInfo.data)
+    console.log('ANTES FORMATADA', data)
+    console.log('DATA FORMATADA', data_formatada)
+
+    const contratantes = [];
+
+    const total_pagantes = $(".nr_pagantes.regular").val(); // Obtém o total de pagantes
+
+    // Inicializa variáveis de controle para verificação dos campos preenchidos
+    let camposPreenchidos = {
+      pagantes: true,
+      pacotes: true,
+      participantes: true
+    };
+
+    // Itera sobre cada pagante
+    for (let i = 0; i < total_pagantes; i++) {
+      const pagante = $(`#select-pagante-${i}`).val();
+      const pacote = $(`#select-pacotes-${i}`).val();
+      const qtdParticipantes = parseInt($(`#select-pacotes-${i} option:selected`).data('qtd-participantes'));
+      const alunos = [];
+      const participantes = [];
+
+      // Verifica se pagante ou pacote não estão preenchidos
+      if (!pagante) {
+        camposPreenchidos.pagantes = false;
+        break;
+      }
+      if (!pacote) {
+        camposPreenchidos.pacotes = false;
+        break;
+      }
+
+      // Itera sobre cada participante dentro de um pacote
+      for (let j = 0; j < qtdParticipantes; j++) {
+        const possuiCadastro = $(`#possui_cadastro_${i}_${j}`).val();
+
+        if (possuiCadastro === 'S') {
+          const alunoId = $(`#participante_${i}_${j}`).val();
+          alunos.push(alunoId);
+
+          // Verifica se participante está preenchido
+          if (!alunoId) {
+            camposPreenchidos.participantes = false;
+            break;
+          }
+        } else {
+          const nomeParticipante = $(`#dados_${i}_${j} input[type='text']:first`).val();
+          const celularParticipante = $(`#dados_${i}_${j} input[type='text']:last`).val().replaceAll('(', '').replaceAll(')', '').replaceAll('-', '').replaceAll(' ', '');
+
+          // Verifica se nome e celular do participante estão preenchidos
+          if (!nomeParticipante || !celularParticipante) {
+            camposPreenchidos.participantes = false;
+            break;
+          }
+
+          participantes.push([nomeParticipante, celularParticipante]);
+        }
+      }
+
+      contratantes.push({ contratante: pagante, pacote: pacote, alunos, participantes });
+    }
+    /*
+    // Verifica se todos os campos necessários foram preenchidos
+    if (Object.values(camposPreenchidos).includes(false) || !total_pagantes) {
+      alertavel.find(".modal-body").text("Selecione todos os campos antes de fazer a reserva.");
+      alertavel.modal("show");
+      return;
+    }
+
+    if (!storedInfo.hora_ini || !storedInfo.hora_fim) {
+      alertavel.find(".modal-body").text("É necessário informar um horário para a reserva.");
+      alertavel.modal("show");
+      return;
+    }
+    */
+    gravar_reserva(contratantes, 'regular', storedInfo);
+  };
+
+  const reservar_aula_avulsa = () => {
+    const contratantes = [];
+
+    const total_pagantes = $(".nr_pagantes.avulsa").val();
+
+    let camposPreenchidos = {
+      pagantes: true,
+      qtd: true,
+      participantes: true
+    };
+
+    for (let i = 0; i < total_pagantes; i++) {
+      const pagante = $(`#select-pagante-${i}`).val();
+      const qtdParticipantes = $(`#quantidade-participantes-${i}`).val();
+
+      const alunos = [];
+      const participantes = [];
+
+      if (!qtdParticipantes) {
+        camposPreenchidos.pagantes = false;
+        break;
+      }
+
+      for (let j = 0; j < qtdParticipantes; j++) {
+        const possuiCadastro = $(`#possui_cadastro_${i}_${j}`).val();
+
+        if (possuiCadastro === 'S') {
+          const alunoId = $(`#participante_${i}_${j}`).val();
+          alunos.push(alunoId);
+
+          if (!alunoId) {
+            camposPreenchidos.participantes = false;
+            break;
+          }
+
+        } else {
+          const nomeParticipante = $(`#dados_${i}_${j} input[type='text']:first`).val();
+          const celularParticipante = $(`#dados_${i}_${j} input[type='text']:last`).val().replaceAll('(', '').replaceAll(')', '').replaceAll('-', '').replaceAll(' ', '');
+
+          if (!nomeParticipante || !celularParticipante) {
+            camposPreenchidos.participantes = false;
+            break;
+          }
+
+          participantes.push([nomeParticipante, celularParticipante]);
+
+        }
+      }
+
+      contratantes.push({ contratante: pagante, pacote: null, alunos, participantes });
+    }
+
+    if (Object.values(camposPreenchidos).includes(false) || !total_pagantes) {
+      alertavel.find(".modal-body").text("Selecione todos os campos antes de fazer a reserva.");
+      alertavel.modal("show");
+      return;
+    }
+
+    if (!storedInfo.hora_ini || !storedInfo.hora_fim) {
+      alertavel.find(".modal-body").text("É necessário informar um horário para a reserva.");
+      alertavel.modal("show");
+      return;
+    }
+
+    gravar_reserva(contratantes, 'avulsa', storedInfo);
+  };
+
+  const gravar_reserva = (contratantes, tipo, storedInfo) => {
+    const data = new Date(storedInfo.data);
+    let data_formatada;
+    let url;
+
+    if (tipo === 'avulsa') {
+      const ano = data.getFullYear();
+      const mes = (data.getMonth() + 1).toString().padStart(2, '0');
+      const dia = data.getDate().toString().padStart(2, '0');
+      data_formatada = `${ano}-${mes}-${dia}`;
+
+      url = '/backend/agenda/reserva_unica/criar';
+    } else {
+      data_formatada = data.getDay() - 1;
+      console.log(data_formatada)
+      url = '/backend/agenda/reserva_normal/criar';
+    }
+
+    const payload = {
+      'professor': storedInfo.professor,
+      'hora_ini': storedInfo.hora_ini,
+      'hora_fim': storedInfo.hora_fim,
+      'contratantes': contratantes,
+    };
+
+    payload[tipo === 'avulsa' ? 'data' : 'dia_semana'] = data_formatada;
+
+    normal_request(url, payload, 'POST', csrftoken)
+      .then(response => {
+        if (!response.erro) {
+          alertavel.find(".modal-body").text("Dados Gravados com Sucesso!");
+          alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
+          alertavel.modal("show");
+          alertavel.on('hidden.bs.modal', function (e) {
+            window.location.href = response.redirect;
+          });
+        } else {
+          alertavel.find(".modal-body").text(response.erro);
+          alertavel.modal("show");
+        }
+      })
+      .catch(handleError);
+  };
+
+  showDiv(divCalendario, [divProfessores, divTipoReserva, divReservaAvulsa, divReservaRegular]);
+
+  $(".btn-voltar").click((event) => {
+    showDiv(divCalendario, [divProfessores, divTipoReserva, divReservaAvulsa, divReservaRegular]);
   });
 
-
-  divParticipantes.on("click", ".btn-horario", function () {
-    let horaIni = $(this).data("hora_ini");
-    let horaFim = $(this).data("hora_fim");
-
-    storedInfo.horaIni = horaIni;
-    storedInfo.horaFim = horaFim;
-
-    $(".btn-horario").removeClass("active");
-    $(this).addClass("active");
-
-    console.log(storedInfo)
+  $("#gravar_reserva_avulsa").click(() => {
+    reservar_aula_avulsa();
   });
 
-  calendar.render();
-  selecao_participantes();
+  $("#gravar_reserva_regular").click(() => {
+    reservar_aula_regular();
+  });
+
+  buscar_reservas();
 });

@@ -130,6 +130,8 @@ const converter_data = data => {
   return `${novaData[2]}${novo_separador}${novaData[1]}${novo_separador}${novaData[0]}`
 }
 
+const formatTime = (time) => (time.length === 4 ? `0${time}` : time);
+
 const getCSRFToken = () => {
   const name = 'csrftoken=';
   const decodedCookie = decodeURIComponent(document.cookie);
@@ -145,3 +147,11 @@ const getCSRFToken = () => {
   return null;
 }
 
+const showDiv = (divToShow, divsToHide) => {
+  divsToHide.forEach(div => div.hide());
+  divToShow.show();
+};
+
+const createOption = (value, text, selected = false, disabled = false) => {
+  return $('<option>', { value, text, selected, disabled });
+};

@@ -7,12 +7,12 @@
 <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/libs/select2.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/index.css' %}">
 
-
 <script src="{% static 'frontend/js/libs/fullcalendar.js' %}"></script>
 <script src="{% static 'frontend/js/libs/fullcalendar.min.js' %}"></script>
 <script src="{% static 'frontend/js/libs/jquery.mask.min.js' %}"></script>
 <script src="{% static 'frontend/js/libs/select2.js' %}"></script>
 <script src="{% static 'frontend/js/libs/select2.min.js' %}"></script>
+
 <script src="{% static 'frontend/js/home.js' %}"></script>
 
 
@@ -30,35 +30,96 @@
     <div class="col-12 mb-3">
       <h2 class="text-center mb-3 mt-4">Escolha o professor</h2>
       <div class="div_voltar">
-        <button class="btn btn-new" id="btn-voltar-agenda">Voltar para a Agenda</button>
+        <button class="btn btn-new btn-voltar" type="button">Voltar</button>
       </div>
     </div>
     <div id="card-professores" class="row"></div>
   </div>
 
-  <div id="divReserva" class="text-center" style="display: none;">
+  <div id="divTipoReserva" style="display: none;">
+    <div class="col-12 mb-3">
+      <h2 class="text-center mb-3 mt-4">Escolha o Tipo de Reserva</h2>
+      <div class="div_voltar">
+        <button class="btn btn-new btn-voltar" type="button">Voltar</button>
+      </div>
+    </div>
+    <div id="card-tipo-aula" class="row justify-content-center"></div>
+  </div>
+
+  <div id="divReservaAvulsa" class="text-center" style="display: none;">
     <h2 class="text-center mb-3 mt-4">Informe os Participantes</h2>
     <div class="card custom-cards-agenda row mt-4 mb-4 me-1 ms-1">
       <div class="col-12 mb-3 mt-2">
         <div class="div_voltar">
-          <button class="btn btn-new" id="btn-voltar-professores">Selecionar Professores</button>
+          <button class="btn btn-new btn-voltar">Voltar</button>
         </div>
       </div>
-
-      <div id="formulario_reserva" class="row col-lg-6 col-md-12 col-sm-12 col-xs-12">
-
-        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-1">
-          <select id="pagante" class="form-control" style="width: 100%;" required></select>
+      <div id="formulario_reserva_avulsa" class="row col-lg-6 col-md-12 col-sm-12 col-xs-12">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 mb-1">
+          <label class="form-label mb-2 mt-2">Número de Pagantes</label>
+          <select class="form-control nr_pagantes avulsa mb-2" style="width: 100%;" data-id="avulsa">
+            <option selected disabled>Selecione o Número de Pagantes</option>
+            <option value="1">Um</option>
+            <option value="2">Dois</option>
+            <option value="3">Três</option>
+            <option value="4">Quatro</option>
+          </select>
         </div>
 
-        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-          <select id="pacotes" class="form-control" style="width: 100%;" required></select>
+        <div id="campos_avulsos"></div>
+        <div id="horarios_avulsos" class="text-center mt-2 mb-4"></div>
+
+        <div class="divGravarBtn text-center mt-2 mb-4">
+          <button class="btn btn-new" id="gravar_reserva_avulsa" value="-1">Reservar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="divReservaRegular" class="text-center" style="display: none;">
+    <h2 class="text-center mb-3 mt-4">Informe os Participantes</h2>
+    <div class="card custom-cards-agenda row mt-4 mb-4 me-1 ms-1">
+      <div class="col-12 mb-3 mt-2">
+        <div class="div_voltar">
+          <button class="btn btn-new btn-voltar">Voltar</button>
+        </div>
+      </div>
+      <div id="formulario_reserva_regular" class="row col-lg-6 col-md-12 col-sm-12 col-xs-12">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 mb-1">
+          <select class="form-control nr_pagantes regular mb-2" style="width: 100%;" data-id="regular">
+            <option selected disabled>Selecione o Número de Pagantes</option>
+            <option value="1">Um</option>
+            <option value="2">Dois</option>
+            <option value="3">Três</option>
+            <option value="4">Quatro</option>
+          </select>
         </div>
 
-        <div id="participantesFieldset" style="display: none;"></div>
+        <div id="campos_regular"></div>
+        <div id="horarios_regular" class="text-center mt-2 mb-4"></div>
 
-        <div class="div-btn-reserva mt-3 mb-3">
-          <button class="btn btn-new" id="btn-reserva" type="button">Reservar</button>
+        <div class="divGravarBtn text-center mt-2 mb-4">
+          <button class="btn btn-new" id="gravar_reserva_regular" value="-1">Reservar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="eventoModal" tabindex="-1" role="dialog" aria-labelledby="eventoModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="eventoModalLabel">Detalhes do Evento</h5>
+          <button type="button" class="btn-fechar close-modal" data-bs-dismiss="modal" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+
+        <div class="modal-body">
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-back close-modal" data-bs-dismiss="modal">Fechar</button>
         </div>
       </div>
     </div>

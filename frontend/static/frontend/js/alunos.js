@@ -10,12 +10,19 @@ $(document).ready(() => {
 
   const input_cpf = $('#cpf');
   const input_nome = $("#nome");
+  const input_sexo = $("#sexo");
   const input_email = $("#email");
   const input_celular = $("#celular");
+  const input_nascimento = $("#data_nasc");
+
+  const select_sexo = $("#sexo").select2({
+    minimumResultsForSearch: Infinity,
+    placeholder: "Selecione o Sexo",
+  });
 
   const select_pacotes = $("#pacotes").select2({
     minimumResultsForSearch: Infinity,
-    placeholder: "Pacotes",
+    placeholder: "Selecione o Pacote",
   }).change(function () {
     btnGravarVinculo.val($(this).val());
   });
@@ -67,21 +74,29 @@ $(document).ready(() => {
         json.dados.forEach(data => {
 
           const acoes = `
-          <button class="btn btn-view" data-id="${data.id}" title="Ver Dados"><i class="fas fa-eye"></i></button>
-          <button class="btn btn-edit" data-id="${data.id}" title="Editar"><i class="fas fa-edit"></i></button>
-          <button class="btn btn-delete" data-id="${data.id}" title="Deletar"><i class="fas fa-trash"></i></button>
-          <button class="btn btn-plans" data-id="${data.id}" data-nome="${data.nome}" title="Ver Pacotes"><i class="fa-solid fa-gift"></i></button>`;
+          <button type="button" class="btn btn-view" data-id="${data.id}" title="Ver Dados"><i class="fas fa-eye"></i></button>
+          <button type="button" class="btn btn-edit" data-id="${data.id}" title="Editar"><i class="fas fa-edit"></i></button>
+          <button type="button" class="btn btn-delete" data-id="${data.id}" title="Deletar"><i class="fas fa-trash"></i></button>
+          <button type="button" class="btn btn-plans" data-id="${data.id}" data-nome="${data.nome}" title="Ver Pacotes"><i class="fa-solid fa-gift"></i></button>`;
 
           const status = data.ativo === 'S' ? `<button class="btn btn-ativo" data-id="${data.id}" title="Mudar status para Inativo">Ativo</button>` : `<button class="btn btn-inativo" data-id="${data.id}" title="Mudar status para Ativo">Inativo</button>`;
 
-          const cpf = data.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
-          const celular = data.celular.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2 $3-$4');
+          let celular;
+          let cpf;
+
+          if (data.cpf) {
+            cpf = data.cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+          }
+
+          if (data.celular) {
+            celular = data.celular.replace(/(\d{2})(\d{1})(\d{4})(\d{4})/, '($1) $2 $3-$4');
+          }
 
           datatable.row.add([
             data.nome,
-            cpf,
-            data.email,
-            celular,
+            cpf || 'CPF não informado',
+            data.email || 'Email não informado',
+            celular || 'Celular não informado',
             status,
             acoes
           ]);
@@ -152,8 +167,10 @@ $(document).ready(() => {
         const userData = `
         ${createField('Nome', dados.nome, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
         ${createField('CPF', dados.cpf, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        ${createField('Sexo', dados.sexo, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
         ${createField('Celular', dados.celular, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
         ${createField('Email', dados.email, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        ${createField('Data de nascimento', converter_data(dados.nascimento), "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
       `;
 
         $('#user-data').html(userData);
@@ -164,25 +181,34 @@ $(document).ready(() => {
     // Requisição para obter os pacotes do aluno
     normal_request(`/backend/alunos/${alunoId}/pacotes/buscar`, {}, 'GET', csrftoken)
       .then(response => {
-        const dados = response.dados;
+        const ativos = response.dados;
+        const historico = response.historico;
 
-        // Filtra os pacotes ativos que não foram desativados
-        const activePlans = dados.filter(pacote => pacote.ativo === 'S' && pacote.desativado_em === null);
+        const activePlans = ativos.filter(pacote => pacote.ativo === 'S');
+        const historyPlans = historico.filter(pacote => pacote.desativado_em !== null);
 
         // Mapeia os pacotes ativos para o formato HTML
-        const activePlansHTML = activePlans.map(pacote => `
-          ${createField('Pacote', pacote.pacote__nome, "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
-          ${createField('Data de Validade', converter_data(pacote.data_validade), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
-          <div class="col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2">
-            <button class="btn btn-new desativar_pacote" id="desativar_pacote" type="button" data-id="${pacote.id}">Desativar</button>
-          </div>
-        `).join('');
+        const activePlansHTML = activePlans.map(pacote => {
+          const dataValidade = new Date(pacote.data_validade);
+          const hoje = new Date();
+          const diferencaEmDias = (dataValidade - hoje) / (1000 * 3600 * 24);
 
-        const historyPlans = dados.filter(pacote => pacote.desativado_em !== null);
+          let botaoRenovar = '';
+          if (diferencaEmDias <= 7 && diferencaEmDias >= -14) {
+            botaoRenovar = `<button class="btn btn-new renovar_pacote" type="button" data-id="${pacote.pacote__id}">Renovar</button>`;
+          }
+
+          return `
+            ${createField('Pacote', pacote.pacote__nome, "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
+            ${createField('Contratação', converter_data(pacote.data_contratacao), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
+            ${createField('Validade', converter_data(pacote.data_validade), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
+          `;
+        }).join('');
 
         const historyPlansHTML = historyPlans.map(pacote => `
-          ${createField('Nome', pacote.pacote__nome, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-          ${createField('Finalizado em', converter_data(pacote.desativado_em), "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+          ${createField('Nome', pacote.aluno_pacote__pacote__nome, "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
+          ${createField('Data Contratação', converter_data(pacote.data_contratacao), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
+          ${createField('Finalizado em', converter_data(pacote.desativado_em), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
         `).join('');
 
         displaySection('#current-plan', activePlansHTML, 'Sem Pacotes Vinculados');
@@ -307,14 +333,16 @@ $(document).ready(() => {
    * Grava os dados do novo aluno no backend.
    */
   const gravarFormAluno = () => {
-    const formsData = [input_nome, input_email, input_cpf, input_celular];
+    const formsData = [input_nome];
 
     if (validateForm(formsData)) {
       normal_request('/backend/alunos/criar', {
-        nome: input_nome.val(),
-        cpf: input_cpf.val().replaceAll('.', '').replaceAll('-', ''),
         celular: input_celular.val().replaceAll('(', '').replaceAll(')', '').replaceAll('-', '').replaceAll(' ', ''),
+        cpf: input_cpf.val().replaceAll('.', '').replaceAll('-', ''),
+        nome: input_nome.val(),
         email: input_email.val(),
+        sexo: input_sexo.val(),
+        nascimento: input_nascimento.val(),
         ativo: 'S'
       }, 'POST', csrftoken)
         .then(response => {
@@ -338,7 +366,7 @@ $(document).ready(() => {
    */
   const gravarPacoteAluno = (pacoteId) => {
     const aluno = $("#aluno_nome");
-    const data_contratacao = $("#validade");
+    const data_contratacao = $("#contratacao");
     const pacote = $("#pacotes");
     const formsData = [aluno, data_contratacao, pacote];
 
@@ -375,8 +403,10 @@ $(document).ready(() => {
       normal_request(`/backend/alunos/atualizar/${alunoId}`, {
         celular: input_celular.val().replaceAll('(', '').replaceAll(')', '').replaceAll('-', '').replaceAll(' ', ''),
         cpf: input_cpf.val().replaceAll('.', '').replaceAll('-', ''),
+        nascimento: input_nascimento.val(),
         email: input_email.val(),
         nome: input_nome.val(),
+        sexo: input_sexo.val(),
         ativo: 'S'
       }, 'PUT', csrftoken)
         .then(response => {
@@ -408,6 +438,12 @@ $(document).ready(() => {
   */
   const btnVinculoClickHandler = (event) => {
     const { value } = event.target;
+    const aluno = $("#aluno_nome");
+    const pacote = $("#pacotes");
+    const data_contratacao = $("#contratacao");
+    const formsData = [aluno, data_contratacao, pacote];
+
+    validateForm(formsData);
     gravarPacoteAluno(value);
   };
 

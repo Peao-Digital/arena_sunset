@@ -10,16 +10,22 @@
   outline: 0;
 }
 
+#alertavel {
+  z-index: 99999;
+}
+
 .btn-horario:hover,
 .btn-horario:focus,
 .btn-horario:active,
+.btn-horario.disabled,
 .btn-horario.active {
-  outline: 0;
-  margin: 1px;
-  color: #ffffff;
-  font-weight: bold;
+  outline: 0 !important;
+  margin: 1px !important;
+  color: #ffffff !important;
+  font-weight: bold !important;
   border: 1px solid #ff6b03 !important;
   background: linear-gradient(180deg, #FF6F02 0%, #FE5408 100%) !important;
+  opacity: 1;
 }
 
 .campos-participante {
@@ -28,9 +34,14 @@
   flex-wrap: nowrap;
 }
 
-#formulario_reserva {
+.select-container {
   display: flex;
-  justify-content: center;
+  align-items: center;
+}
+
+#formulario_reserva_avulsa,
+#formulario_reserva_regular {
+  text-align: left;
 }
 
 .custom-cards-agenda,
@@ -51,6 +62,19 @@ h2 {
   border-radius: 10%;
   overflow: hidden;
   object-fit: cover;
+}
+
+.icone-check {
+  color: #FF5722;
+}
+
+.div-texto {
+  color: #d0d6e1;
+  justify-content: center;
+}
+
+.div-texto div {
+  text-align: left;
 }
 
 .div-nome {
