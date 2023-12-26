@@ -121,6 +121,7 @@ class Recorrencia(models.Model):
   horario_fim = models.CharField(max_length=5)
   dia_inteiro = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
+  criado_em = models.DateTimeField(auto_now_add=True, editable=False, null=True)
 
   class Meta:
     verbose_name_plural = "Recorrencia de aulas"
@@ -135,7 +136,7 @@ class Reserva(models.Model):
   dia_inteiro = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
   ativo = models.CharField(max_length=1, choices=Opcoes.SIM_NAO_OPCAO)
   
-  aula_unica = models.ForeignKey(Aula, on_delete=models.CASCADE, null=True, blank=True)
+  aula = models.ForeignKey(Aula, on_delete=models.CASCADE, null=True, blank=True)
   especial = models.ForeignKey(DiaReservado, on_delete=models.CASCADE, null=True, blank=True)
 
   cancelado_por = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, blank=True)

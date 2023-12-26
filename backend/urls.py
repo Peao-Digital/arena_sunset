@@ -37,6 +37,7 @@ urlpatterns = [
   path('pacotes/cancelar_contrato/<int:contrato>', PacoteAlunoView.as_view(http_method_names=['put']), name="Cancelar contrato"),
 
   path('agenda/buscar', AgendaView.as_view(http_method_names=['get']), name="Buscar reservas"),
+  path('agenda/verificar_vencidos', JobView.as_view(http_method_names=['get']), name="Verificar vencidos"),
 
   path('agenda/reserva_especial/ver/<int:id>', ReservaEspecialCrudView.as_view(http_method_names=['get']), name="Ver reserva especial"),
   path('agenda/reserva_especial/criar', ReservaEspecialCrudView.as_view(http_method_names=['post']), name="Criar reserva especial"),

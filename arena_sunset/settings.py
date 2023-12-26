@@ -126,3 +126,5 @@ if int(env('SSL_ON')) == 1:
   SECURE_HSTS_SECONDS = 31536000
   CSRF_TRUSTED_ORIGINS = ['http://plataforma.arenasunsetpadel.com.br']
   ALLOWED_HOSTS = ['http://plataforma.arenasunsetpadel.com.br']
+
+DIAS_INATIVAR_VENCIMENTO=int(env('DIAS_INATIVAR_VENCIMENTO'))

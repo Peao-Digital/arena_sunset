@@ -17,6 +17,8 @@ def f_nome_usuario(user):
   return user.username.capitalize()
 
 def construir_datahorario(data, horario):
+  if data is None:
+    return None
   ano, mes, dia = data.split('-')
   hora, minuto = horario.split(':')
 
@@ -27,11 +29,8 @@ def ajustar_horario(horario):
   return ('00' if horario.hour == 0 else str(horario.hour)) + ':' + ('00' if horario.minute == 0 else str(horario.minute))
 
 def f_gerar_datas_periodo(data_inicial, data_final, dia_semana):
-  d1 = data_inicial.split('-')
-  d2 = data_final.split('-')
-
-  a1 = date(int(d1[0]),int(d1[1]), int(d1[2]))
-  a2 = date(int(d2[0]),int(d2[1]), int(d2[2]))
+  a1 = f_contruir_data(data_inicial)
+  a2 = f_contruir_data(data_final)
   delta = timedelta(days=1)
 
   datas = []
@@ -41,3 +40,7 @@ def f_gerar_datas_periodo(data_inicial, data_final, dia_semana):
     a1 += delta
 
   return datas
+
+def f_contruir_data(data_str):
+  d = data_str.split('-')
+  return date(int(d[0]),int(d[1]), int(d[2]))

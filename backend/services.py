@@ -1,8 +1,9 @@
 import json
 import os
-import datetime
+from datetime import datetime, timedelta
 import calendar
 
+from django.conf import settings
 from django.core.exceptions import (ValidationError, ObjectDoesNotExist)
 from django.db import transaction
 from django.db.models import Q
@@ -707,12 +708,34 @@ class AgendaSrv():
     obj_aulaAluno.save()
 
   @staticmethod
-  def horario_indisponivel(apenas_especial = False):
-    return False
+  def horario_disponivel(data, dia_semana, hora_ini, hora_fim, apenas_especial = False):
+    return True
+    #dth1, dth2 = construir_datahorario(data, hora_ini), construir_datahorario(data, hora_fim)
+
+    ##Conferindo os eventos especiais
+    #d1 = Reserva.objects.filter(data=data, especial__isnull=False, dia_inteiro='S', ativo='S')
+    #d2 = Reserva.objects.filter(data=data, data_horario_ini__range=(dth1, dth2), especial__isnull=False, dia_inteiro='N', ativo='S')
+
+    #disponivel = d1.exists() is False and d2.exists() is False
+
+    #if apenas_especial is False:
+    #  d3 = Reserva.objects.filter(data=data, data_horario_ini__range=(dth1, dth2), aula__isnull=False, ativo='S')
+    #  d4 = Recorrencia.objects.filter(horario_ini__range=(dth1, dth2), ativo='S')
+
+    #  disponivel = d1.exists() is False and d2.exists() is False and d3.exists() is False and d4.exists() is False
+
+    #return disponivel
 
   @staticmethod
   def professor_disponivel(professor, data, dia_semana, hora_ini, hora_fim):
     return True
+  
+    #a1 = Recorrencia.objects.filter(aula__professor=professor, dia_semana=dia_semana, horario_ini=hora_ini)
+
+    #dth1, dth2 = construir_datahorario(data, hora_ini), construir_datahorario(data, hora_fim)
+    #a2 = Reserva.objects.filter(aula__professor=professor, data=data, data_horario_ini__range=(dth1, dth2))
+
+    #return a1.exists() is False and a2.exists() is False
   
   @staticmethod
   def pode_reservar_pacote_periodo(contratante, pacote, data):
@@ -724,9 +747,30 @@ class AgendaSrv():
       data_inicial = request.GET.get('data_inicial', None)
       data_final = request.GET.get('data_final', None)
 
+      filtros_reservas_especiais = {
+        'especial__isnull': False,
+        'data__range': (data_inicial, data_final),
+        'ativo': 'S'
+      }
+
+      filtros_recorrencias = {
+        'criado_em__lte': data_final,
+        'ativo': 'S'
+      }
+
+      filtros_reservas_unicas = {
+        'aula__isnull': False,
+        'data__range': (data_inicial, data_final),
+        'ativo': 'S'
+      }
+
+      if f_usuario_possui_grupo(request.user, 'PROFESSOR'):
+        filtros_recorrencias['aula__professor'] = request.user
+        filtros_reservas_unicas['aula__professor'] = request.user
+
       dados = []
       #Buscando as reservas especiais
-      reservas_especiais = Reserva.objects.select_related().filter(especial__isnull=False, data__range=(data_inicial, data_final), ativo='S')
+      reservas_especiais = Reserva.objects.select_related().filter(**filtros_reservas_especiais)
       for reserva_especial in reservas_especiais:
         dados.append({
           'id': reserva_especial.id,
@@ -740,25 +784,27 @@ class AgendaSrv():
         })
 
       #Buscando as reservas com recorrencia
-      recorrencias = Recorrencia.objects.select_related().filter(ativo='S')
+      recorrencias = Recorrencia.objects.select_related().filter(**filtros_recorrencias)
       for recorrencia in recorrencias:
 
         #Gerando todas as datas possiveis dentro do periodo informado
         lista_datas = f_gerar_datas_periodo(data_inicial, data_final, recorrencia.dia_semana)
         for data in lista_datas:
-          dados.append({
-            'id': recorrencia.id,
-            'data': data,
-            'horario_ini': recorrencia.horario_ini,
-            'horario_fim': recorrencia.horario_fim,
-            'descricao': '',
-            'professor': {'id': recorrencia.aula.professor.id, 'nome': f_nome_usuario(recorrencia.aula.professor)},
-            'dia_semana': recorrencia.dia_semana,
-            'tipo': 'NORMAL'
-          })
+          dt_obj = f_contruir_data(data)
+          if dt_obj >= recorrencia.criado_em.date():
+            dados.append({
+              'id': recorrencia.id,
+              'data': data,
+              'horario_ini': recorrencia.horario_ini,
+              'horario_fim': recorrencia.horario_fim,
+              'descricao': '',
+              'professor': {'id': recorrencia.aula.professor.id, 'nome': f_nome_usuario(recorrencia.aula.professor)},
+              'dia_semana': recorrencia.dia_semana,
+              'tipo': 'NORMAL'
+            })
 
       #Buscando as reservas unicas
-      reservas_unicas = Reserva.objects.select_related().filter(aula_unica__isnull=False, data__range=(data_inicial, data_final), ativo='S')
+      reservas_unicas = Reserva.objects.select_related().filter(**filtros_reservas_unicas)
       for reserva in reservas_unicas:
         dados.append({
           'id': reserva.id,
@@ -766,7 +812,7 @@ class AgendaSrv():
           'horario_ini': ajustar_horario(reserva.data_horario_ini),
           'horario_fim': ajustar_horario(reserva.data_horario_fim),
           'descricao': '',
-          'professor': {'id': reserva.aula_unica.professor.id, 'nome': f_nome_usuario(reserva.aula_unica.professor)},
+          'professor': {'id': reserva.aula.professor.id, 'nome': f_nome_usuario(reserva.aula.professor)},
           'dia_semana': '',
           'tipo': 'UNICA'
         })
@@ -830,8 +876,8 @@ class AgendaSrv():
         obj_reserva.especial = obj_diaReservado
         obj_reserva.ativo = 'S'
 
-        horario_indisponivel = AgendaSrv.horario_indisponivel(True)
-        if horario_indisponivel is False:
+        horario_disponivel = AgendaSrv.horario_disponivel(data, None, hora_ini, hora_fim, True)
+        if horario_disponivel:
           obj_diaReservado.full_clean()
           obj_diaReservado.save()
 
@@ -874,7 +920,7 @@ class AgendaSrv():
     try:
       reserva = Reserva.objects.select_related().get(pk=id)
 
-      participantes = AulaParticipante.objects.filter(aula=reserva.aula_unica)
+      participantes = AulaParticipante.objects.filter(aula=reserva.aula)
       alunos = [
         {'id': d.participante.id, 'nome': d.participante.nome,
          'contratante_id': d.contratante.id,
@@ -893,7 +939,7 @@ class AgendaSrv():
         'cancelado_por': f_nome_usuario(reserva.cancelado_por),
         'cancelado_em': reserva.cancelado_em,
         'motivo_cancelamento': reserva.motivo_cancelamento,
-        'professor': {'id': reserva.aula_unica.professor.id, 'nome': f_nome_usuario(reserva.aula_unica.professor)},
+        'professor': {'id': reserva.aula.professor.id, 'nome': f_nome_usuario(reserva.aula.professor)},
         'alunos': alunos,
         'tipo': 'UNICA',
         'pode_editar': pode_editar
@@ -931,12 +977,12 @@ class AgendaSrv():
         obj_reserva.data_horario_ini = construir_datahorario(data, hora_ini)
         obj_reserva.data_horario_fim = construir_datahorario(data, hora_fim)
         obj_reserva.dia_inteiro = dia_inteiro
-        obj_reserva.aula_unica = obj_aula
+        obj_reserva.aula = obj_aula
 
-        horario_indisponivel = AgendaSrv.horario_indisponivel()
+        horario_disponivel = AgendaSrv.horario_disponivel(data, None, hora_ini, hora_fim)
         professor_disponivel = AgendaSrv.professor_disponivel(professor_obj, data, None, hora_ini, hora_fim)
 
-        if horario_indisponivel is False and professor_disponivel:
+        if horario_disponivel and professor_disponivel:
           obj_aula.full_clean()
           obj_aula.save()
 
@@ -972,7 +1018,7 @@ class AgendaSrv():
           obj_reserva.save()
 
           return {'id': obj_reserva.id}, 200
-        elif horario_indisponivel:
+        elif horario_disponivel is False:
           return {'msg': 'Um registro com esta data/horário já existe!'}, 400
         else:
           return {'msg': 'O professor selecionado ja possui este horário reservado!'}, 400
@@ -1071,10 +1117,10 @@ class AgendaSrv():
         obj_recorrencia.dia_semana = dia_semana
         obj_recorrencia.dia_inteiro = dia_inteiro
 
-        horario_indisponivel = AgendaSrv.horario_indisponivel()
-        professor_disponivel = AgendaSrv.professor_disponivel(professor_obj, None, dia_semana, hora_ini, hora_fim)
+        horario_disponivel = True#AgendaSrv.horario_disponivel(None, dia_semana, hora_ini, hora_fim)
+        professor_disponivel = True#AgendaSrv.professor_disponivel(professor_obj, None, dia_semana, hora_ini, hora_fim)
 
-        if horario_indisponivel is False and professor_disponivel:
+        if horario_disponivel and professor_disponivel:
           obj_aula.full_clean()
           obj_aula.save()
 
@@ -1108,7 +1154,7 @@ class AgendaSrv():
           obj_recorrencia.save()
 
           return {'id': obj_recorrencia.id}, 200
-        elif horario_indisponivel:
+        elif horario_disponivel is False:
           return {'msg': 'Um registro com esta data/horário já existe!'}, 400
         else:
           return {'msg': 'O professor selecionado ja possui este horário reservado!'}, 400
@@ -1139,3 +1185,42 @@ class AgendaSrv():
 
 class RelatoriosSrv():
   pass
+
+class JobSrv():
+
+  def verificar_vencidos(request):
+    try:
+      hoje = datetime.now().date()
+
+      #Pegar a data de 'DIAS_INATIVAR_VENCIMENTO' dias atras
+      data_limite = hoje - timedelta(days=settings.DIAS_INATIVAR_VENCIMENTO)
+      
+      #Pegar todas pessoas vencidas a partir do dia atual
+      contratantes = AlunoPacote.objects.select_related().filter(ativo='S', data_validade__lte=data_limite)
+
+      contratantes_id = [c.aluno.id for c in contratantes]
+
+      #Buscar as recorrencias com os vencidos
+      recorrencias = Recorrencia.objects.select_related().filter(ativo='S', aula__aulaparticipante__contratante__in=contratantes_id)
+
+      #Buscar as reservas com os vencidos
+      reservas = Reserva.objects.select_related().filter(ativo='S', aula__aulaparticipante__contratante__in=contratantes_id, data__gte=hoje)
+
+      #Inativar as reservas e recorrencias encontradas
+      for recorrencia in recorrencias:
+        recorrencia.ativo = 'N'
+        recorrencia.save()
+      
+      for reserva in reservas:
+        reserva.ativo = 'N'
+        reserva.cancelado_em = datetime.now()
+        reserva.motivo_cancelamento = 'Vencimento do pacote do contratante ({} dias atrás).'.format(settings.DIAS_INATIVAR_VENCIMENTO)
+        reserva.save()
+
+      return {'msg': 'Dados atualizados!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500

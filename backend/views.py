@@ -241,3 +241,9 @@ class AgendaView(View):
     if status != 400:
       res, status = AgendaSrv.buscar_reservas(request)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+  
+class JobView(View):
+  
+  def get(self, request):
+    res, status = JobSrv.verificar_vencidos(request)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
