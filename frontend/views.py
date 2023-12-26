@@ -7,8 +7,9 @@ from django.contrib import messages
 from backend.functions import (f_usuario_possui_grupo, f_nome_usuario)
 
 def f_default_context(user):
+  superusuario = user.is_superuser
   context = {
-    'perfil_administrador': f_usuario_possui_grupo(user, 'ADM_SITE'),
+    'perfil_administrador': f_usuario_possui_grupo(user, 'ADM_SITE') or superusuario,
     'perfil_atendimento': f_usuario_possui_grupo(user, 'ATENDIMENTO'),
     'perfil_professor': f_usuario_possui_grupo(user, 'PROFESSOR'),
     'perfil_aluno': f_usuario_possui_grupo(user, 'ALUNO'),

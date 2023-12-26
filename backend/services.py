@@ -728,34 +728,34 @@ class AgendaSrv():
 
   @staticmethod
   def professor_disponivel(professor, data, dia_semana, hora_ini, hora_fim):
-    return True
-  
-    #filtros_recorrencias = {
-    #  'aula__professor': professor,
-    #  'dia_semana': dia_semana,
-    #  'ativo': 'S'
-    #}
-#
-    #filtros_reservas = {
-    #  'aula__professor': professor,
-    #  'ativo': 'S'
-    #}
-    
-    #if dia_semana is None:
-    #  dia_semana = (f_contruir_data(data)).weekday()
-    #  filtros_recorrencias['dia_semana'] = dia_semana
-#
-    #  dth1, dth2 = construir_datahorario(data, hora_ini), construir_datahorario(data, hora_fim)
-    #  filtros_reservas['data'] = data
-    #  filtros_reservas['data_horario_ini__range'] = (dth1, dth2)
-#
-    #else:
-    #  filtros_reservas['data__week_day'] = dia_semana
-#
-    #a1 = Recorrencia.objects.filter(**filtros_recorrencias)
-    #a2 = Reserva.objects.filter(**filtros_reservas)
+    filtros_recorrencias = {
+      'aula__professor': professor,
+      'dia_semana': dia_semana,
+      'horario_ini': hora_ini,
+      'ativo': 'S'
+    }
 
-    #return a1.exists() is False and a2.exists() is False
+    filtros_reservas = {
+      'aula__professor': professor,
+      'ativo': 'S'
+    }
+
+    if dia_semana is None:
+      dia_semana = (f_contruir_data(data)).weekday()
+      filtros_recorrencias['dia_semana'] = dia_semana
+
+      dth1, dth2 = construir_datahorario(data, hora_ini), construir_datahorario(data, hora_fim)
+      filtros_reservas['data'] = data
+      filtros_reservas['data_horario_ini__range'] = (dth1, dth2)
+
+    else:
+      filtros_reservas['data__week_day'] = dia_semana
+      filtros_reservas['data_horario_ini__hour'] = hora_ini.split(':')[0]
+
+    a1 = Recorrencia.objects.filter(**filtros_recorrencias)
+    a2 = Reserva.objects.filter(**filtros_reservas)
+
+    return a1.exists() is False and a2.exists() is False
   
   @staticmethod
   def pode_reservar_pacote_periodo(contratante, pacote, data):

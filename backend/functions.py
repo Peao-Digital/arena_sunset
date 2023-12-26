@@ -4,9 +4,6 @@ def f_usuario_possui_grupo(user, tipo_grupo):
   if user.is_authenticated is False:
     return False
   
-  if user.is_superuser:
-    return True
-  
   return len(user.groups.filter(tipo_grupo__tipo=tipo_grupo)) > 0
 
 def f_nome_usuario(user):

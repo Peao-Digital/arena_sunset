@@ -5,7 +5,7 @@ from .services import *
 from .functions import f_usuario_possui_grupo  
 
 def apenas_administracao(user):
-  if f_usuario_possui_grupo(user, 'ADM_SITE'):
+  if f_usuario_possui_grupo(user, 'ADM_SITE') or user.is_superuser:
     return None, None
   
   return {"erro": "Você não possui acesso para este módulo!"}, 400
