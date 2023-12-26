@@ -293,7 +293,6 @@ $(document).ready(() => {
     alertavel.find('.modal-body').empty();
     alertavel.find('.modal-footer').empty();
 
-
     alertavel.find('.modal-body').html("Tem certeza que deseja cancelar o contrato ?");
     alertavel.find('.modal-footer').html(`<button class="btn confirm-disabled">Cancelar</button>`);
     alertavel.modal("show");

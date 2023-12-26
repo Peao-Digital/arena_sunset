@@ -110,8 +110,6 @@ const download_file = file => {
   document.body.removeChild(a)
 }
 
-const selecionado_todos = (val, tam) => val[0] == "0" && tam > 1
-
 const converter_data = data => {
   if (data == null || data == "") {
     return data
@@ -129,8 +127,6 @@ const converter_data = data => {
   let novaData = data.split(separador);
   return `${novaData[2]}${novo_separador}${novaData[1]}${novo_separador}${novaData[0]}`
 }
-
-const formatTime = (time) => (time.length === 4 ? `0${time}` : time);
 
 const getCSRFToken = () => {
   const name = 'csrftoken=';
@@ -155,3 +151,11 @@ const showDiv = (divToShow, divsToHide) => {
 const createOption = (value, text, selected = false, disabled = false) => {
   return $('<option>', { value, text, selected, disabled });
 };
+
+const getNomeDiaSemana = (numeroDia) => {
+  const diasSemana = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+  return diasSemana[numeroDia - 1];
+}
+
+const formatTime = (time) => (time.length === 4 ? `0${time}` : time);
+const selecionado_todos = (val, tam) => val[0] == "0" && tam > 1

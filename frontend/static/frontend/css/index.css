@@ -64,6 +64,17 @@ h2 {
   object-fit: cover;
 }
 
+#divDetalhesContratantes,
+#detalhesAula {
+  text-align: left;
+}
+
+.divDetalhesParticipantes {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+
 .icone-check {
   color: #FF5722;
 }

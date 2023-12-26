@@ -5,6 +5,17 @@ $(document).ready(() => {
   const conteudo = $('#content');
   const navbar = $('#navbar');
 
+  btnToggle.on('click', () => {
+    sidebar.toggleClass('show');
+    const isSidebarVisible = sidebar.hasClass('show');
+
+    navbar.toggleClass('navSideClose', !isSidebarVisible).toggleClass('navSideOpen', isSidebarVisible);
+    conteudo.toggleClass('page-wrapper', isSidebarVisible).toggleClass('page-wrapperClose', !isSidebarVisible);
+
+    btnToggle.html(`<i class="icons fa-solid ${isSidebarVisible ? 'fa-x' : 'fa-bars'}"></i>`);
+    logo.css('display', isSidebarVisible ? 'block' : 'none');
+  });
+
   const closeSidebarOnMobile = () => {
     if (window.innerWidth < 768) {
       sidebar.removeClass('show');
@@ -22,20 +33,15 @@ $(document).ready(() => {
     }
   };
 
-  // Chama a função ao carregar a página
+  const setActiveButton = () => {
+    const currentPath = window.location.pathname;
+
+    $('.btn-list-sidebar').each(function () {
+      $(this).toggleClass('btn-list-sidebar-active', new URL($(this).attr('href'), window.location.origin).pathname === currentPath);
+    });
+  }
+
+  setActiveButton();
   closeSidebarOnMobile();
-
-  // Atualiza a função ao redimensionar a janela
   $(window).resize(closeSidebarOnMobile);
-
-  btnToggle.on('click', () => {
-    sidebar.toggleClass('show');
-    const isSidebarVisible = sidebar.hasClass('show');
-
-    navbar.toggleClass('navSideClose', !isSidebarVisible).toggleClass('navSideOpen', isSidebarVisible);
-    conteudo.toggleClass('page-wrapper', isSidebarVisible).toggleClass('page-wrapperClose', !isSidebarVisible);
-
-    btnToggle.html(`<i class="icons fa-solid ${isSidebarVisible ? 'fa-x' : 'fa-bars'}"></i>`);
-    logo.css('display', isSidebarVisible ? 'block' : 'none');
-  });
 });

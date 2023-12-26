@@ -88,59 +88,6 @@ $(document).ready(function () {
     `;
   };
 
-  /**
-   * Função de Inicialização do calendário
-   * @returns FullCalendar
-   */
-  const initializeCalendar = (evento) => {
-    return new FullCalendar.Calendar(calendarEl, {
-      buttonText: {
-        prevYear: "&nbsp;&lt;&lt;&nbsp;",
-        nextYear: "&nbsp;&gt;&gt;&nbsp;",
-        today: "Hoje",
-        month: "Mês",
-        week: "Semana",
-        day: "Dia"
-      },
-      locale: 'pt-br',
-      headerToolbar: {
-        left: 'prev,today,next',
-        center: 'title',
-        right: 'dayGridMonth,timeGridWeek,timeGridDay'
-      },
-      dateClick: function (info) {
-        const dataAtual = new Date();
-        const dataClicada = new Date(info.date);
-
-        dataAtual.setHours(0, 0, 0, 0);
-        dataClicada.setHours(0, 0, 0, 0);
-
-        if (dataClicada < dataAtual) {
-          alertavel.find(".modal-body").text("Selecione uma data válida!");
-          alertavel.modal("show");
-        } else {
-          storedInfo.data = info.date;
-          selecao_professores();
-          modal.modal("show");
-        }
-      },
-      eventClick: function (info) {
-        buscar_reserva_individual(info.event.id, info.event.groupId);
-      },
-      events: evento,
-      dayMaxEventRows: true, // Adicione essa linha para limitar o número de eventos por linha
-      eventTextColor: '#fff', // Defina a cor do texto do evento como branco
-      contentHeight: 'auto', // Adicione essa linha para ajustar automaticamente a altura do calendário
-      eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' }, // Adicione essa linha para formatar o horário do evento
-      eventDisplay: 'block', // Adicione essa linha para exibir os eventos em blocos
-      hiddenDays: [0],
-      allDayText: 'Dia Todo',
-      slotDuration: '01:00',
-      slotMinTime: '06:00',
-      slotMaxTime: '18:00',
-    });
-  };
-
   /** Função de inicialização de tela de Seleção de professores no fluxo de reservas */
   const selecao_professores = () => {
     professores_card.empty();
@@ -242,8 +189,6 @@ $(document).ready(function () {
         selectPacotes.empty();
         selectPacotes.append(defaultOption);
 
-        console.log(options);
-
         // Adiciona as novas opções
         options.forEach(option => {
           const optionElement = createOption(option.valor, option.nome);
@@ -338,8 +283,8 @@ $(document).ready(function () {
 
   /**
    * Função de carregamento dos campos de pagantes/quantidades/pacotes
-   * @param {*} numero_pagantes 
-   * @param {*} tipo 
+   * @param {*} numero_pagantes Número total de contratantes
+   * @param {*} tipo Tipo de reserva (regular ou avulsa)
    */
   const carregar_campos_selects = (numero_pagantes, tipo) => {
     const $form = tipo === "avulsa" ? $('#campos_avulsos') : $('#campos_regular');
@@ -443,6 +388,11 @@ $(document).ready(function () {
     carregar_pagantes($form);
   };
 
+  /**
+   * Função que retorna os fieldsets de participantes de cada pagante
+   * @param {*} qtdParticipantes Total de participantes dos pagantes
+   * @param {*} paganteIndex Index do pagante que os dados se referem
+   */
   const renderizarFieldsets = (qtdParticipantes, paganteIndex) => {
     const divFieldset = $(`#divFieldsetPagante-${paganteIndex}`);
     divFieldset.empty();
@@ -472,6 +422,12 @@ $(document).ready(function () {
     });
   };
 
+  /**
+   * Função de carregamento dos selects e inputs de participantes, dentro dos fieldsets
+   * @param {*} status Status se possui ou não cadastro
+   * @param {*} paganteIndex Index do pagante que os dados se referem
+   * @param {*} participanteIndex Index do participante que os dados se referem
+   */
   const carregar_dados_participantes = (status, paganteIndex, participanteIndex) => {
     const divFieldsetDados = $(`#dados_${paganteIndex}_${participanteIndex}`);
     divFieldsetDados.empty();
@@ -513,74 +469,144 @@ $(document).ready(function () {
     console.log('entrou aqui');
   };
 
-  const buscar_reservas = () => {
-    let dataInicial = new Date();
-    let dataFinal = new Date();
-    dataFinal.setMonth(dataInicial.getMonth() + 1);
+  /** Função de busca de todas as reservas por período */
+  const buscarReservas = async (dataInicial, dataFinal) => {
+    const url = `/backend/agenda/buscar?data_inicial=${dataInicial}&data_final=${dataFinal}`;
 
-    // Formata as datas para 'YYYY-MM-DD'
-    let dataInicialStr = dataInicial.toISOString().split('T')[0];
-    let dataFinalStr = dataFinal.toISOString().split('T')[0];
+    try {
+      const response = await normal_request(url, {}, 'GET', csrftoken);
+      return response.dados.map(reserva => formatarReserva(reserva));
+    } catch (error) {
+      handleError(error);
+    }
+  };
 
-    // Constrói a URL com os parâmetros de consulta
-    let url = `/backend/agenda/buscar?data_inicial=${dataInicialStr}&data_final=${dataFinalStr}`;
+  /** Função para formatar a reserva */
+  const formatarReserva = (reserva) => {
+    const formattedStartTime = formatTime(reserva.horario_ini);
+    const formattedEndTime = formatTime(reserva.horario_fim);
+    const tipoCor = reserva.tipo === 'UNICA' ? '#0073e6' : '#FF5722';
 
-    normal_request(url, {}, 'GET', csrftoken)
-      .then(response => {
-        criarEventosNoCalendario(response);
-      })
-      .catch(handleError);
-  }
+    return {
+      id: reserva.id,
+      groupId: reserva.tipo,
+      textColor: '#fff',
+      backgroundColor: tipoCor,
+      borderColor: tipoCor,
+      end: new Date(`${reserva.data}T${formattedEndTime}`),
+      title: reserva.professor.nome,
+      start: new Date(`${reserva.data}T${formattedStartTime}`),
+      allDay: false,
+    };
+  };
 
+  /**
+   * Função de busca de todas as reservas por id e tipo
+   * @param {*} id Id da reserva
+   * @param {*} tipo Tipo da reserva (unica ou avulsa) e (normal ou regular)
+   */
   const buscar_reserva_individual = (id, tipo) => {
     const url = `/backend/agenda/reserva_${tipo === 'UNICA' ? 'unica' : 'normal'}/ver/${id}`;
+    const fieldsetContratantes = $("#divDetalhesContratantes");
+    const detalhesAula = $("#detalhesAula");
 
     normal_request(url, {}, 'GET', csrftoken)
       .then(response => {
+        const dados = response.dados;
 
-        console.log(response)
+        detalhesAula.empty();
+        fieldsetContratantes.empty();
 
+        const aulaInfo = `
+          <div class="row mb-2">
+            <div class="col-lg-12 col-md-12 col-sm-12"><strong>Professor:</strong> ${dados.professor.nome}</div>
+          </div>
+          <div class="row mb-2">
+            <div class="col-lg-6 col-md-6 col-sm-12"><strong>Horário Inicial:</strong> ${dados.horario_inicial}</div>
+            <div class="col-lg-6 col-md-6 col-sm-12"><strong>Horário Final:</strong> ${dados.horario_final}</div>
+          </div>          
+        `;
+
+        detalhesAula.html(aulaInfo);
+        const groupedAlunos = agruparAlunosPorContratante(dados.alunos);
+
+        Object.values(groupedAlunos).forEach((group, index) => {
+          const contratanteContainer = $(`<div class="contratante-container"></div>`);
+          contratanteContainer.append(`<b>Contratante #${index + 1}</b> - <span>${group.nomeContratante}</span`);
+
+          const participantsFieldset = $(`<fieldset class="mt-1 mb-2 divDetalhesParticipantes"><legend>Participantes</legend></fieldset>`);
+
+          if (group.participantes) {
+            group.participantes.forEach(participantName => {
+              participantsFieldset.append(`<b>${participantName}</b>`);
+            });
+          }
+
+          contratanteContainer.append(participantsFieldset);
+          fieldsetContratantes.append(contratanteContainer);
+        });
+
+        // Definir o ouvinte de evento para o botão "Cancelar Aula" dentro do modalEvento
+        modalEvento.find('.modal-footer').html(`<button class="btn confirm-delete confirm-cancel">Cancelar Aula</button>`);
+        modalEvento.modal('show');
+
+        $(".confirm-cancel").click(() => {
+          alertavel.find('.modal-body').empty();
+          alertavel.find('.modal-footer').empty();
+
+          alertavel.find('.modal-body').html("Tem certeza que deseja cancelar a aula ?");
+          alertavel.find('.modal-footer').html(`<button class="btn confirm-delete cancelar-aula" value="${id}" data-tipo="${tipo}">Cancelar</button>`);
+          alertavel.modal("show");
+          modalEvento.modal("hide");
+        });
       })
       .catch(handleError);
+  };
 
-    modalEvento.modal('show');
+  const cancelar_aula = (id, tipo) => {
+    const url_cancelar = `/backend/agenda/reserva_${tipo === 'UNICA' ? 'unica' : 'normal'}/cancelar/${id}`;
+
+    normal_request(url_cancelar, {}, 'PUT', csrftoken)
+      .then(response => {
+        const successMessage = response.msg || ''
+
+        if (successMessage.includes("Reserva cancelada!")) {
+          console.log("a");
+          alertavel.find('.modal-body').html(`O registro foi cancelado com sucesso!`);
+          alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
+          location.reload();
+        } else {
+          alertavel.find('.modal-body').html('Não foi possível cancelar a aula', response.msg);
+          alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
+        }
+      })
+      .catch(handleError);
   }
 
-  const criarEventosNoCalendario = (resposta) => {
-
-    const eventos = resposta.dados.map((reserva) => {
-      const formattedStartTime = formatTime(reserva.horario_ini);
-      const formattedEndTime = formatTime(reserva.horario_fim);
-
-      const startDateTime = `${reserva.data}T${formattedStartTime}`;
-      const endDateTime = `${reserva.data}T${formattedEndTime}`;
-
-      return {
-        id: reserva.id,
-        groupId: reserva.tipo,
-        textColor: '#fff',
-        backgroundColor: reserva.tipo === 'UNICA' ? '#0073e6' : '#FF5722',
-        borderColor: reserva.tipo === 'UNICA' ? '#0073e6' : '#FF5722',
-        end: new Date(endDateTime),
-        title: reserva.professor.nome,
-        start: new Date(startDateTime),
-        allDay: false,
-      };
-    });
-
-    const calendar = initializeCalendar(eventos);
-    calendar.render();
-  };
+  /**
+   * Organiza uma lista de alunos em grupos baseados no contratante a que cada participante está associado
+   * @param {array} alunos 
+   * @returns 
+   */
+  const agruparAlunosPorContratante = (alunos) => {
+    return alunos.reduce((acumulador, {
+      contratante_id: idContratante,
+      contratante_nome: nomeContratante,
+      nome: nomeAluno
+    }) => {
+      if (!acumulador[idContratante]) {
+        acumulador[idContratante] = {
+          nomeContratante,
+          participantes: []
+        };
+      }
+      acumulador[idContratante].participantes.push(nomeAluno);
+      return acumulador;
+    }, {});
+  }
 
   // Função para reservar aula regular
   const reservar_aula_regular = () => {
-    const data = new Date(storedInfo.data);
-    data_formatada = data.getDay();
-
-    console.log('DATA ARMAZENADA', storedInfo.data)
-    console.log('ANTES FORMATADA', data)
-    console.log('DATA FORMATADA', data_formatada)
-
     const contratantes = [];
 
     const total_pagantes = $(".nr_pagantes.regular").val(); // Obtém o total de pagantes
@@ -639,7 +665,7 @@ $(document).ready(function () {
 
       contratantes.push({ contratante: pagante, pacote: pacote, alunos, participantes });
     }
-    /*
+
     // Verifica se todos os campos necessários foram preenchidos
     if (Object.values(camposPreenchidos).includes(false) || !total_pagantes) {
       alertavel.find(".modal-body").text("Selecione todos os campos antes de fazer a reserva.");
@@ -652,10 +678,11 @@ $(document).ready(function () {
       alertavel.modal("show");
       return;
     }
-    */
+
     gravar_reserva(contratantes, 'regular', storedInfo);
   };
 
+  // Função para reservar aula avulsa
   const reservar_aula_avulsa = () => {
     const contratantes = [];
 
@@ -723,6 +750,12 @@ $(document).ready(function () {
     gravar_reserva(contratantes, 'avulsa', storedInfo);
   };
 
+  /**
+   * Função para gravar dados da reserva
+   * @param {*} contratantes Pagantes do projeto, e participantes
+   * @param {*} tipo Tipo da reserva (unica ou avulsa) e (normal ou regular)
+   * @param {*} storedInfo Data, hora, professor
+   */
   const gravar_reserva = (contratantes, tipo, storedInfo) => {
     const data = new Date(storedInfo.data);
     let data_formatada;
@@ -737,7 +770,6 @@ $(document).ready(function () {
       url = '/backend/agenda/reserva_unica/criar';
     } else {
       data_formatada = data.getDay() - 1;
-      console.log(data_formatada)
       url = '/backend/agenda/reserva_normal/criar';
     }
 
@@ -757,7 +789,7 @@ $(document).ready(function () {
           alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
           alertavel.modal("show");
           alertavel.on('hidden.bs.modal', function (e) {
-            window.location.href = response.redirect;
+            location.reload();
           });
         } else {
           alertavel.find(".modal-body").text(response.erro);
@@ -765,6 +797,66 @@ $(document).ready(function () {
         }
       })
       .catch(handleError);
+  };
+
+  /**
+   * Função de Inicialização do calendário
+   * @returns FullCalendar
+   */
+  const initializeCalendar = () => {
+    let calendar = new FullCalendar.Calendar(calendarEl, {
+      buttonText: {
+        prevYear: "&nbsp;&lt;&lt;&nbsp;",
+        nextYear: "&nbsp;&gt;&gt;&nbsp;",
+        today: "Hoje",
+        month: "Mês",
+        week: "Semana",
+        day: "Dia"
+      },
+      locale: 'pt-br',
+      headerToolbar: {
+        left: 'prev,today,next',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+      },
+      dateClick: function (info) {
+        const dataAtual = new Date();
+        const dataClicada = new Date(info.date);
+
+        dataAtual.setHours(0, 0, 0, 0);
+        dataClicada.setHours(0, 0, 0, 0);
+
+        if (dataClicada < dataAtual) {
+          alertavel.find(".modal-body").text("Selecione uma data válida!");
+          alertavel.modal("show");
+        } else {
+          storedInfo.data = info.date;
+          selecao_professores();
+          modal.modal("show");
+        }
+      },
+      eventClick: function (info) {
+        buscar_reserva_individual(info.event.id, info.event.groupId);
+      },
+      dayMaxEventRows: true, // Adicione essa linha para limitar o número de eventos por linha
+      eventTextColor: '#fff', // Defina a cor do texto do evento como branco
+      contentHeight: 'auto', // Adicione essa linha para ajustar automaticamente a altura do calendário
+      eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'short' }, // Adicione essa linha para formatar o horário do evento
+      eventDisplay: 'block', // Adicione essa linha para exibir os eventos em blocos
+      hiddenDays: [0],
+      allDayText: 'Dia Todo',
+      slotDuration: '01:00',
+      slotMinTime: '06:00',
+      slotMaxTime: '18:00',
+    });
+
+    calendar.render();
+
+    const { activeStart, activeEnd } = calendar.view;
+    const dataInicial = activeStart.toISOString().split('T')[0];
+    const dataFinal = activeEnd.toISOString().split('T')[0];
+
+    buscarReservas(dataInicial, dataFinal).then(dados => calendar.addEventSource(dados));
   };
 
   showDiv(divCalendario, [divProfessores, divTipoReserva, divReservaAvulsa, divReservaRegular]);
@@ -781,5 +873,11 @@ $(document).ready(function () {
     reservar_aula_regular();
   });
 
-  buscar_reservas();
+  $(document).on('click', '.cancelar-aula', function () {
+    const id = $(this).val();
+    const tipo = $(this).data('tipo');
+    cancelar_aula(id, tipo);
+  });
+
+  initializeCalendar();
 });

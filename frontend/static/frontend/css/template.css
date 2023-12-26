@@ -161,7 +161,7 @@ main .page-wrapper {
 }
 
 .btn-list-sidebar:hover,
-.btn-list-sidebar:active {
+.btn-list-sidebar-active {
   color: #FE5408;
 }
 

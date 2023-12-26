@@ -45,7 +45,7 @@
         <ul class="Btn-list">
 
           <li>
-            <a class="btn-list-sidebar active" href="/">
+            <a class="btn-list-sidebar btn-list-sidebar-active" href="/">
               <i class="icons fa-solid fa-calendar-days"></i>
               <span class="list-title">Agenda</span>
             </a>
@@ -53,7 +53,7 @@
 
           {% if perfil_administrador %}
           <li>
-            <a class="btn-list-sidebar active" href="{% url 'frontend:Criar aluno' %}">
+            <a class="btn-list-sidebar" href="{% url 'frontend:Criar aluno' %}">
               <i class="icons fa-solid fa-users"></i>
               <span class="list-title">Alunos</span>
             </a>
@@ -73,17 +73,17 @@
             </a>
           </li>
 
-          <li>
+          <!--<li>
             <a class="btn-list-sidebar" href="#">
               <i class="icons fa-solid fa-file-pdf"></i>
               <span class="list-title">Relatórios</span>
             </a>
-          </li>
+          </li>-->
 
           {% elif perfil_atendimento %}
 
           <li>
-            <a class="btn-list-sidebar active" href="{% url 'frontend:Criar aluno' %}">
+            <a class="btn-list-sidebar" href="{% url 'frontend:Criar aluno' %}">
               <i class="icons fa-solid fa-users"></i>
               <span class="list-title">Alunos</span>
             </a>
