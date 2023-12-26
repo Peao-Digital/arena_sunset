@@ -17,7 +17,6 @@ DEBUG = int(env('DEBUG')) == 1
 
 ALLOWED_HOSTS = ['*']
 if DEBUG is False:
-  ALLOWED_HOSTS = ['http://plataforma.arenasunsetpadel.com.br', 'https://plataforma.arenasunsetpadel.com.br']
   CSRF_TRUSTED_ORIGINS = ['http://plataforma.arenasunsetpadel.com.br', 'https://plataforma.arenasunsetpadel.com.br']
 
 CORS_ORIGIN_ALLOW_ALL = True
