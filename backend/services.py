@@ -730,10 +730,30 @@ class AgendaSrv():
   def professor_disponivel(professor, data, dia_semana, hora_ini, hora_fim):
     return True
   
-    #a1 = Recorrencia.objects.filter(aula__professor=professor, dia_semana=dia_semana, horario_ini=hora_ini)
-
-    #dth1, dth2 = construir_datahorario(data, hora_ini), construir_datahorario(data, hora_fim)
-    #a2 = Reserva.objects.filter(aula__professor=professor, data=data, data_horario_ini__range=(dth1, dth2))
+    #filtros_recorrencias = {
+    #  'aula__professor': professor,
+    #  'dia_semana': dia_semana,
+    #  'ativo': 'S'
+    #}
+#
+    #filtros_reservas = {
+    #  'aula__professor': professor,
+    #  'ativo': 'S'
+    #}
+    
+    #if dia_semana is None:
+    #  dia_semana = (f_contruir_data(data)).weekday()
+    #  filtros_recorrencias['dia_semana'] = dia_semana
+#
+    #  dth1, dth2 = construir_datahorario(data, hora_ini), construir_datahorario(data, hora_fim)
+    #  filtros_reservas['data'] = data
+    #  filtros_reservas['data_horario_ini__range'] = (dth1, dth2)
+#
+    #else:
+    #  filtros_reservas['data__week_day'] = dia_semana
+#
+    #a1 = Recorrencia.objects.filter(**filtros_recorrencias)
+    #a2 = Reserva.objects.filter(**filtros_reservas)
 
     #return a1.exists() is False and a2.exists() is False
   
@@ -754,7 +774,7 @@ class AgendaSrv():
       }
 
       filtros_recorrencias = {
-        'criado_em__lte': data_final,
+        'criado_em__date__lte': data_final,
         'ativo': 'S'
       }
 
@@ -800,7 +820,8 @@ class AgendaSrv():
               'descricao': '',
               'professor': {'id': recorrencia.aula.professor.id, 'nome': f_nome_usuario(recorrencia.aula.professor)},
               'dia_semana': recorrencia.dia_semana,
-              'tipo': 'NORMAL'
+              'tipo': 'NORMAL',
+              'criado_em': recorrencia.criado_em.date()
             })
 
       #Buscando as reservas unicas
@@ -1117,8 +1138,8 @@ class AgendaSrv():
         obj_recorrencia.dia_semana = dia_semana
         obj_recorrencia.dia_inteiro = dia_inteiro
 
-        horario_disponivel = True#AgendaSrv.horario_disponivel(None, dia_semana, hora_ini, hora_fim)
-        professor_disponivel = True#AgendaSrv.professor_disponivel(professor_obj, None, dia_semana, hora_ini, hora_fim)
+        horario_disponivel = AgendaSrv.horario_disponivel(None, dia_semana, hora_ini, hora_fim)
+        professor_disponivel = AgendaSrv.professor_disponivel(professor_obj, None, dia_semana, hora_ini, hora_fim)
 
         if horario_disponivel and professor_disponivel:
           obj_aula.full_clean()
