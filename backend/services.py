@@ -690,9 +690,17 @@ class PacoteAlunoSrv():
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
-  def pode_reservar(pacote_obj, contratante_obj, data, diasemana):
+  def pode_reservar(pacote_obj, contratante_obj, data, dia_semana):
     if pacote_obj is None:
       return True
+    
+    #contrato_obj = AlunoPacote.objects.filter(pacote=pacote_obj, aluno=contratante_obj, ativo='S')
+
+    #if contrato_obj.exists() is False:
+    #  return False
+    #
+    #contrato_obj = contrato_obj[0]
+
     return True
 
 class AgendaSrv():
@@ -710,6 +718,12 @@ class AgendaSrv():
   @staticmethod
   def horario_disponivel(data, dia_semana, hora_ini, hora_fim, apenas_especial = False):
     return True
+  
+    if dia_semana is None:
+      pass
+    else:
+      pass
+
     #dth1, dth2 = construir_datahorario(data, hora_ini), construir_datahorario(data, hora_fim)
 
     ##Conferindo os eventos especiais
@@ -747,7 +761,6 @@ class AgendaSrv():
       dth1, dth2 = construir_datahorario(data, hora_ini), construir_datahorario(data, hora_fim)
       filtros_reservas['data'] = data
       filtros_reservas['data_horario_ini__range'] = (dth1, dth2)
-
     else:
       filtros_reservas['data__week_day'] = dia_semana
       filtros_reservas['data_horario_ini__hour'] = hora_ini.split(':')[0]
@@ -757,10 +770,6 @@ class AgendaSrv():
 
     return a1.exists() is False and a2.exists() is False
   
-  @staticmethod
-  def pode_reservar_pacote_periodo(contratante, pacote, data):
-    pass
-
   @staticmethod
   def buscar_reservas(request):
     try:
@@ -975,7 +984,7 @@ class AgendaSrv():
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
-  def criar_reserva_unica(request):      
+  def criar_reserva_unica(request):
     try:
       post_data = json.loads(request.body)
 

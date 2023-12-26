@@ -15,8 +15,11 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(env('DEBUG')) == 1
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['*'] if DEBUG else ['http://plataforma.arenasunsetpadel.com.br']
 CORS_ORIGIN_ALLOW_ALL = True
+
+if DEBUG:
+  CSRF_TRUSTED_ORIGINS = ['http://plataforma.arenasunsetpadel.com.br']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -120,11 +123,8 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 UPLOAD_URL = 'uploads/'
 UPLOAD_ROOT = os.path.join(BASE_DIR, 'uploads')
 
-if int(env('SSL_ON')) == 1:
-  SESSION_COOKIE_SECURE = int(env('SSL_ON')) == 1
-  CSRF_COOKIE_SECURE = int(env('SSL_ON')) == 1
-  SECURE_HSTS_SECONDS = 31536000
-  CSRF_TRUSTED_ORIGINS = ['http://plataforma.arenasunsetpadel.com.br']
-  ALLOWED_HOSTS = ['http://plataforma.arenasunsetpadel.com.br']
+SESSION_COOKIE_SECURE = int(env('SSL_ON')) == 1
+CSRF_COOKIE_SECURE = int(env('SSL_ON')) == 1
+SECURE_HSTS_SECONDS = 31536000
 
 DIAS_INATIVAR_VENCIMENTO=int(env('DIAS_INATIVAR_VENCIMENTO'))
