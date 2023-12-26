@@ -700,6 +700,7 @@ class PacoteAlunoSrv():
       return False
     
     contrato_obj = contrato_obj[0]
+    data = datetime.today().date() if data is None else data
 
     #FALTA FAZER
 
@@ -837,8 +838,8 @@ class AgendaSrv():
         lista_datas = f_gerar_datas_periodo(data_inicial, data_final, recorrencia.dia_semana)
         for data in lista_datas:
           dt_obj = f_contruir_data(data)
-          if dt_obj >= recorrencia.criado_em.date():
 
+          if dt_obj >= recorrencia.criado_em.date():
             participantes = AulaParticipante.objects.filter(aula=recorrencia.aula)
             contratantes = fcontratantes(participantes)
 

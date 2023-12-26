@@ -15,11 +15,12 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = int(env('DEBUG')) == 1
 
-ALLOWED_HOSTS = ['*'] if DEBUG else ['http://plataforma.arenasunsetpadel.com.br']
-CORS_ORIGIN_ALLOW_ALL = True
+ALLOWED_HOSTS = ['*']
+if DEBUG is False:
+  ALLOWED_HOSTS = ['http://plataforma.arenasunsetpadel.com.br', 'https://plataforma.arenasunsetpadel.com.br']
+  CSRF_TRUSTED_ORIGINS = ['http://plataforma.arenasunsetpadel.com.br', 'https://plataforma.arenasunsetpadel.com.br']
 
-if DEBUG:
-  CSRF_TRUSTED_ORIGINS = ['http://plataforma.arenasunsetpadel.com.br']
+CORS_ORIGIN_ALLOW_ALL = True
 
 INSTALLED_APPS = [
     'django.contrib.admin',
