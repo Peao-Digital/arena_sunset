@@ -762,7 +762,7 @@ class AgendaSrv():
       filtros_reservas['data'] = data
       filtros_reservas['data_horario_ini__range'] = (dth1, dth2)
     else:
-      filtros_reservas['data__week_day'] = dia_semana
+      filtros_reservas['data__week_day'] = int(dia_semana) - 2
       filtros_reservas['data_horario_ini__hour'] = hora_ini.split(':')[0]
 
     a1 = Recorrencia.objects.filter(**filtros_recorrencias)
@@ -1075,9 +1075,9 @@ class AgendaSrv():
 
           return {'id': obj_reserva.id}, 200
         elif horario_disponivel is False:
-          return {'msg': 'Um registro com esta data/horário já existe!'}, 400
+          return {'erro': 'Um registro com esta data/horário já existe!', "tipo_erro": "validacao"}, 400
         else:
-          return {'msg': 'O professor selecionado ja possui este horário reservado!'}, 400
+          return {'erro': 'O professor selecionado ja possui este horário reservado!', "tipo_erro": "validacao"}, 400
         
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
@@ -1211,9 +1211,9 @@ class AgendaSrv():
 
           return {'id': obj_recorrencia.id}, 200
         elif horario_disponivel is False:
-          return {'msg': 'Um registro com esta data/horário já existe!'}, 400
+          return {'erro': 'Um registro com esta data/horário já existe!', "tipo_erro": "validacao"}, 400
         else:
-          return {'msg': 'O professor selecionado ja possui este horário reservado!'}, 400
+          return {'erro': 'O professor selecionado ja possui este horário reservado!', "tipo_erro": "validacao"}, 400
 
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
