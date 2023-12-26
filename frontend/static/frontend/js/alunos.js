@@ -10,7 +10,6 @@ $(document).ready(() => {
 
   const input_cpf = $('#cpf');
   const input_nome = $("#nome");
-  const input_sexo = $("#sexo");
   const input_email = $("#email");
   const input_celular = $("#celular");
   const input_nascimento = $("#data_nasc");
@@ -67,6 +66,7 @@ $(document).ready(() => {
   /* Função para carregar os dados e preencher a tabela datatable */
   const carregar_dados = () => {
 
+
     normal_request('/backend/alunos/listar', {}, 'GET', csrftoken)
       .then(json => {
         datatable.clear(); // Limpa a tabela
@@ -74,10 +74,10 @@ $(document).ready(() => {
         json.dados.forEach(data => {
 
           const acoes = `
-          <button type="button" class="btn btn-view" data-id="${data.id}" title="Ver Dados"><i class="fas fa-eye"></i></button>
-          <button type="button" class="btn btn-edit" data-id="${data.id}" title="Editar"><i class="fas fa-edit"></i></button>
-          <button type="button" class="btn btn-delete" data-id="${data.id}" title="Deletar"><i class="fas fa-trash"></i></button>
-          <button type="button" class="btn btn-plans" data-id="${data.id}" data-nome="${data.nome}" title="Ver Pacotes"><i class="fa-solid fa-gift"></i></button>`;
+            <button type="button" class="btn btn-view" data-id="${data.id}" title="Ver Dados"><i class="fas fa-eye"></i></button>
+            <button type="button" class="btn btn-edit" data-id="${data.id}" title="Editar"><i class="fas fa-edit"></i></button>
+            <button type="button" class="btn btn-delete" data-id="${data.id}" title="Deletar"><i class="fas fa-trash"></i></button>
+            <button type="button" class="btn btn-plans" data-id="${data.id}" data-nome="${data.nome}" title="Ver Pacotes"><i class="fa-solid fa-gift"></i></button>`;
 
           const status = data.ativo === 'S' ? `<button class="btn btn-ativo" data-id="${data.id}" title="Mudar status para Inativo">Ativo</button>` : `<button class="btn btn-inativo" data-id="${data.id}" title="Mudar status para Ativo">Inativo</button>`;
 
@@ -94,9 +94,9 @@ $(document).ready(() => {
 
           datatable.row.add([
             data.nome,
-            cpf || 'CPF não informado',
-            data.email || 'Email não informado',
-            celular || 'Celular não informado',
+            cpf || 'Não informado',
+            data.email || 'Não informado',
+            celular || 'Não informado',
             status,
             acoes
           ]);
@@ -144,11 +144,12 @@ $(document).ready(() => {
   };
 
   /**
- * Abre o modal de visualização dos dados do aluno.
- * @param {number} alunoId - O ID do aluno a ser visualizado.
- */
+   * Abre o modal de visualização dos dados do aluno.
+   * @param {number} alunoId - O ID do aluno a ser visualizado.
+   */
   const openViewModal = (alunoId) => {
     modal_view.find('.modal-title').text(`Dados do Aluno #${alunoId}`);
+    modal_view.find('.modal-footer').empty().html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
 
     $('#current-plan').empty();
     $('#history').empty();
@@ -156,21 +157,26 @@ $(document).ready(() => {
     // Função para criar campos de visualização
     const createField = (label, value, classes) => `
     <div class="labels-view ${classes}">
-      <label><b>${label}:</b> ${value}</label>
+      <label><b>${label}</b> ${value}</label>
     </div>`;
 
     // Requisição para obter os dados do aluno
     normal_request(`/backend/alunos/ver/${alunoId}`, {}, 'GET', csrftoken)
       .then(response => {
-        const dados = response.dados;
+        const { nome, cpf, celular, sexo, email, nascimento } = response.dados;
+
+        const formatCPF = cpf => cpf ? cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4') : 'Não Informado';
+        const formatCelular = celular => celular ? celular.replace(/(\d{2})(\d{1})(\d{4})(\d{4})/, '($1) $2 $3-$4') : 'Não Informado';
+        const formatSexo = sexo => sexo === 'M' ? 'Masculino' : sexo === 'F' ? 'Feminino' : 'Não informado';
+        const formatNascimento = nascimento => nascimento !== null ? converter_data(nascimento) : 'Não informado';
 
         const userData = `
-        ${createField('Nome', dados.nome, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-        ${createField('CPF', dados.cpf, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-        ${createField('Sexo', dados.sexo, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-        ${createField('Celular', dados.celular, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-        ${createField('Email', dados.email, "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
-        ${createField('Data de nascimento', converter_data(dados.nascimento), "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        ${createField('Nome:', nome || 'Não Informado', "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        ${createField('CPF:', formatCPF(cpf), "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        ${createField('Sexo:', formatSexo(sexo), "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        ${createField('Celular:', formatCelular(celular), "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        ${createField('Email:', email || 'Não Informado', "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
+        ${createField('Data de nascimento:', formatNascimento(nascimento), "col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2")}
       `;
 
         $('#user-data').html(userData);
@@ -188,28 +194,58 @@ $(document).ready(() => {
         const historyPlans = historico.filter(pacote => pacote.desativado_em !== null);
 
         // Mapeia os pacotes ativos para o formato HTML
-        const activePlansHTML = activePlans.map(pacote => {
+        const activePlansHTML = activePlans.map((pacote, index, array) => {
           const dataValidade = new Date(pacote.data_validade);
           const hoje = new Date();
           const diferencaEmDias = (dataValidade - hoje) / (1000 * 3600 * 24);
 
           let botaoRenovar = '';
           if (diferencaEmDias <= 7 && diferencaEmDias >= -14) {
-            botaoRenovar = `<button class="btn btn-new renovar_pacote" type="button" data-id="${pacote.pacote__id}">Renovar</button>`;
+            botaoRenovar = `<button class="btn btn-new renovar_pacote w-100" id="renovacao-${pacote.id} type="button" data-id="${pacote.pacote__id}"> Renovar</button> `;
+          }
+          console.log(pacote)
+          // Constrói o HTML para o plano atual
+          let planoHTML = `
+              ${createField('', pacote.pacote__nome, "col-lg-2 col-md-2 col-sm-12 col-xs-12 mb-2")}
+              ${createField('Início:', converter_data(pacote.data_contratacao), "col-lg-3 col-md-6 col-sm-6 col-xs-6 mb-2")}
+              ${createField('Validade:', converter_data(pacote.data_validade), "col-lg-3 col-md-6 col-sm-6 col-xs-6 mb-2")}
+              <div class="col-lg-2 col-md-2 col-sm-12 mb-1">
+                ${botaoRenovar}
+              </div>
+              <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
+                <button class="btn btn-new desativar_pacote w-100" id="desativar_pacote" type="button" data-pacote="${pacote.pacote__id} data-id="${pacote.id}">Desativar</button>
+              </div>
+              <div class="divRenovacao justify-content-center" id="divRenovacao-${pacote.pacote__id}" style="display:none;">
+                <label for="contratacao" class="form-label"><b>Nova Data de Contratação</b></label>
+                <input id="nova_contratacao-${pacote.pacote__id}" class="form-control" type="date" name="data_contratacao" required>
+                <div class="mt-2 text-center">
+                  <button class="btn btn-new gravar-renovacao" data-id=${pacote.id} data-pacote="${pacote.pacote__id}" data-aluno="${pacote.aluno}">Gravar</button>
+                </div>
+              </div>
+              
+              <div id="error-message-contratos" class="text-danger text-center mt-2 mb-2"></div>
+              `;
+
+          // Adiciona o <hr> se não for o último elemento
+          if (index !== array.length - 1) {
+            planoHTML += `<hr class="mb-2 mt-2">`;
           }
 
-          return `
-            ${createField('Pacote', pacote.pacote__nome, "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
-            ${createField('Contratação', converter_data(pacote.data_contratacao), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
-            ${createField('Validade', converter_data(pacote.data_validade), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
-          `;
+          return planoHTML;
         }).join('');
 
-        const historyPlansHTML = historyPlans.map(pacote => `
-          ${createField('Nome', pacote.aluno_pacote__pacote__nome, "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
-          ${createField('Data Contratação', converter_data(pacote.data_contratacao), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
-          ${createField('Finalizado em', converter_data(pacote.desativado_em), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
-        `).join('');
+        const historyPlansHTML = historyPlans.map((pacote, index, array) => {
+          let historyHTML = `
+            ${createField('Pacote:', pacote.aluno_pacote__pacote__nome, "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
+            ${createField('Início:', converter_data(pacote.data_contratacao), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}
+            ${createField('Finalizado em:', converter_data(pacote.desativado_em), "col-lg-4 col-md-4 col-sm-12 col-xs-12 mb-2")}`
+
+          if (index !== array.length - 1) {
+            historyHTML += `<hr class="mb-2 mt-2">`;
+          }
+
+          return historyHTML;
+        }).join('');
 
         displaySection('#current-plan', activePlansHTML, 'Sem Pacotes Vinculados');
         displaySection('#history', historyPlansHTML, 'Sem Pacotes Anteriores');
@@ -227,7 +263,7 @@ $(document).ready(() => {
     if (content.length > 0) {
       $(sectionId).html(content);
     } else {
-      $(sectionId).html(`<div class="col-12 text-center">${defaultMessage}</div>`);
+      $(sectionId).html(`<div class="col-12 text-center"> ${defaultMessage}</div> `);
     }
   };
 
@@ -239,13 +275,16 @@ $(document).ready(() => {
     modal.find('.modal-title').text(`Editando Aluno #${alunoId}`);
     $('#error-message').text('').hide();
 
-    normal_request(`/backend/alunos/ver/${alunoId}`, {}, 'GET', csrftoken)
+    normal_request(`/backend/alunos/ver/${alunoId} `, {}, 'GET', csrftoken)
       .then(response => {
         const dados = response.dados;
         input_email.val(dados.email);
         input_nome.val(dados.nome);
+        select_sexo.val(dados.sexo).trigger("change");
         input_cpf.val(dados.cpf).unmask();
+        input_nascimento.val(dados.nascimento);
         input_celular.val(dados.celular).unmask();
+
         btnGravar.val(dados.id);
         modal.modal("show");
 
@@ -259,30 +298,38 @@ $(document).ready(() => {
   * Abre o modal de remoção do aluno através da ID existente no backend.
   * @param {number} planId - O ID do aluno a ser deletado.
   */
-  const openDeleteModal = (planId) => {
-    alertavel.find('.modal-body').empty();
-    alertavel.find('.modal-footer').empty();
+  const openDeleteModal = (alunoId) => {
+    // Primeiro verifica se o aluno tem contratos ativos ou histórico de contratos
+    normal_request(`/backend/alunos/${alunoId}/pacotes/buscar`, {}, 'GET', csrftoken)
+      .then(response => {
+        const contratosAtivos = response.dados.some(contrato => contrato.ativo === 'S');
+        const historicoExistente = response.historico && response.historico.length > 0;
 
-    alertavel.find('.modal-body').html("Tem certeza que deseja deletar o aluno ?");
-    alertavel.find('.modal-footer').html(`<button class="btn confirm-delete">Deletar</button>`);
-    alertavel.modal("show");
+        if (contratosAtivos || historicoExistente) {
+          // Se tem contrato ativo ou histórico, mostra uma mensagem de erro
+          alertavel.find('.modal-body').html("O aluno não pode ser excluído pois possui contratos ativos ou um histórico de contratos vinculados.");
+          alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
+          alertavel.modal("show");
+        } else {
+          // Se não tem contrato ativo nem histórico, mostra o modal de confirmação de exclusão
+          alertavel.find('.modal-body').html("Tem certeza que deseja deletar o aluno?");
+          alertavel.find('.modal-footer').html(`<button class="btn confirm-delete" data-aluno-id="${alunoId}">Deletar</button>`);
+          alertavel.modal("show");
 
-    $(".confirm-delete").off("click").click(() => {
-      normal_request(`/backend/alunos/deletar/${planId}`, {}, 'DELETE', csrftoken)
-        .then(response => {
-          const successMessage = response.msg || ''
-
-          if (successMessage.includes('O registro foi deletado com sucesso!')) {
-            alertavel.find('.modal-body').html(`O registro foi deletado com sucesso!`);
-            alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-            carregar_dados();
-          } else {
-            alertavel.find('.modal-body').html('Não foi possível remover o cadastro do aluno', response.msg);
-            alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-          }
-        })
-        .catch(handleError);
-    });
+          $(".confirm-delete").off("click").click(function () {
+            const id = $(this).attr("data-aluno-id");
+            normal_request(`/backend/alunos/deletar/${id}`, {}, 'DELETE', csrftoken)
+              .then(response => {
+                alertavel.find('.modal-body').html(response.msg);
+                alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
+                carregar_dados();
+                alertavel.modal("show");
+              })
+              .catch(handleError);
+          });
+        }
+      })
+      .catch(handleError);
   };
 
   /**
@@ -293,13 +340,13 @@ $(document).ready(() => {
     alertavel.find('.modal-body').empty();
     alertavel.find('.modal-footer').empty();
 
-    alertavel.find('.modal-body').html("Tem certeza que deseja cancelar o contrato ?");
-    alertavel.find('.modal-footer').html(`<button class="btn confirm-disabled">Cancelar</button>`);
+    alertavel.find('.modal-body').html("Tem certeza que deseja desativar o contrato ?");
+    alertavel.find('.modal-footer').html(`<button class="btn confirm-disabled">Desativar</button>`);
     alertavel.modal("show");
     modal_view.modal('hide');
 
     $(".confirm-disabled").off("click").click(() => {
-      normal_request(`/backend/pacotes/cancelar_contrato/${planId}`, {}, 'put', csrftoken)
+      normal_request(`/backend/pacotes/cancelar_contrato/${planId} `, {}, 'put', csrftoken)
         .then(response => {
           const successMessage = response.msg || ''
 
@@ -319,9 +366,9 @@ $(document).ready(() => {
   * Valida o formulário antes de Gravar os dados do Alunos.
   * @param {Array} formsData - Um array contendo os elementos do formulário.
   */
-  const validateForm = (formsData, tipo) => {
+  const validateForm = (formsData, alert) => {
     if (formsData.some(form => !form || form.val().trim() === '')) {
-      alertError.text('Todos os campos devem ser preenchidos.').show();
+      $("#error-message").text('Todos os campos devem ser preenchidos.').show();
       return false;
     }
 
@@ -333,21 +380,20 @@ $(document).ready(() => {
    */
   const gravarFormAluno = () => {
     const formsData = [input_nome];
-
-    if (validateForm(formsData)) {
+    if (validateForm(formsData, alertError)) {
       normal_request('/backend/alunos/criar', {
         celular: input_celular.val().replaceAll('(', '').replaceAll(')', '').replaceAll('-', '').replaceAll(' ', ''),
         cpf: input_cpf.val().replaceAll('.', '').replaceAll('-', ''),
         nome: input_nome.val(),
         email: input_email.val(),
-        sexo: input_sexo.val(),
-        nascimento: input_nascimento.val(),
+        sexo: select_sexo.val(),
+        nascimento: input_nascimento.val() === '' ? null : input_nascimento.val(),
         ativo: 'S'
       }, 'POST', csrftoken)
         .then(response => {
           if (!response.erro) {
             alertavel.find(".modal-body").text("Dados Gravados com Sucesso!");
-            alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
+            alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button> `);
             alertavel.modal("show");
             carregar_dados();
             modal.modal("hide");
@@ -363,31 +409,45 @@ $(document).ready(() => {
   /**
    * Grava o vinculo entre aluno e pacote no backend.
    */
-  const gravarPacoteAluno = (pacoteId) => {
-    const aluno = $("#aluno_nome");
-    const data_contratacao = $("#contratacao");
-    const pacote = $("#pacotes");
-    const formsData = [aluno, data_contratacao, pacote];
+  const gravarPacoteAluno = async (pacoteId, tipo, dados_renovacao) => {
+    // Construção do objeto dados baseado no tipo
+    let dados = {
+      aluno: tipo === 'renovacao' ? dados_renovacao.aluno : $("#aluno_nome").data('id'),
+      data_contratacao: tipo === 'renovacao' ? dados_renovacao.data_contratacao : $("#contratacao").val(),
+      ativo: 'S'
+    };
 
-    if (validateForm(formsData)) {
-      normal_request(`/backend/pacotes/${pacoteId}/contratar`, {
-        aluno: aluno.data('id'),
-        data_contratacao: data_contratacao.val(),
-        ativo: 'S'
-      }, 'POST', csrftoken)
-        .then(response => {
-          if (!response.erro) {
-            alertavel.find(".modal-body").text("Dados Gravados com Sucesso!");
-            alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-            alertavel.modal("show");
-            carregar_dados();
-            modal_plans.modal("hide");
-          } else {
-            alertavel.find(".modal-body").text(response.erro);
-            alertavel.modal("show");
-          }
-        })
-        .catch(handleError);
+    console.log(dados_renovacao);
+
+    // Validação específica para renovação
+    if (tipo === 'renovacao' && (!dados_renovacao.data_contratacao || dados_renovacao.data_contratacao.trim() === '')) {
+      $("#error-message-contratos").text('A nova data de contratação não pode ser vazia para renovar.').show();
+      return;
+    }
+
+    // Validação para tipo diferente de renovação
+    if (tipo !== 'renovacao') {
+      const formsData = [$("#aluno_nome"), $("#contratacao"), $("#pacotes")];
+      if (!validateForm(formsData, $("#error-message-pacotes"))) return;
+    }
+
+    try {
+      const response = await normal_request(`/backend/pacotes/${pacoteId}/contratar`, dados, 'POST', csrftoken);
+      // Manipulação de resposta
+      const message = response.erro ? response.erro : "Dados Gravados com Sucesso!";
+      alertavel.find(".modal-body").text(message);
+      const footerHtml = response.erro ? '' : `<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`;
+      alertavel.find('.modal-footer').html(footerHtml);
+      alertavel.modal("show");
+
+      // Se não houver erro, atualize os dados e feche o modal
+      if (!response.erro) {
+        carregar_dados();
+        modal_plans.modal("hide");
+        modal_view.modal("hide");
+      }
+    } catch (error) {
+      handleError(error); // Tratar erro de requisição
     }
   };
 
@@ -398,14 +458,14 @@ $(document).ready(() => {
   const editarFormAluno = (alunoId) => {
     const formsData = [input_nome, input_email, input_cpf, input_celular];
 
-    if (validateForm(formsData, 'Editar')) {
+    if (validateForm(formsData, alertError)) {
       normal_request(`/backend/alunos/atualizar/${alunoId}`, {
         celular: input_celular.val().replaceAll('(', '').replaceAll(')', '').replaceAll('-', '').replaceAll(' ', ''),
         cpf: input_cpf.val().replaceAll('.', '').replaceAll('-', ''),
         nascimento: input_nascimento.val(),
         email: input_email.val(),
         nome: input_nome.val(),
-        sexo: input_sexo.val(),
+        sexo: select_sexo.val(),
         ativo: 'S'
       }, 'PUT', csrftoken)
         .then(response => {
@@ -437,13 +497,7 @@ $(document).ready(() => {
   */
   const btnVinculoClickHandler = (event) => {
     const { value } = event.target;
-    const aluno = $("#aluno_nome");
-    const pacote = $("#pacotes");
-    const data_contratacao = $("#contratacao");
-    const formsData = [aluno, data_contratacao, pacote];
-
-    validateForm(formsData);
-    gravarPacoteAluno(value);
+    gravarPacoteAluno(value, 'gravacao', {});
   };
 
   /**
@@ -455,6 +509,7 @@ $(document).ready(() => {
 
     modal.find('input, select').val('');
     modal.find('.modal-title').text('Criação de Alunos');
+    select_sexo.val('').trigger("change");
 
     btnGravar.val("-1");
 
@@ -513,6 +568,39 @@ $(document).ready(() => {
   const btnGravar = $("#Gravar").click(btnGravarClickHandler);
   const btnGravarVinculo = $("#GravarVinculo").click(btnVinculoClickHandler);
   const btnNewAluno = $("#new_aluno").click(btnNewAlunoClickHandler);
+
+  $(document).on('click', '.renovar_pacote', function () {
+    console.log($(this));
+    // Pega o ID do pacote que está sendo renovado.
+    const pacoteId = $(this).data('id');
+
+    // Calcula o primeiro dia do próximo mês.
+    const hoje = new Date();
+    const primeiroDiaProximoMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 1);
+
+    // Formata a data para o formato apropriado (yyyy-mm-dd).
+    const dataFormatada = primeiroDiaProximoMes.toISOString().split('T')[0];
+
+    // Seleciona o campo de data de renovação correspondente ao pacote e atualiza seu valor.
+    $(`#divRenovacao-${pacoteId} input[name='data_contratacao']`).val(dataFormatada);
+    $(`#divRenovacao-${pacoteId}`).css('display', 'block');
+  });
+
+  $(document).on('click', '.gravar-renovacao', function () {
+    const id = $(this).data('id');
+    const pacote_id = $(this).data('pacote');
+    const nova_data = $(`#nova_contratacao-${pacote_id}`).val();
+    const pacote = $(this).data('pacote');
+
+    const dados = {
+      data_contratacao: nova_data,
+      aluno: $(this).data('aluno'),
+    }
+
+    console.log(nova_data)
+
+    gravarPacoteAluno(pacote, 'renovacao', dados);
+  });
 
   carregar_dados();
 });

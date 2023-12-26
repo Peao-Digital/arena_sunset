@@ -14,6 +14,27 @@
   z-index: 99999;
 }
 
+.legenda {
+  display: flex;
+  justify-content: center;
+}
+
+.div_aula_avulsa {
+  background-color: #ff5722;
+  color: white !important;
+  padding: 5px;
+  border-radius: 5px;
+  margin: 5px;
+}
+
+.div_aula_regular {
+  background-color: #0073e6;
+  color: white !important;
+  padding: 5px;
+  border-radius: 5px;
+  margin: 5px;
+}
+
 .btn-horario:hover,
 .btn-horario:focus,
 .btn-horario:active,

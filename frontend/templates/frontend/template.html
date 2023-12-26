@@ -43,7 +43,6 @@
 
       <div class="sidebar-body">
         <ul class="Btn-list">
-
           <li>
             <a class="btn-list-sidebar btn-list-sidebar-active" href="/">
               <i class="icons fa-solid fa-calendar-days"></i>
@@ -65,33 +64,25 @@
               <span class="list-title">Pacotes</span>
             </a>
           </li>
-
+          
           <li>
             <a class="btn-list-sidebar" href="{% url 'frontend:Criar usuário' %}">
               <i class="icons fa-solid fa-clipboard-user"></i>
               <span class="list-title">Colaboradores</span>
             </a>
           </li>
+          {% endif %}
 
-          <!--<li>
-            <a class="btn-list-sidebar" href="#">
-              <i class="icons fa-solid fa-file-pdf"></i>
-              <span class="list-title">Relatórios</span>
-            </a>
-          </li>-->
-
-          {% elif perfil_atendimento %}
-
+          {% if perfil_atendimento or perfil_professor %}
           <li>
             <a class="btn-list-sidebar" href="{% url 'frontend:Criar aluno' %}">
               <i class="icons fa-solid fa-users"></i>
               <span class="list-title">Alunos</span>
             </a>
           </li>
-
           {% endif %}
-        </ul>
 
+        </ul>
       </div>
 
     </nav>
@@ -115,14 +106,6 @@
 
           <ul class="dropdown-menu">
             {% if user.is_authenticated %}
-
-            {% if perfil_administrador %}
-            <li><a class="dropdown-item" target="_self" href="{% url 'frontend:administracao' %}">Administração</a></li>
-            {% endif %}
-
-            {% if user.is_superuser %}
-            <li><a class="dropdown-item" target="_blank" href="{% url 'admin:index' %}">Acessar o Django</a></li>
-            {% endif %}
 
             <li>
               <form method="post" style="margin-bottom: 0;" action="{% url 'frontend:logout' %}">

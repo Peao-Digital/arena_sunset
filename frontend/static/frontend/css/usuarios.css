@@ -4,71 +4,100 @@
   align-items: center;
 }
 
-.input-preview__src {
+.divFoto {
+  width: 100%;
+  flex-direction: column !important;
+  align-content: center !important;
+  justify-content: center;
+  align-items: center;
+}
+
+.image-button .icon-image {
+  font-size: 5rem;
+}
+
+.image-input {
+  text-align: center;
+}
+
+.image-input input {
   display: none;
 }
 
-.input-preview {
-  border: dashed #314473 0.175em;
-  border-radius: 0.5em;
-  width: 20vw;
-  height: 250px;
+.image-input label {
   display: flex;
-  background-size: contain;
-  background-repeat: no-repeat;
-  background-position: center;
-  position: relative;
-  transition: ease-in-out 750ms;
+  color: #FFF;
+  background: #060a14;
+  padding: 0.3rem 0.6rem;
+  font-size: 115%;
+  cursor: pointer;
+  width: 100%;
+  height: 20vh;
+  border: 1px solid #182239;
+  flex-direction: column;
+  flex-wrap: wrap;
   align-content: center;
-  align-items: center;
   justify-content: center;
+  align-items: center;
 }
 
-.input-preview::before {
-  font-family: "Font Awesome 5 Free";
-  font-size: 4rem;
-  font-weight: 900;
-  content: "\f030";
-  position: absolute;
-  top: 14%;
-  left: 0;
-  width: 100%;
+.image-input label i {
+  font-size: 125%;
+  margin-right: 0.3rem;
+}
+
+.image-input label:hover i {
+  animation: shake 0.35s;
+}
+
+.image-input img {
+  max-width: 50%;
+  display: none;
+  border: 1px solid #182239;
+  border-radius: 5px;
+}
+
+.image-input span {
+  display: none;
+  cursor: pointer;
+  color: #ff5f06;
+  font-weight: bold;
+  padding: 5px;
+  border-radius: 5px;
   text-align: center;
-  color: #314473;
-  cursor: pointer;
-}
-
-.input-preview::after {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 5px;
   position: absolute;
-  top: 50%;
-  left: 0;
-  width: 100%;
-  text-align: center;
-  transform: translateY(50%);
-  content: "Escolha a Foto do usuário...";
-  font-size: 1em;
-  color: #314473;
-  cursor: pointer;
 }
 
-.has-image::before {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgb(50 50 50 / 44%);
-  content: " ";
-  transition: ease-in-out 750ms;
-  cursor: pointer;
+.image-input span:hover {
+  color: #ffffff;
+  font-weight: bold;
+  background: linear-gradient(180deg, #FF6F02 0%, #FE5408 100%);
+  border: 1px solid #FF5722;
+
 }
 
-.has-image::after {
-  font-family: "Font Awesome 5 Free";
-  font-size: 4rem;
-  font-weight: 900;
-  content: "\f030";
-  color: #3144734f;
-  top: 15%;
-  cursor: pointer;
+@keyframes shake {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  25% {
+    transform: rotate(10deg);
+  }
+
+  50% {
+    transform: rotate(0deg);
+  }
+
+  75% {
+    transform: rotate(-10deg);
+  }
+
+  100% {
+    transform: rotate(0deg);
+  }
 }

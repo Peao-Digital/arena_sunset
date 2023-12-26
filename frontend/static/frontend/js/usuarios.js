@@ -14,6 +14,9 @@ $(document).ready(() => {
   const input_sobrenome = $("#sobrenome");
   const input_conf_senha = $("#conf_senha");
 
+  const fileImage = $('.input-preview__src');
+  const filePreview = $('.input-preview');
+
   input_cpf.mask('000.000.000-00');
 
   const select_grupo = $("#grupo").select2({
@@ -237,6 +240,7 @@ $(document).ready(() => {
             alertavel.find(".modal-body").text("Dados editados com sucesso!");
             modal.modal("hide");
             alertavel.modal("show");
+            carregar_dados();
           } else {
             alertavel.find(".modal-body").text(response.erro);
             alertavel.modal("show");
@@ -296,6 +300,33 @@ $(document).ready(() => {
       .catch(handleError);
   };
 
+  $('#imageInput').on('change', function () {
+    let $input = $(this);
+
+    if ($input.val().length > 0) {
+      let fileReader = new FileReader();
+      fileReader.onload = function (data) {
+        $('.image-preview').attr('src', data.target.result);
+      }
+      fileReader.readAsDataURL($input.prop('files')[0]);
+      $('.image-button').css('display', 'none');
+      $('.image-preview').css('display', 'flex');
+      $('.change-image').css('display', 'flex');
+    }
+  });
+
+  $('.change-image').on('click', function () {
+    let $control = $(this);
+
+    $('#imageInput').val('');
+    let $preview = $('.image-preview');
+
+    $preview.attr('src', '');
+    $preview.css('display', 'none');
+    $control.css('display', 'none');
+    $('.image-button').css('display', 'flex');
+  });
+
   datatable.on("click", ".btn-delete", function () {
     const userId = $(this).data("id");
     openDeleteModal(userId);
@@ -309,7 +340,7 @@ $(document).ready(() => {
   });
 
   alertavel.on("click", ".close-modal", () => {
-    alertavel.find('.modal-footer').html(`< button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
+    alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
     alertavel.modal("hide");
   });
 

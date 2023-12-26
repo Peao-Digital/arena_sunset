@@ -123,29 +123,42 @@ $(document).ready(() => {
    * @param {number} planId - O ID do pacote a ser deletado.
    */
   const openDeleteModal = (planId) => {
-    alertavel.find('.modal-body').empty();
-    alertavel.find('.modal-footer').empty();
+    // Primeiro verifica se o pacote tem contratos ativos
+    normal_request(`/backend/pacotes/${planId}/contratos/buscar`, {}, 'GET', csrftoken)
+      .then(response => {
+        const contratosAtivos = response.dados.some(contrato => contrato.ativo === 'S');
+        const historicoExistente = response.historico && response.historico.length > 0;
 
-    alertavel.find('.modal-body').html("Tem certeza que deseja deletar o pacote ?");
-    alertavel.find('.modal-footer').html(`<button class="btn confirm-delete">Deletar</button>`);
-    alertavel.modal("show");
+        if (contratosAtivos || historicoExistente) {
+          // Se tem contrato ativo, mostra uma mensagem de erro
+          alertavel.find('.modal-body').html("O pacote não pode ser excluído pois possui contratos ativos ou histórico de contratos.");
+          alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
+          alertavel.modal("show");
+        } else {
+          // Se não tem contrato ativo, mostra o modal de confirmação de exclusão
+          alertavel.find('.modal-body').html("Tem certeza que deseja deletar o pacote?");
+          alertavel.find('.modal-footer').html(`<button class="btn confirm-delete" data-plan-id="${planId}">Deletar</button>`);
+          alertavel.modal("show");
 
-    $(".confirm-delete").off("click").click(() => {
-      normal_request(`/backend/pacotes/deletar/${planId}`, {}, 'DELETE', csrftoken)
-        .then(response => {
-          const successMessage = response.msg || ''
-
-          if (successMessage.includes('O registro foi deletado com sucesso!')) {
-            alertavel.find('.modal-body').html(`O registro foi deletado com sucesso!`);
-            alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-            carregar_dados();
-          } else {
-            console.error('Erro ao deletar pacote:', response.message);
-          }
-        })
-        .catch(handleError);
-
-    });
+          $(".confirm-delete").off("click").click(function () {
+            const id = $(this).attr("data-plan-id");
+            normal_request(`/backend/pacotes/deletar/${id}`, {}, 'DELETE', csrftoken)
+              .then(response => {
+                const successMessage = response.msg || '';
+                if (successMessage.includes('O registro foi deletado com sucesso!')) {
+                  alertavel.find('.modal-body').html(`O registro foi deletado com sucesso!`);
+                  alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
+                  carregar_dados();
+                } else {
+                  console.error('Erro ao deletar pacote:', response.message);
+                }
+                alertavel.modal("show");
+              })
+              .catch(handleError);
+          });
+        }
+      })
+      .catch(handleError);
   };
 
   /**

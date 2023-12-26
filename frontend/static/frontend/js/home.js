@@ -39,12 +39,14 @@ $(document).ready(function () {
    * @returns 
    */
   const card_professores = (professor) => {
+    const imagePath = "/static/frontend/img/professor.png";
+
     return `
       <div class="col-md-6 col-lg-4 col-sm-12 mb-3">
         <div class="card custom-cards-professores">
           <div class="card-body">
             <div class="div-foto mb-4">
-              <img src="" class="img-professor"/>
+              <img src="${imagePath}" class="img-professor"/>
             </div>
             <div class="div-nome mt-4">
               <h4>${professor.nome}</h4>
@@ -95,10 +97,26 @@ $(document).ready(function () {
     showDiv(divProfessores, [divCalendario, divTipoReserva, divReservaAvulsa, divReservaRegular]);
     normal_request('/backend/professores/listar', {}, 'GET', csrftoken)
       .then(response => {
-        response.dados.forEach((professor) => {
-          professores_card.append(card_professores(professor));
-        });
+        if (response.dados.length === 0) {
+          const html = `
+          <div class="col-md-12 col-lg-12 col-sm-12 mb-3">
+            <div class="card custom-cards-professores">
+              <div class="card-body">
+                <div class="div-nome mt-4 mb-4">
+                  <h3>Sem Professores cadastrados</h3>
+                </div>
+              </div>
+            </div>
+          </div>`;
 
+          professores_card.append(html);
+        } else {
+          response.dados.forEach((professor) => {
+            if(professor.ativo !== 'N'){
+              professores_card.append(card_professores(professor));
+            }
+          });
+        }
         $(".btn-select-professor").click((event) => {
           const { value } = event.target;
           storedInfo.professor = value;
@@ -140,9 +158,9 @@ $(document).ready(function () {
   };
 
   /**
- * Função de carregamento dos pagantes
- * @param {*} $form Formulário jQuery onde os selects serão carregados
- */
+   * Função de carregamento dos pagantes
+   * @param {*} $form Formulário jQuery onde os selects serão carregados
+   */
   const carregar_pagantes = async ($form) => {
     try {
       const defaultOption = createOption('', 'Pagante', true, true);
@@ -177,9 +195,10 @@ $(document).ready(function () {
     // Requisição para obter pacotes do aluno
     normal_request(`/backend/alunos/${id}/pacotes/buscar`, {}, 'GET', csrftoken)
       .then(json => {
-        const options = json.dados
-          .filter(({ ativo }) => ativo !== 'N')
-          .map(({ pacote__id, pacote__nome, pacote__qtd_participantes }) => ({
+
+        const options = json.dados.filter(({ ativo, vencido }) => vencido !== 'S' && ativo !== 'N')
+          .map(({ pacote__id, pacote__nome, pacote__qtd_participantes, vencido }) => ({
+            vencido: vencido,
             valor: pacote__id,
             nome: pacote__nome,
             qtdParticipantes: pacote__qtd_participantes,
@@ -201,9 +220,9 @@ $(document).ready(function () {
   };
 
   /**
- * Carrega a lista de alunos em um elemento de seleção (dropdown).
- * @param {jQuery} selectElement O elemento de seleção (dropdown) jQuery.
- */
+   * Carrega a lista de alunos em um elemento de seleção (dropdown).
+   * @param {jQuery} selectElement O elemento de seleção (dropdown) jQuery.
+   */
   const carregar_alunos = async (selectElement) => {
     try {
       // Inicializa o select2 no elemento de seleção
@@ -554,7 +573,19 @@ $(document).ready(function () {
           alertavel.find('.modal-body').empty();
           alertavel.find('.modal-footer').empty();
 
-          alertavel.find('.modal-body').html("Tem certeza que deseja cancelar a aula ?");
+          let html;
+          if (tipo === 'UNICA') {
+            html = `
+                  <div class="motivo">
+                      <textarea id="motivo-cancelamento-${id}" class="form-control" name="motivo" placeholder="Informe o motivo do cancelamento"></textarea>
+                      <div id="error-message-cancelamento" class="text-danger mt-2"></div>
+                  </div>
+              `;
+          } else {
+            html = `<p>Tem certeza que deseja deletar a reserva?</p>`;
+          }
+
+          alertavel.find('.modal-body').html(html);
           alertavel.find('.modal-footer').html(`<button class="btn confirm-delete cancelar-aula" value="${id}" data-tipo="${tipo}">Cancelar</button>`);
           alertavel.modal("show");
           modalEvento.modal("hide");
@@ -563,18 +594,19 @@ $(document).ready(function () {
       .catch(handleError);
   };
 
-  const cancelar_aula = (id, tipo) => {
+  const cancelar_aula = (id, tipo, motivo) => {
     const url_cancelar = `/backend/agenda/reserva_${tipo === 'UNICA' ? 'unica' : 'normal'}/cancelar/${id}`;
 
-    normal_request(url_cancelar, {}, 'PUT', csrftoken)
+    normal_request(url_cancelar, { motivo: motivo }, 'PUT', csrftoken)
       .then(response => {
         const successMessage = response.msg || ''
 
         if (successMessage.includes("Reserva cancelada!")) {
-          console.log("a");
           alertavel.find('.modal-body').html(`O registro foi cancelado com sucesso!`);
           alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-          location.reload();
+          alertavel.on('hidden.bs.modal', function (e) {
+            location.reload();
+          });
         } else {
           alertavel.find('.modal-body').html('Não foi possível cancelar a aula', response.msg);
           alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
@@ -828,6 +860,7 @@ $(document).ready(function () {
 
         if (dataClicada < dataAtual) {
           alertavel.find(".modal-body").text("Selecione uma data válida!");
+          alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
           alertavel.modal("show");
         } else {
           storedInfo.data = info.date;
@@ -876,7 +909,15 @@ $(document).ready(function () {
   $(document).on('click', '.cancelar-aula', function () {
     const id = $(this).val();
     const tipo = $(this).data('tipo');
-    cancelar_aula(id, tipo);
+    let motivo = $(`#motivo-cancelamento-${id}`).val();
+
+    if (motivo === '' || motivo === null && tipo === 'UNICA') {
+      $("#error-message-cancelamento").text("É necessário informar um motivo para o cancelamento!").show();
+    } else {
+      cancelar_aula(id, tipo, motivo);
+    }
+
+
   });
 
   initializeCalendar();
