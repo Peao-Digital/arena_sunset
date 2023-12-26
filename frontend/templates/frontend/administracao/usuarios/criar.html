@@ -8,8 +8,6 @@
 <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/usuarios.css' %}">
 <link rel="stylesheet" type="text/css" href="{% static 'frontend/css/libs/select2.css' %}">
 
-<script src="{% static 'frontend/js/libs/datatables.js' %}"></script>
-<script src="{% static 'frontend/js/libs/datatables.min.js' %}"></script>
 <script src="{% static 'frontend/js/libs/jquery.mask.min.js' %}"></script>
 <script src="{% static 'frontend/js/libs/select2.js' %}"></script>
 <script src="{% static 'frontend/js/libs/select2.min.js' %}"></script>
@@ -23,8 +21,7 @@
     </div>
 
     <div class="table tabela_dados table-users mt-3">
-      <table id="datatable-user" class="table table-dark table-responsive display nowrap"
-        aria-describedby="table-user">
+      <table id="datatable-user" class="table table-dark table-responsive display nowrap" aria-describedby="table-user">
         <thead>
           <tr>
             <th>Nome</th>
@@ -54,11 +51,14 @@
         <form class="formulario" id="formulario" enctype="multipart/form-data">
           <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="nome" class="form-control" type="text" name="nome" placeholder="Nome" required maxlength="50">
+              <label for="nome" class="form-label"><b>Nome</b></label>
+              <input id="nome" class="form-control" type="text" name="nome" placeholder="Digite o Nome" required
+                maxlength="50">
             </div>
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="sobrenome" class="form-control" type="text" name="sobrenome" placeholder="Sobrenome" required
+              <label for="sobrenome" class="form-label"><b>Sobrenome</b></label>
+              <input id="sobrenome" class="form-control" type="text" name="sobrenome" placeholder="Digite o Sobrenome"
                 maxlength="50">
             </div>
           </div>
@@ -66,36 +66,42 @@
           <div class="row">
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="usuario" class="form-control" type="text" name="usuario" placeholder="Usuário de login"
+              <label for="usuario" class="form-label"><b>Usuário</b></label>
+              <input id="usuario" class="form-control" type="text" name="usuario" placeholder="Digite o Usuário"
                 required maxlength="50">
             </div>
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="email" class="form-control" type="email" name="email" placeholder="Email"
-                autocomplete="username" required maxlength="50">
+              <label for="email" class="form-label"><b>Email</b></label>
+              <input id="email" class="form-control" type="email" name="email" placeholder="Digite o Email"
+                autocomplete="username" maxlength="50">
             </div>
           </div>
 
           <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="senha" class="form-control" type="password" name="senha" placeholder="Senha de login" required
+              <label for="email" class="form-label"><b>Senha</b></label>
+              <input id="senha" class="form-control" type="password" name="senha" placeholder="Digite a Senha" required
                 autocomplete="new-password" maxlength="50">
             </div>
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <label for="email" class="form-label"><b>Confirmação de Senha</b></label>
               <input id="conf_senha" class="form-control" type="password" name="conf_senha"
-                placeholder="Confirmação de senha" required autocomplete="new-password" maxlength="50">
+                placeholder="Digite a Confirmação de senha" required autocomplete="new-password" maxlength="50">
             </div>
           </div>
 
           <div class="row">
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
-              <input id="cpf" class="form-control" type="text" name="cpf" placeholder="CPF" required>
+              <label for="nome" class="form-label"><b>CPF</b></label>
+              <input id="cpf" class="form-control" type="text" name="cpf" placeholder="Digite o CPF">
             </div>
 
             <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 mb-2">
+              <label for="nome" class="form-label"><b>Grupo</b></label>
               <select id="grupo" class="form-control" name="grupo" required style="width: 100%">
-                <option></option>
+                <option selected disabled>Selecione o Grupo</option>
               </select>
             </div>
           </div>

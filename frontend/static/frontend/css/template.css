@@ -161,7 +161,7 @@ main .page-wrapper {
 }
 
 .btn-list-sidebar:hover,
-.btn-list-sidebar:active {
+.btn-list-sidebar-active {
   color: #FE5408;
 }
 
@@ -240,7 +240,7 @@ ul.dropdown-menu.show::after {
 .form-control,
 .form-select:focus,
 .form-control:focus {
-  color: #d0d6e1;
+  color: #6176ab;
   background-color: #0d1529;
   border-color: #314473;
   border-radius: 2px;
@@ -248,12 +248,12 @@ ul.dropdown-menu.show::after {
 }
 
 .form-control::placeholder {
-  color: #d0d6e1;
+  color: #6176ab;
   opacity: 1;
 }
 
 .form-control:disabled {
-  background-color: #314473;
+  background-color: #060a14;
   opacity: 1;
 }
 
