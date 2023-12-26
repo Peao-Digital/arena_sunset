@@ -16,7 +16,6 @@ urlpatterns = [
   path('usuarios/trocar_senha', UsuarioSenhaView.as_view(http_method_names=['put']), name="Trocar senha de usuário"),
 
   path('professores/listar', ProfessorView.as_view(http_method_names=['get']), name="Listar os professores"),
-  path('professores/<int:id>/horarios', ProfessorView.as_view(http_method_names=['get']), name="Listar os horarios do professor"),
 
   path('alunos/ativar_desativar/<int:id>', AlunoAtivacaoView.as_view(http_method_names=['put']), name="Ativar/desativar aluno"),
   path('alunos/ver/<int:id>', AlunoView.as_view(http_method_names=['get']), name="Ver aluno"),

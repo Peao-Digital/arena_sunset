@@ -331,9 +331,6 @@ class ProfessorSrv():
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
-  @staticmethod
-  def ver_horarios(request, id):
-    pass
 
 class PacoteSrv():
 
@@ -781,7 +778,7 @@ class AgendaSrv():
       for participante in participantes:
         if participante.contratante.nome not in contratantes:
           contratantes[participante.contratante.nome] = []
-        contratantes[participante.contratante.nome].append({'id': participante.participante.id, 'nome': participante.participante.nome})
+        contratantes[participante.contratante.nome].append({'id': participante.participante.id, 'nome': participante.participante.nome, 'celular': participante.participante.celular})
       return contratantes
   
     try:
@@ -982,7 +979,8 @@ class AgendaSrv():
       alunos = [
         {'id': d.participante.id, 'nome': d.participante.nome,
          'contratante_id': d.contratante.id,
-         'contratante_nome': d.contratante.nome} for d in participantes
+         'contratante_nome': d.contratante.nome,
+         'celular': d.participante.celular} for d in participantes
       ]
 
       pode_editar = f_usuario_possui_grupo(request.user, 'ADM_SITE') or f_usuario_possui_grupo(request.user, 'ATENDIMENTO') or reserva.aula.professor.id == request.user.id

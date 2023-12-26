@@ -79,10 +79,7 @@ class UsuarioSenhaView(View):
 
 class ProfessorView(View):
   def get(self, request, id = None):
-    if id is None:
-      res, status = ProfessorSrv.listar(request)
-    else:
-      res, status = ProfessorSrv.ver_horarios(request, id)
+    res, status = ProfessorSrv.listar(request)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
 class AlunoView(View):
