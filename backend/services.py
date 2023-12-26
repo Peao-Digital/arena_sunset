@@ -319,6 +319,7 @@ class ProfessorSrv():
       for dado in dados:
         d_json.append({
           'id': dado.id, 'usuario': dado.username,
+          'ativo': 'S' if dado.is_active else 'N',
           'nome': f_nome_usuario(dado)
         })
 
@@ -694,12 +695,13 @@ class PacoteAlunoSrv():
     if pacote_obj is None:
       return True
     
-    #contrato_obj = AlunoPacote.objects.filter(pacote=pacote_obj, aluno=contratante_obj, ativo='S')
+    contrato_obj = AlunoPacote.objects.filter(pacote=pacote_obj, aluno=contratante_obj, ativo='S')
+    if contrato_obj.exists() is False:
+      return False
+    
+    contrato_obj = contrato_obj[0]
 
-    #if contrato_obj.exists() is False:
-    #  return False
-    #
-    #contrato_obj = contrato_obj[0]
+    #FALTA
 
     return True
 
