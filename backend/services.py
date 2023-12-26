@@ -701,7 +701,7 @@ class PacoteAlunoSrv():
     
     contrato_obj = contrato_obj[0]
 
-    #FALTA
+    #FALTA FAZER
 
     return True
 
@@ -722,7 +722,7 @@ class AgendaSrv():
     return True
   
     if dia_semana is None:
-      pass
+      dia_semana = (f_contruir_data(data)).weekday()
     else:
       pass
 
@@ -774,9 +774,24 @@ class AgendaSrv():
   
   @staticmethod
   def buscar_reservas(request):
+    def fcontratantes(participantes):
+      contratantes = {}
+
+      for participante in participantes:
+        if participante.contratante.nome not in contratantes:
+          contratantes[participante.contratante.nome] = []
+        contratantes[participante.contratante.nome].append({'id': participante.participante.id, 'nome': participante.participante.nome})
+      return contratantes
+  
     try:
       data_inicial = request.GET.get('data_inicial', None)
       data_final = request.GET.get('data_final', None)
+
+      acesso = {
+        'perfil_administrador': f_usuario_possui_grupo(request.user, 'ADM_SITE') or request.user.is_superuser,
+        'perfil_atendimento': f_usuario_possui_grupo(request.user, 'ATENDIMENTO'),
+        'perfil_professor': f_usuario_possui_grupo(request.user, 'PROFESSOR')
+      }
 
       filtros_reservas_especiais = {
         'especial__isnull': False,
@@ -823,6 +838,10 @@ class AgendaSrv():
         for data in lista_datas:
           dt_obj = f_contruir_data(data)
           if dt_obj >= recorrencia.criado_em.date():
+
+            participantes = AulaParticipante.objects.filter(aula=recorrencia.aula)
+            contratantes = fcontratantes(participantes)
+
             dados.append({
               'id': recorrencia.id,
               'data': data,
@@ -832,12 +851,17 @@ class AgendaSrv():
               'professor': {'id': recorrencia.aula.professor.id, 'nome': f_nome_usuario(recorrencia.aula.professor)},
               'dia_semana': recorrencia.dia_semana,
               'tipo': 'NORMAL',
-              'criado_em': recorrencia.criado_em.date()
+              'criado_em': recorrencia.criado_em.date(),
+              'contratantes': contratantes
             })
 
       #Buscando as reservas unicas
       reservas_unicas = Reserva.objects.select_related().filter(**filtros_reservas_unicas)
       for reserva in reservas_unicas:
+
+        participantes = AulaParticipante.objects.filter(aula=reserva.aula)
+        contratantes = fcontratantes(participantes)
+
         dados.append({
           'id': reserva.id,
           'data': reserva.data,
@@ -846,10 +870,11 @@ class AgendaSrv():
           'descricao': '',
           'professor': {'id': reserva.aula.professor.id, 'nome': f_nome_usuario(reserva.aula.professor)},
           'dia_semana': '',
-          'tipo': 'UNICA'
+          'tipo': 'UNICA',
+          'contratantes': contratantes
         })
 
-      return {'dados': dados}, 200
+      return {'dados': dados, 'acesso': acesso}, 200
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
