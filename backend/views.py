@@ -101,6 +101,11 @@ class AlunoView(View):
   def delete(self, request, id):
     res, status = AlunoSrv.deletar(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
+  
+class ContratanteView(View):
+  def get(self, request, id = None):
+    res, status = PacoteAlunoSrv.listar_contratantes(request)
+    return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
 
 class AlunoAtivacaoView(View):
   def put(self, request, id):

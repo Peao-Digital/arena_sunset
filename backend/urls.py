@@ -20,6 +20,7 @@ urlpatterns = [
   path('alunos/ativar_desativar/<int:id>', AlunoAtivacaoView.as_view(http_method_names=['put']), name="Ativar/desativar aluno"),
   path('alunos/ver/<int:id>', AlunoView.as_view(http_method_names=['get']), name="Ver aluno"),
   path('alunos/listar', AlunoView.as_view(http_method_names=['get']), name="Buscar alunos"),
+  path('alunos/contratantes', ContratanteView.as_view(http_method_names=['get']), name="Buscar alunos contratantes/pagantes"),
   path('alunos/criar', AlunoView.as_view(http_method_names=['post']), name="Criar aluno"),
   path('alunos/atualizar/<int:id>', AlunoView.as_view(http_method_names=['put']), name="Atualizar aluno"),
   path('alunos/deletar/<int:id>', AlunoView.as_view(http_method_names=['delete']), name="Deletar aluno"),

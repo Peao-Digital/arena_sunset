@@ -331,7 +331,6 @@ class ProfessorSrv():
     except Exception as e:
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
-
 class PacoteSrv():
 
   @staticmethod
@@ -457,7 +456,7 @@ class AlunoSrv():
   @staticmethod
   def buscar(request):
     try:
-      dados = Aluno.objects.values('id', 'nome', 'cpf', 'celular', 'email', 'ativo', 'nascimento', 'sexo').all()
+      dados = Aluno.objects.values('id', 'nome', 'cpf', 'celular', 'email', 'ativo', 'nascimento', 'sexo').all().order_by('nome')
 
       d_json = []
       for dado in dados:
@@ -688,6 +687,26 @@ class PacoteAlunoSrv():
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
+  def listar_contratantes(request):
+    try:
+      dados = AlunoPacote.objects.values(
+        'aluno__id', 'aluno__nome', 'aluno__cpf', 'aluno__celular', 'aluno__email', 'aluno__ativo', 'aluno__nascimento', 'aluno__sexo'
+      ).filter(ativo='S').distinct().order_by('aluno__nome')
+
+      d_json = []
+      for dado in dados:
+        d = {}
+        for k in dado.keys():
+          d[k.replace('aluno__', '')] = dado[k]
+        d_json.append(d)
+
+      return {'dados': d_json}, 200
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+
+  @staticmethod
   def pode_reservar(pacote_obj, contratante_obj, data, dia_semana):
     if pacote_obj is None:
       return True
@@ -699,7 +718,26 @@ class PacoteAlunoSrv():
     contrato_obj = contrato_obj[0]
     data = datetime.today().date() if data is None else data
 
-    #FALTA FAZER
+    filtros_recorrencias = {
+      'dia_semana': dia_semana,
+      'aula__aulaparticipante__pacote': pacote_obj,
+      'ativo': 'S'
+    }
+
+    filtros_reservas = {
+      'aula__aulaparticipante__pacote': pacote_obj,
+      'ativo': 'S'
+    }
+
+    if dia_semana is None:
+      dia_semana = (f_contruir_data(data)).weekday()
+      filtros_recorrencias['dia_semana'] = dia_semana
+      filtros_reservas['data'] = data
+    else:
+      filtros_reservas['data__week_day'] = int(dia_semana) - 2
+
+    a1 = Recorrencia.objects.filter(**filtros_recorrencias)
+    a2 = Reserva.objects.filter(**filtros_reservas)
 
     return True
 
@@ -716,30 +754,27 @@ class AgendaSrv():
     obj_aulaAluno.save()
 
   @staticmethod
-  def horario_disponivel(data, dia_semana, hora_ini, hora_fim, apenas_especial = False):
-    return True
+  def horario_disponivel(data, hora_ini, hora_fim):
+    dth1, dth2 = construir_datahorario(data, hora_ini), construir_datahorario(data, hora_fim)
+
+    filtros_reservas_especiais1 = {
+      'dia_inteiro': 'N',
+      'data': data,
+      'data_horario_ini__range': (dth1, dth2),
+      'ativo': 'S'
+    }
+
+    filtros_reservas_especiais2 = {
+      'dia_inteiro': 'S',
+      'data': data,
+      'ativo': 'S'
+    }
+
+    a1 = Reserva.objects.filter(**filtros_reservas_especiais1)
+    a2 = Reserva.objects.filter(**filtros_reservas_especiais2)
+
+    return a1.exists() is False and a2.exists() is False
   
-    if dia_semana is None:
-      dia_semana = (f_contruir_data(data)).weekday()
-    else:
-      pass
-
-    #dth1, dth2 = construir_datahorario(data, hora_ini), construir_datahorario(data, hora_fim)
-
-    ##Conferindo os eventos especiais
-    #d1 = Reserva.objects.filter(data=data, especial__isnull=False, dia_inteiro='S', ativo='S')
-    #d2 = Reserva.objects.filter(data=data, data_horario_ini__range=(dth1, dth2), especial__isnull=False, dia_inteiro='N', ativo='S')
-
-    #disponivel = d1.exists() is False and d2.exists() is False
-
-    #if apenas_especial is False:
-    #  d3 = Reserva.objects.filter(data=data, data_horario_ini__range=(dth1, dth2), aula__isnull=False, ativo='S')
-    #  d4 = Recorrencia.objects.filter(horario_ini__range=(dth1, dth2), ativo='S')
-
-    #  disponivel = d1.exists() is False and d2.exists() is False and d3.exists() is False and d4.exists() is False
-
-    #return disponivel
-
   @staticmethod
   def professor_disponivel(professor, data, dia_semana, hora_ini, hora_fim):
     filtros_recorrencias = {
@@ -772,6 +807,21 @@ class AgendaSrv():
   
   @staticmethod
   def buscar_reservas(request):
+    def fdata_minima_vencimento(participantes):
+      #Buscar a data de vencimento dos contrantes da reserva para limitar as recorrenciais na agenda
+      #Adicionar a esta data os dias a mais de DIAS_INATIVAR_VENCIMENTO
+      data_minima = None
+
+      for participante in participantes:
+        data = AlunoPacote.objects.get(pacote=participante.pacote, aluno=participante.contrante, ativo='S').data_validade
+
+        if data_minima is None:
+          data_minima = data
+        
+        if data < data_minima:
+          data_minima = data
+      return data_minima + timedelta(settings.DIAS_INATIVAR_VENCIMENTO)
+
     def fcontratantes(participantes):
       contratantes = {}
 
@@ -780,7 +830,7 @@ class AgendaSrv():
           contratantes[participante.contratante.nome] = []
         contratantes[participante.contratante.nome].append({'id': participante.participante.id, 'nome': participante.participante.nome, 'celular': participante.participante.celular})
       return contratantes
-  
+   
     try:
       data_inicial = request.GET.get('data_inicial', None)
       data_final = request.GET.get('data_final', None)
@@ -838,8 +888,10 @@ class AgendaSrv():
 
           if dt_obj >= recorrencia.criado_em.date():
             participantes = AulaParticipante.objects.filter(aula=recorrencia.aula)
-            contratantes = fcontratantes(participantes)
+            #data_minima_vencimento = fdata_minima_vencimento(participantes)
 
+            #if dt_obj <= data_minima_vencimento:
+            contratantes = fcontratantes(participantes)
             dados.append({
               'id': recorrencia.id,
               'data': data,
@@ -856,7 +908,6 @@ class AgendaSrv():
       #Buscando as reservas unicas
       reservas_unicas = Reserva.objects.select_related().filter(**filtros_reservas_unicas)
       for reserva in reservas_unicas:
-
         participantes = AulaParticipante.objects.filter(aula=reserva.aula)
         contratantes = fcontratantes(participantes)
 
@@ -931,7 +982,7 @@ class AgendaSrv():
         obj_reserva.especial = obj_diaReservado
         obj_reserva.ativo = 'S'
 
-        horario_disponivel = AgendaSrv.horario_disponivel(data, None, hora_ini, hora_fim, True)
+        horario_disponivel = AgendaSrv.horario_disponivel(data, hora_ini, hora_fim)
         if horario_disponivel:
           obj_diaReservado.full_clean()
           obj_diaReservado.save()
@@ -1035,10 +1086,9 @@ class AgendaSrv():
         obj_reserva.dia_inteiro = dia_inteiro
         obj_reserva.aula = obj_aula
 
-        horario_disponivel = AgendaSrv.horario_disponivel(data, None, hora_ini, hora_fim)
         professor_disponivel = AgendaSrv.professor_disponivel(professor_obj, data, None, hora_ini, hora_fim)
 
-        if horario_disponivel and professor_disponivel:
+        if professor_disponivel:
           obj_aula.full_clean()
           obj_aula.save()
 
@@ -1074,8 +1124,6 @@ class AgendaSrv():
           obj_reserva.save()
 
           return {'id': obj_reserva.id}, 200
-        elif horario_disponivel is False:
-          return {'erro': 'Um registro com esta data/horário já existe!', "tipo_erro": "validacao"}, 400
         else:
           return {'erro': 'O professor selecionado ja possui este horário reservado!', "tipo_erro": "validacao"}, 400
         
@@ -1173,10 +1221,9 @@ class AgendaSrv():
         obj_recorrencia.dia_semana = dia_semana
         obj_recorrencia.dia_inteiro = dia_inteiro
 
-        horario_disponivel = AgendaSrv.horario_disponivel(None, dia_semana, hora_ini, hora_fim)
         professor_disponivel = AgendaSrv.professor_disponivel(professor_obj, None, dia_semana, hora_ini, hora_fim)
 
-        if horario_disponivel and professor_disponivel:
+        if professor_disponivel:
           obj_aula.full_clean()
           obj_aula.save()
 
@@ -1210,8 +1257,6 @@ class AgendaSrv():
           obj_recorrencia.save()
 
           return {'id': obj_recorrencia.id}, 200
-        elif horario_disponivel is False:
-          return {'erro': 'Um registro com esta data/horário já existe!', "tipo_erro": "validacao"}, 400
         else:
           return {'erro': 'O professor selecionado ja possui este horário reservado!', "tipo_erro": "validacao"}, 400
 

@@ -166,7 +166,7 @@ $(document).ready(function () {
       const defaultOption = createOption('', 'Pagante', true, true);
 
       // Requisição assíncrona para obter a lista de alunos
-      const response = await normal_request('/backend/alunos/listar', {}, 'GET', csrftoken);
+      const response = await normal_request('/backend/alunos/contratantes', {}, 'GET', csrftoken);
       const dadosFiltrados = response.dados.filter(val => val.ativo !== 'N');
 
       // Atualiza cada select de pagante no formulário
