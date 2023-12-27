@@ -183,13 +183,6 @@ $(document).ready(() => {
    * @param {number} userId - O ID do usuário a ser editado.
    */
   const editarFormUser = (userId) => {
-    input_cpf.val('');
-    input_nome.val('');
-    input_email.val('');
-    input_usuario.val('');
-    input_sobrenome.val('');
-    select_grupo.val('').trigger("change");
-
     const formsData = [input_nome, input_sobrenome, input_usuario, input_email, input_cpf, select_grupo];
 
     if (validateForm(formsData, 'Editar')) {
@@ -305,7 +298,6 @@ $(document).ready(() => {
     const id = $(this).data('id');
     normal_request(`/backend/usuarios/deletar/${id}`, {}, 'DELETE', csrftoken)
       .then(response => {
-        console.log()
         handleResponse(response, alertavel, 'Usuário deletado!');
       })
       .catch(response => handleError);
