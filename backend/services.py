@@ -234,6 +234,9 @@ class UsuarioSrv():
     try:
       with transaction.atomic():
         u_obj = User.objects.get(pk=id)
+        if Reserva.objects.filter(ativo='S', aula__professor=u_obj) or Recorrencia.objects.filter(ativo='S', aula__professor=u_obj):
+          return {'erro': 'O usuário não pode ser deletado porque possui agendamentos vinculados!'}, 200
+
         u_obj.delete()
       return {'msg': 'Usuário deletado!'}, 200
     except ObjectDoesNotExist  as e:
@@ -813,13 +816,14 @@ class AgendaSrv():
       data_minima = None
 
       for participante in participantes:
-        data = AlunoPacote.objects.get(pacote=participante.pacote, aluno=participante.contrante, ativo='S').data_validade
+        data = AlunoPacote.objects.get(pacote=participante.pacote, aluno=participante.contratante, ativo='S').data_validade
 
         if data_minima is None:
           data_minima = data
         
         if data < data_minima:
           data_minima = data
+
       return data_minima + timedelta(settings.DIAS_INATIVAR_VENCIMENTO)
 
     def fcontratantes(participantes):
@@ -888,22 +892,22 @@ class AgendaSrv():
 
           if dt_obj >= recorrencia.criado_em.date():
             participantes = AulaParticipante.objects.filter(aula=recorrencia.aula)
-            #data_minima_vencimento = fdata_minima_vencimento(participantes)
+            data_minima_vencimento = fdata_minima_vencimento(participantes)
 
-            #if dt_obj <= data_minima_vencimento:
-            contratantes = fcontratantes(participantes)
-            dados.append({
-              'id': recorrencia.id,
-              'data': data,
-              'horario_ini': recorrencia.horario_ini,
-              'horario_fim': recorrencia.horario_fim,
-              'descricao': '',
-              'professor': {'id': recorrencia.aula.professor.id, 'nome': f_nome_usuario(recorrencia.aula.professor)},
-              'dia_semana': recorrencia.dia_semana,
-              'tipo': 'NORMAL',
-              'criado_em': recorrencia.criado_em.date(),
-              'contratantes': contratantes
-            })
+            if dt_obj <= data_minima_vencimento:
+              contratantes = fcontratantes(participantes)
+              dados.append({
+                'id': recorrencia.id,
+                'data': data,
+                'horario_ini': recorrencia.horario_ini,
+                'horario_fim': recorrencia.horario_fim,
+                'descricao': '',
+                'professor': {'id': recorrencia.aula.professor.id, 'nome': f_nome_usuario(recorrencia.aula.professor)},
+                'dia_semana': recorrencia.dia_semana,
+                'tipo': 'NORMAL',
+                'criado_em': recorrencia.criado_em.date(),
+                'contratantes': contratantes
+              })
 
       #Buscando as reservas unicas
       reservas_unicas = Reserva.objects.select_related().filter(**filtros_reservas_unicas)
