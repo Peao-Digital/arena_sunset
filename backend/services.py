@@ -809,11 +809,11 @@ class AgendaSrv():
         data_vencimento = AlunoPacote.objects.get(pacote=participante.pacote, aluno=participante.contratante, ativo='S').data_validade
         data_contratacao = AlunoPacote.objects.get(pacote=participante.pacote, aluno=participante.contratante, ativo='S').data_contratacao
 
-        if data_minima is None:
-          data_minima = data
+        if data_minima_vencimento is None:
+          data_minima_vencimento = data
           data_minima_inicio = data_contratacao
         
-        if data_vencimento < data_minima:
+        if data_vencimento < data_minima_vencimento:
           data_minima = data_vencimento
 
         if data_contratacao < data_minima_inicio:
