@@ -14,15 +14,7 @@ $(document).ready(() => {
   const input_sobrenome = $("#sobrenome");
   const input_conf_senha = $("#conf_senha");
 
-  const fileImage = $('.input-preview__src');
-  const filePreview = $('.input-preview');
-
   input_cpf.mask('000.000.000-00');
-
-  const select_grupo = $("#grupo").select2({
-    minimumResultsForSearch: Infinity,
-    placeholder: "Selecione o Grupo"
-  });
 
   const datatable = $("#datatable-user").DataTable({
     searching: true,
@@ -33,32 +25,33 @@ $(document).ready(() => {
     },
   });
 
+  const select_grupo = $("#grupo").select2({
+    minimumResultsForSearch: Infinity,
+    placeholder: "Selecione o Grupo",
+  });
+
   /** Função de validação dos dados.*/
-  const handleError = (error) => {
-    console.error(error);
+  const handleError = (response) => {
+    if (response.erro) {
+      alertavel.find('.modal-body').html(response.erro).modal("show");
+    } else {
+      alertavel.find('.modal-body').html('Ocorreu um erro inesperado!').modal("show");
+    }
   };
 
   /** Função de carregamento dos grupos e select de grupos.*/
   const carregar_grupos = () => {
-    const defaultOption = $('<option>', {
-      value: '',
-      text: 'Grupo',
-      selected: true,
-      disabled: true,
-    });
 
+    const defaultOption = createOption('', 'Grupo', true, true);
     normal_request('/backend/grupos/buscar', {}, 'GET', csrftoken)
-      .then(json => {
-
-        let option;
+      .then(response => {
         select_grupo.empty().append(defaultOption);
 
-        json.dados.forEach(val => {
-          option = $("<option>").val(val.id).text(val.name);
-          select_grupo.append(option)
+        response.dados.forEach(val => {
+          select_grupo.append(createOption(val.id, val.name));
         });
       })
-      .catch(handleError);
+      .catch(response => handleError);
   };
 
   /**
@@ -66,10 +59,10 @@ $(document).ready(() => {
    */
   const carregar_dados = () => {
     normal_request('/backend/usuarios/buscar', {}, 'GET', csrftoken)
-      .then(json => {
+      .then(response => {
         datatable.clear();
 
-        json.dados.forEach(data => {
+        response.dados.forEach(data => {
           const user_grupos = data.grupos ? data.grupos.join(', ') : 'Nenhum grupo';
 
           const acoes = `<button class="btn btn-edit" data-id="${data.id}" title="Editar"><i class="fas fa-edit"></i></button>
@@ -86,14 +79,8 @@ $(document).ready(() => {
         });
 
         datatable.draw();
-
-        $('.btn-edit').click(function () {
-          const userId = $(this).data('id');
-          carregar_grupos();
-          openEditModal(userId);
-        });
       })
-      .catch(handleError);
+      .catch(response => handleError);
   };
 
   /**
@@ -130,11 +117,11 @@ $(document).ready(() => {
    * @param {number} userId - O ID do usuário a ser editado.
    */
   const openEditModal = (userId) => {
+
     modal.find('.modal-title').text(`Editando usuário #${userId}`);
     $('#error-message').text('').hide();
     $('#senha, #conf_senha').prop('required', false);
     $('#senha, #conf_senha').removeAttr('required');
-    select_grupo.empty();
 
     normal_request(`/backend/usuarios/ver/${userId}`, {}, 'GET', csrftoken)
       .then(response => {
@@ -152,7 +139,7 @@ $(document).ready(() => {
 
         input_cpf.mask('000.000.000-00');
       })
-      .catch(handleError);
+      .catch(response => handleError);
   };
 
   /**
@@ -162,26 +149,9 @@ $(document).ready(() => {
   const openDeleteModal = (userId) => {
     alertavel.find('.modal-body').empty();
     alertavel.find('.modal-footer').empty();
-
     alertavel.find('.modal-body').html("Tem certeza que deseja remover o colaborador ?");
-    alertavel.find('.modal-footer').html(`<button class="btn confirm-delete">Deletar</button>`);
+    alertavel.find('.modal-footer').html(`<button class="btn confirm-delete" data-id='${userId}'>Deletar</button>`);
     alertavel.modal("show");
-
-    $(".confirm-delete").off("click").click(() => {
-      normal_request(`/backend/usuarios/deletar/${userId}`, {}, 'DELETE', csrftoken)
-        .then(response => {
-          const successMessage = response.msg || ''
-
-          if (successMessage.includes('Usuário deletado!')) {
-            alertavel.find('.modal-body').html(`O registro foi deletado com sucesso!`);
-            alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-            carregar_dados();
-          } else {
-            console.error('Erro ao deletar usuário:', response.message);
-          }
-        })
-        .catch(handleError);
-    });
   };
 
   /**
@@ -202,19 +172,9 @@ $(document).ready(() => {
         grupo: select_grupo.val()
       }, 'POST', csrftoken)
         .then(response => {
-          if (!response.erro) {
-            alertavel.find(".modal-body").text("Dados Gravados com Sucesso!");
-            alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-
-            alertavel.modal("show");
-            modal.modal("hide");
-            carregar_dados();
-          } else {
-            alertavel.find(".modal-body").text(response.erro);
-            alertavel.modal("show");
-          }
+          handleResponse(response, alertavel, 'Dados Gravados com Sucesso!');
         })
-        .catch(handleError);
+        .catch(response => handleError);
     }
   };
 
@@ -236,16 +196,8 @@ $(document).ready(() => {
         nome: input_nome.val(),
       }, 'PUT', csrftoken)
         .then(response => {
-          if (!response.erro) {
-            alertavel.find(".modal-body").text("Dados editados com sucesso!");
-            modal.modal("hide");
-            alertavel.modal("show");
-            carregar_dados();
-          } else {
-            alertavel.find(".modal-body").text(response.erro);
-            alertavel.modal("show");
-          }
-        }).catch(handleError);
+          handleResponse(response, alertavel, 'Dados Editados com Sucesso!');
+        }).catch(response => handleError);
     }
   }
 
@@ -289,15 +241,9 @@ $(document).ready(() => {
 
     normal_request(endpoint, { requestData }, 'PUT', token)
       .then(response => {
-        const successMessage = response.msg || ''
-
-        if (successMessage.includes('Usuário ativado') || successMessage.includes('Usuário desativado')) {
-          carregar_dados();
-        } else {
-          console.error('Erro ao ativar/desativar usuário:', response.msg);
-        }
+        handleResponse(response, alertavel, 'Status Alterado com Sucesso!');
       })
-      .catch(handleError);
+      .catch(response => handleError);
   };
 
   $('#imageInput').on('change', function () {
@@ -346,6 +292,21 @@ $(document).ready(() => {
 
   modal.on("click", ".close-modal", () => {
     modal.modal("hide")
+  });
+
+  $(document).on('click', '.confirm-delete', function () {
+    const id = $(this).data('id');
+    normal_request(`/backend/usuarios/deletar/${id}`, {}, 'DELETE', csrftoken)
+      .then(response => {
+        handleResponse(response, alertavel, 'Usuário deletado!');
+      })
+      .catch(response => handleError);
+  });
+
+  $(document).on('click', '.btn-edit', function () {
+    const userId = $(this).data('id');
+    carregar_grupos();
+    openEditModal(userId);
   });
 
   const btnGravar = $("#Gravar").click(btnGravarClickHandler);

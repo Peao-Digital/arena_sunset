@@ -20,16 +20,16 @@
 }
 
 .div_aula_avulsa {
-  border: 1px solid #ff5722;
-  color: #ff5722 !important;
+  color: #0073e6 !important;
+  border: 1px solid #0073e6;
   padding: 5px;
   border-radius: 2px;
   margin: 5px;
 }
 
 .div_aula_regular {
-  color: #0073e6 !important;
-  border: 1px solid #0073e6;
+  border: 1px solid #ff5722;
+  color: #ff5722 !important;
   padding: 5px;
   border-radius: 2px;
   margin: 5px;

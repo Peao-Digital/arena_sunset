@@ -37,35 +37,31 @@ $(document).ready(() => {
   input_celular.mask('(00) 0 0000-0000');
 
   /** Função de validação dos dados.*/
-  const handleError = (error) => {
-    console.error(error);
+  const handleError = (response) => {
+    if (response.erro) {
+      alertavel.find('.modal-body').html(response.erro).modal("show");
+    } else {
+      alertavel.find('.modal-body').html('Ocorreu um erro inesperado!').modal("show");
+    }
   };
 
   /** Função de carregamento dos pacotes e select de pacotes.*/
   const carregar_pacotes = () => {
-    const defaultOption = $('<option>', {
-      value: '',
-      text: 'Pacotes',
-      selected: true,
-      disabled: true,
-    });
+    const defaultOption = createOption('', 'Pacotes', true, true);
 
     normal_request('/backend/pacotes/listar', {}, 'GET', csrftoken)
-      .then(json => {
-        let option;
+      .then(response => {
         select_pacotes.empty().append(defaultOption);
 
-        json.dados.filter(val => val.ativo !== 'N').forEach(val => {
-          option = $("<option>").val(val.id).text(val.nome);
-          select_pacotes.append(option);
+        response.dados.filter(val => val.ativo !== 'N').forEach(val => {
+          select_pacotes.append(createOption(val.id, val.nome));
         });
       })
-      .catch(handleError);
+      .catch(response => handleError);
   };
 
   /* Função para carregar os dados e preencher a tabela datatable */
   const carregar_dados = () => {
-
 
     normal_request('/backend/alunos/listar', {}, 'GET', csrftoken)
       .then(json => {
@@ -104,25 +100,8 @@ $(document).ready(() => {
 
         // Desenha a tabela
         datatable.draw();
-
-        // Adiciona eventos de clique aos botões
-        $('.btn-edit').click(function () {
-          const alunoId = $(this).data('id');
-          openEditModal(alunoId);
-        });
-
-        $('.btn-view').click(function () {
-          const alunoId = $(this).data('id');
-          openViewModal(alunoId);
-        });
-
-        $('.btn-plans').click(function () {
-          const alunoId = $(this).data('id');
-          const alunoNome = $(this).data('nome');
-          openPlansModal(alunoId, alunoNome);
-        });
       })
-      .catch(handleError);
+      .catch(response => handleError);
   };
 
   /**
@@ -182,7 +161,7 @@ $(document).ready(() => {
         $('#user-data').html(userData);
         modal_view.modal("show");
       })
-      .catch(handleError);
+      .catch(response => handleError);
 
     // Requisição para obter os pacotes do aluno
     normal_request(`/backend/alunos/${alunoId}/pacotes/buscar`, {}, 'GET', csrftoken)
@@ -201,7 +180,7 @@ $(document).ready(() => {
 
           let botaoRenovar = '';
           if (diferencaEmDias <= 7 && diferencaEmDias >= -14) {
-            botaoRenovar = `<button class="btn btn-new renovar_pacote w-100" id="renovacao-${pacote.id} type="button" data-id="${pacote.pacote__id}"> Renovar</button> `;
+            botaoRenovar = `<button class="btn btn-new renovar_pacote w-100" id="renovacao-${pacote.id}" type="button" data-id="${pacote.pacote__id}">Renovar</button> `;
           }
           console.log(pacote)
           // Constrói o HTML para o plano atual
@@ -213,7 +192,7 @@ $(document).ready(() => {
                 ${botaoRenovar}
               </div>
               <div class="col-lg-2 col-md-2 col-sm-12 col-xs-12">
-                <button class="btn btn-new desativar_pacote w-100" id="desativar_pacote" type="button" data-pacote="${pacote.pacote__id} data-id="${pacote.id}">Desativar</button>
+                <button class="btn btn-new desativar_pacote w-100" id="desativar_pacote" type="button" data-pacote="${pacote.pacote__id}" data-id="${pacote.id}">Desativar</button>
               </div>
               <div class="divRenovacao justify-content-center" id="divRenovacao-${pacote.pacote__id}" style="display:none;">
                 <label for="contratacao" class="form-label"><b>Nova Data de Contratação</b></label>
@@ -250,7 +229,7 @@ $(document).ready(() => {
         displaySection('#current-plan', activePlansHTML, 'Sem Pacotes Vinculados');
         displaySection('#history', historyPlansHTML, 'Sem Pacotes Anteriores');
       })
-      .catch(handleError);
+      .catch(response => handleError);
   };
 
   /**
@@ -291,7 +270,7 @@ $(document).ready(() => {
         input_cpf.mask('000.000.000-00');
         input_celular.mask('(00) 0 0000-0000');
       })
-      .catch(handleError);
+      .catch(response => handleError);
   };
 
   /**
@@ -320,16 +299,13 @@ $(document).ready(() => {
             const id = $(this).attr("data-aluno-id");
             normal_request(`/backend/alunos/deletar/${id}`, {}, 'DELETE', csrftoken)
               .then(response => {
-                alertavel.find('.modal-body').html(response.msg);
-                alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-                carregar_dados();
-                alertavel.modal("show");
+                handleResponse(response, alertavel, 'Registro Deletado com sucesso!');
               })
-              .catch(handleError);
+              .catch(response => handleError);
           });
         }
       })
-      .catch(handleError);
+      .catch(response => handleError);
   };
 
   /**
@@ -341,24 +317,18 @@ $(document).ready(() => {
     alertavel.find('.modal-footer').empty();
 
     alertavel.find('.modal-body').html("Tem certeza que deseja desativar o contrato ?");
-    alertavel.find('.modal-footer').html(`<button class="btn confirm-disabled">Desativar</button>`);
+    alertavel.find('.modal-footer').html(`<button class="btn confirm-disabled" data-id="${planId}">Desativar</button>`);
     alertavel.modal("show");
     modal_view.modal('hide');
 
-    $(".confirm-disabled").off("click").click(() => {
-      normal_request(`/backend/pacotes/cancelar_contrato/${planId} `, {}, 'put', csrftoken)
-        .then(response => {
-          const successMessage = response.msg || ''
+    $(".confirm-disabled").off("click").click(function () {
+      const id = $(this).data('id');
 
-          if (successMessage.includes('Contrato cancelado com sucesso!')) {
-            alertavel.find('.modal-body').html(`Contrato cancelado com sucesso!`);
-            alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-            carregar_dados();
-          } else {
-            console.error('Erro ao cancelar contrato:', response.msg);
-          }
+      normal_request(`/backend/pacotes/cancelar_contrato/${id} `, {}, 'put', csrftoken)
+        .then(response => {
+          handleResponse(response, alertavel, 'Contrato cancelado com sucesso!');
         })
-        .catch(handleError);
+        .catch(response => handleError);
     });
   };
 
@@ -391,18 +361,9 @@ $(document).ready(() => {
         ativo: 'S'
       }, 'POST', csrftoken)
         .then(response => {
-          if (!response.erro) {
-            alertavel.find(".modal-body").text("Dados Gravados com Sucesso!");
-            alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button> `);
-            alertavel.modal("show");
-            carregar_dados();
-            modal.modal("hide");
-          } else {
-            alertavel.find(".modal-body").text(response.erro);
-            alertavel.modal("show");
-          }
+          handleResponse(response, alertavel, 'Dados Gravados com Sucesso!');
         })
-        .catch(handleError);
+        .catch(response => handleError);
     }
   };
 
@@ -417,8 +378,6 @@ $(document).ready(() => {
       ativo: 'S'
     };
 
-    console.log(dados_renovacao);
-
     // Validação específica para renovação
     if (tipo === 'renovacao' && (!dados_renovacao.data_contratacao || dados_renovacao.data_contratacao.trim() === '')) {
       $("#error-message-contratos").text('A nova data de contratação não pode ser vazia para renovar.').show();
@@ -431,24 +390,11 @@ $(document).ready(() => {
       if (!validateForm(formsData, $("#error-message-pacotes"))) return;
     }
 
-    try {
-      const response = await normal_request(`/backend/pacotes/${pacoteId}/contratar`, dados, 'POST', csrftoken);
-      // Manipulação de resposta
-      const message = response.erro ? response.erro : "Dados Gravados com Sucesso!";
-      alertavel.find(".modal-body").text(message);
-      const footerHtml = response.erro ? '' : `<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`;
-      alertavel.find('.modal-footer').html(footerHtml);
-      alertavel.modal("show");
-
-      // Se não houver erro, atualize os dados e feche o modal
-      if (!response.erro) {
+    normal_request(`/backend/pacotes/${pacoteId}/contratar`, dados, 'POST', csrftoken)
+      .then(response => {
+        handleResponse(response, alertavel, 'Dados Gravados com sucesso!');
         carregar_dados();
-        modal_plans.modal("hide");
-        modal_view.modal("hide");
-      }
-    } catch (error) {
-      handleError(error); // Tratar erro de requisição
-    }
+      });
   };
 
   /**
@@ -469,16 +415,8 @@ $(document).ready(() => {
         ativo: 'S'
       }, 'PUT', csrftoken)
         .then(response => {
-          if (!response.erro) {
-            alertavel.find(".modal-body").text("Dados editados com sucesso!");
-            carregar_dados();
-            modal.modal("hide");
-            alertavel.modal("show");
-          } else {
-            alertavel.find(".modal-body").text(response.erro);
-            alertavel.modal("show");
-          }
-        }).catch(handleError);
+          handleResponse(response, alertavel, 'Dados editados com sucesso!');
+        }).catch(response => handleError);
     }
   }
 
@@ -528,15 +466,10 @@ $(document).ready(() => {
 
     normal_request(endpoint, requestData, 'PUT', token)
       .then(response => {
-        const successMessage = response.msg || '';
-
-        if (successMessage.includes('Aluno ativado') || successMessage.includes('Aluno desativado')) {
-          carregar_dados();
-        } else {
-          console.error('Erro ao ativar/desativar aluno:', response.msg);
-        }
+        handleResponse(response, alertavel, 'Status Alterado com sucesso!');
+        carregar_dados();
       })
-      .catch(handleError);
+      .catch(response => handleError);
   };
 
   datatable.on("click", ".btn-ativo, .btn-inativo", function () {
@@ -587,7 +520,6 @@ $(document).ready(() => {
   });
 
   $(document).on('click', '.gravar-renovacao', function () {
-    const id = $(this).data('id');
     const pacote_id = $(this).data('pacote');
     const nova_data = $(`#nova_contratacao-${pacote_id}`).val();
     const pacote = $(this).data('pacote');
@@ -597,9 +529,23 @@ $(document).ready(() => {
       aluno: $(this).data('aluno'),
     }
 
-    console.log(nova_data)
-
     gravarPacoteAluno(pacote, 'renovacao', dados);
+  });
+
+  $(document).on('click', '.btn-edit', function () {
+    const alunoId = $(this).data('id');
+    openEditModal(alunoId);
+  });
+
+  $(document).on('click', '.btn-view', function () {
+    const alunoId = $(this).data('id');
+    openViewModal(alunoId);
+  });
+
+  $(document).on('click', '.btn-plans', function () {
+    const alunoId = $(this).data('id');
+    const alunoNome = $(this).data('nome');
+    openPlansModal(alunoId, alunoNome);
   });
 
   carregar_dados();

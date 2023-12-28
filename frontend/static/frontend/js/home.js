@@ -1,6 +1,13 @@
 $(document).ready(function () {
   const csrftoken = getCSRFToken();
-  const handleError = console.error;
+
+  const handleError = (response) => {
+    if (response.erro) {
+      alertavel.find('.modal-body').html(response.erro).modal("show");
+    } else {
+      alertavel.find('.modal-body').html('Ocorreu um erro inesperado!').modal("show");
+    }
+  };
 
   const modal = $("#modal-form");
   const modalEvento = $("#eventoModal");
@@ -97,35 +104,32 @@ $(document).ready(function () {
     showDiv(divProfessores, [divCalendario, divTipoReserva, divReservaAvulsa, divReservaRegular]);
     normal_request('/backend/professores/listar', {}, 'GET', csrftoken)
       .then(response => {
-        if (response.dados.length === 0) {
-          const html = `
-          <div class="col-md-12 col-lg-12 col-sm-12 mb-3">
-            <div class="card custom-cards-professores">
-              <div class="card-body">
-                <div class="div-nome mt-4 mb-4">
-                  <h3>Sem Professores cadastrados</h3>
+        if (!response.erro) {
+          if (response.dados.length === 0) {
+            const html = `
+              <div class="col-md-12 col-lg-12 col-sm-12 mb-3">
+                <div class="card custom-cards-professores">
+                  <div class="card-body">
+                    <div class="div-nome mt-4 mb-4">
+                      <h3>Sem Professores cadastrados</h3>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </div>`;
+              </div>`;
 
-          professores_card.append(html);
+            professores_card.append(html);
+          } else {
+            response.dados.forEach((professor) => {
+              if (professor.ativo !== 'N') {
+                professores_card.append(card_professores(professor));
+              }
+            });
+          }
         } else {
-          response.dados.forEach((professor) => {
-            if(professor.ativo !== 'N'){
-              professores_card.append(card_professores(professor));
-            }
-          });
+          alertavel.find(".modal-body").text(response.erro);
         }
-        $(".btn-select-professor").click((event) => {
-          const { value } = event.target;
-          storedInfo.professor = value;
-
-          showDiv(divTipoReserva, [divCalendario, divProfessores, divReservaAvulsa, divReservaRegular]);
-          selecao_tipo_aula();
-        });
       })
-      .catch(handleError);
+      .catch(response => handleError(response));
   };
 
   /** Função de inicialização de tela de Seleção de tipos de aulas no fluxo de reservas */
@@ -147,14 +151,6 @@ $(document).ready(function () {
     tipos.forEach((aulas) => {
       tiporeserva_card.append(card_aulas(aulas));
     });
-
-    $(".btn-select-aula").click(function (event) {
-      if ($(this).val() === 'avulsa') {
-        showDiv(divReservaAvulsa, [divCalendario, divProfessores, divTipoReserva, divReservaRegular]);
-      } else {
-        showDiv(divReservaRegular, [divCalendario, divProfessores, divTipoReserva, divReservaAvulsa]);
-      }
-    });
   };
 
   /**
@@ -162,25 +158,21 @@ $(document).ready(function () {
    * @param {*} $form Formulário jQuery onde os selects serão carregados
    */
   const carregar_pagantes = async ($form) => {
-    try {
-      const defaultOption = createOption('', 'Pagante', true, true);
+    const defaultOption = createOption('', 'Pagante', true, true);
 
-      // Requisição assíncrona para obter a lista de alunos
-      const response = await normal_request('/backend/alunos/contratantes', {}, 'GET', csrftoken);
-      const dadosFiltrados = response.dados.filter(val => val.ativo !== 'N');
+    // Requisição assíncrona para obter a lista de alunos
+    const response = await normal_request('/backend/alunos/contratantes', {}, 'GET', csrftoken);
+    const dadosFiltrados = response.dados.filter(val => val.ativo !== 'N');
 
-      // Atualiza cada select de pagante no formulário
-      $form.find('.select-pagante').each(function () {
-        const $select = $(this).empty().append(defaultOption.clone());
+    // Atualiza cada select de pagante no formulário
+    $form.find('.select-pagante').each(function () {
+      const selects = $(this).empty().append(defaultOption.clone());
 
-        // Adiciona cada aluno filtrado como uma opção do select
-        dadosFiltrados.forEach(val => {
-          $select.append(createOption(val.id, val.nome));
-        });
+      // Adiciona cada aluno filtrado como uma opção do select
+      dadosFiltrados.forEach(val => {
+        selects.append(createOption(val.id, val.nome));
       });
-    } catch (error) {
-      handleError(error);
-    }
+    });
   };
 
   /**
@@ -189,14 +181,15 @@ $(document).ready(function () {
    * @param {number} posicao - Posição do select no formulário.
    */
   const carregar_pacotes = (id, posicao) => {
+
     const defaultOption = createOption('', 'Pacotes', true, true);
     const selectPacotes = $(`.select-pacote-${posicao}`);
 
     // Requisição para obter pacotes do aluno
     normal_request(`/backend/alunos/${id}/pacotes/buscar`, {}, 'GET', csrftoken)
-      .then(json => {
+      .then(response => {
 
-        const options = json.dados.filter(({ ativo, vencido }) => vencido !== 'S' && ativo !== 'N')
+        const options = response.dados.filter(({ ativo, vencido }) => vencido !== 'S' && ativo !== 'N')
           .map(({ pacote__id, pacote__nome, pacote__qtd_participantes, vencido }) => ({
             vencido: vencido,
             valor: pacote__id,
@@ -215,8 +208,7 @@ $(document).ready(function () {
           selectPacotes.append(optionElement);
         });
 
-      })
-      .catch(handleError); // Tratamento de erros
+      }).catch(response => handleError(response));
   };
 
   /**
@@ -224,35 +216,24 @@ $(document).ready(function () {
    * @param {jQuery} selectElement O elemento de seleção (dropdown) jQuery.
    */
   const carregar_alunos = async (selectElement) => {
-    try {
-      // Inicializa o select2 no elemento de seleção
-      selectElement.select2({
-        minimumResultsForSearch: Infinity,
-        placeholder: "Selecione o Participante",
-      });
+    // Opção padrão para o select
+    const defaultOption = createOption('', 'Selecione o Participante', true, true);
+    selectElement.empty().append(defaultOption);
 
-      // Opção padrão para o select
-      const defaultOption = createOption('', 'Selecione o Participante', true, true);
-      selectElement.empty().append(defaultOption);
+    // Requisição para buscar alunos ativos
+    const response = await normal_request('/backend/alunos/listar', {}, 'GET', csrftoken);
+    const { dados } = response;
 
-      // Requisição para buscar alunos ativos
-      const response = await normal_request('/backend/alunos/listar', {}, 'GET', csrftoken);
-      const { dados } = response;
-
-      // Verifica se os dados recebidos são válidos
-      if (!dados || !Array.isArray(dados)) {
-        throw new Error("Dados inválidos recebidos do servidor");
-      }
-
-      // Filtra e adiciona alunos ativos ao select
-      dados.filter(({ ativo }) => ativo !== 'N').forEach(({ id, nome }) => {
-        const option = createOption(id, nome);
-        selectElement.append(option);
-      });
-    } catch (error) {
-      // Manipulação de erros
-      handleError(error);
+    // Verifica se os dados recebidos são válidos
+    if (!dados || !Array.isArray(dados)) {
+      throw new Error("Dados inválidos recebidos do servidor");
     }
+
+    // Filtra e adiciona alunos ativos ao select
+    dados.filter(({ ativo }) => ativo !== 'N').forEach(({ id, nome, celular }) => {
+      const option = createOption(id, nome).attr('data-celular', celular);
+      selectElement.append(option);
+    });
   };
 
   /**
@@ -286,18 +267,6 @@ $(document).ready(function () {
     } else {
       horarios_regular.empty().append(BtnHorarios);
     }
-
-    $(".btn-horario").click(function () {
-      // Remova a classe "disabled" de todos os botões de horário
-      $(".btn-horario").removeClass("disabled");
-
-      // Adicione a classe "disabled" apenas ao botão de horário clicado
-      $(this).addClass("disabled");
-
-      // Salve as horas iniciais e finais no storedInfo
-      storedInfo.hora_ini = $(this).data("hora_ini");
-      storedInfo.hora_fim = $(this).data("hora_fim");
-    });
   }
 
   /**
@@ -447,6 +416,7 @@ $(document).ready(function () {
    * @param {*} paganteIndex Index do pagante que os dados se referem
    * @param {*} participanteIndex Index do participante que os dados se referem
    */
+
   const carregar_dados_participantes = (status, paganteIndex, participanteIndex) => {
     const divFieldsetDados = $(`#dados_${paganteIndex}_${participanteIndex}`);
     divFieldsetDados.empty();
@@ -465,10 +435,25 @@ $(document).ready(function () {
           <input type="text" class="form-control celular_aluno_${paganteIndex}_${participanteIndex}" placeholder="Celular" id="celular_aluno_${paganteIndex}_${participanteIndex}">
         </div>`);
 
-      inputCelular.find('input').mask('(00) 0 0000-0000');
 
       divFieldsetDados.append(selectParticipante, inputCelular);
       carregar_alunos($(`#participante_${paganteIndex}_${participanteIndex}`));
+
+      $('#participante_' + paganteIndex + '_' + participanteIndex).select2({
+        minimumResultsForSearch: Infinity,
+        placeholder: "Selecione o Participante",
+      }).change(function () {
+        const selectedOption = $(this).find('option:selected');
+        let celular = selectedOption.data('celular');
+
+        celular = celular ? celular.toString() : '';
+
+        const celularformatado = celular.replace(/(\d{2})(\d{1})(\d{4})(\d{4})/, '($1) $2 $3-$4');
+
+        $(`#celular_aluno_${paganteIndex}_${participanteIndex}`).val(celularformatado).attr('disabled', true);
+      });
+
+      inputCelular.find('input').mask('(00) 0 0000-0000');
     } else {
       const inputNome = $(`
       <div class="col-lg-6 col-md-6 col-sm-12 mb-2">
@@ -484,28 +469,29 @@ $(document).ready(function () {
 
       divFieldsetDados.append(inputNome).append(inputCelular);
     }
-
-    console.log('entrou aqui');
   };
 
   /** Função de busca de todas as reservas por período */
   const buscarReservas = async (dataInicial, dataFinal) => {
     const url = `/backend/agenda/buscar?data_inicial=${dataInicial}&data_final=${dataFinal}`;
 
-    try {
-      const response = await normal_request(url, {}, 'GET', csrftoken);
-      return response.dados.map(reserva => formatarReserva(reserva));
-    } catch (error) {
-      handleError(error);
+    const response = await normal_request(url, {}, 'GET', csrftoken);
+    let perfil_professor;
+
+    if (response.acesso.perfil_professor === true) {
+      perfil_professor = true;
     }
+
+    return response.dados.map(reserva => formatarReserva(reserva, perfil_professor));
   };
 
   /** Função para formatar a reserva */
-  const formatarReserva = (reserva) => {
+  const formatarReserva = (reserva, perfil_professor) => {
     const formattedStartTime = formatTime(reserva.horario_ini);
     const formattedEndTime = formatTime(reserva.horario_fim);
     const tipoCor = reserva.tipo === 'UNICA' ? '#0073e6' : '#FF5722';
 
+    let title = perfil_professor === true ? Object.keys(reserva.contratantes) : reserva.professor.nome;
     return {
       id: reserva.id,
       groupId: reserva.tipo,
@@ -513,7 +499,7 @@ $(document).ready(function () {
       backgroundColor: tipoCor,
       borderColor: tipoCor,
       end: new Date(`${reserva.data}T${formattedEndTime}`),
-      title: reserva.professor.nome,
+      title: title,
       start: new Date(`${reserva.data}T${formattedStartTime}`),
       allDay: false,
     };
@@ -591,28 +577,23 @@ $(document).ready(function () {
           modalEvento.modal("hide");
         });
       })
-      .catch(handleError);
+      .catch(response => handleError(response));
   };
 
+  /**
+   * Função para cancelar a aula reservada
+   * @param {*} id 
+   * @param {*} tipo 
+   * @param {*} motivo 
+   */
   const cancelar_aula = (id, tipo, motivo) => {
     const url_cancelar = `/backend/agenda/reserva_${tipo === 'UNICA' ? 'unica' : 'normal'}/cancelar/${id}`;
 
     normal_request(url_cancelar, { motivo: motivo }, 'PUT', csrftoken)
       .then(response => {
-        const successMessage = response.msg || ''
-
-        if (successMessage.includes("Reserva cancelada!")) {
-          alertavel.find('.modal-body').html(`O registro foi cancelado com sucesso!`);
-          alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-          alertavel.on('hidden.bs.modal', function (e) {
-            location.reload();
-          });
-        } else {
-          alertavel.find('.modal-body').html('Não foi possível cancelar a aula', response.msg);
-          alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-        }
+        handleResponse(response, alertavel, "O registro foi cancelado com sucesso!");
       })
-      .catch(handleError);
+      .catch(response => handleError(response));
   }
 
   /**
@@ -816,19 +797,8 @@ $(document).ready(function () {
 
     normal_request(url, payload, 'POST', csrftoken)
       .then(response => {
-        if (!response.erro) {
-          alertavel.find(".modal-body").text("Dados Gravados com Sucesso!");
-          alertavel.find('.modal-footer').html(`<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`);
-          alertavel.modal("show");
-          alertavel.on('hidden.bs.modal', function (e) {
-            location.reload();
-          });
-        } else {
-          alertavel.find(".modal-body").text(response.erro);
-          alertavel.modal("show");
-        }
-      })
-      .catch(handleError);
+        handleResponse(response, alertavel, "Dados Gravados com Sucesso!");
+      }).catch(response => handleError);
   };
 
   /**
@@ -906,6 +876,16 @@ $(document).ready(function () {
     reservar_aula_regular();
   });
 
+  $(document).on('click', '.btn-horario', function () {
+
+    $(".btn-horario").removeClass("disabled");// Remova a classe "disabled" de todos os botões de horário
+    $(this).addClass("disabled");// Adicione a classe "disabled" apenas ao botão de horário clicado
+
+    // Salve as horas iniciais e finais no storedInfo
+    storedInfo.hora_ini = $(this).data("hora_ini");
+    storedInfo.hora_fim = $(this).data("hora_fim");
+  });
+
   $(document).on('click', '.cancelar-aula', function () {
     const id = $(this).val();
     const tipo = $(this).data('tipo');
@@ -916,8 +896,22 @@ $(document).ready(function () {
     } else {
       cancelar_aula(id, tipo, motivo);
     }
+  });
 
+  $(document).on('click', '.btn-select-aula', function () {
+    if ($(this).val() === 'avulsa') {
+      showDiv(divReservaAvulsa, [divCalendario, divProfessores, divTipoReserva, divReservaRegular]);
+    } else {
+      showDiv(divReservaRegular, [divCalendario, divProfessores, divTipoReserva, divReservaAvulsa]);
+    }
+  });
 
+  $(document).on('click', '.btn-select-professor', function (event) {
+    const { value } = event.target;
+    storedInfo.professor = value;
+
+    showDiv(divTipoReserva, [divCalendario, divProfessores, divReservaAvulsa, divReservaRegular]);
+    selecao_tipo_aula();
   });
 
   initializeCalendar();

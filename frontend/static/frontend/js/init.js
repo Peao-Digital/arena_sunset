@@ -157,5 +157,21 @@ const getNomeDiaSemana = (numeroDia) => {
   return diasSemana[numeroDia - 1];
 }
 
+const handleResponse = (response, alertavel, msg) => {
+  const footerHtml = `<button type="button" class="btn btn-back" data-bs-dismiss="modal">Fechar</button>`;
+  alertavel.find('.modal-footer').html(footerHtml);
+
+  if (!response.erro) {
+    alertavel.find(".modal-body").text(msg);
+    alertavel.on('hidden.bs.modal', function () {
+      location.reload();
+    });
+  } else {
+    alertavel.find(".modal-body").text(response.erro);
+  }
+
+  alertavel.modal("show");
+}
+
 const formatTime = (time) => (time.length === 4 ? `0${time}` : time);
 const selecionado_todos = (val, tam) => val[0] == "0" && tam > 1
