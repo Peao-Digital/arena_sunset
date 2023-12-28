@@ -841,6 +841,20 @@ $(document).ready(function () {
       eventClick: function (info) {
         buscar_reserva_individual(info.event.id, info.event.groupId);
       },
+      datesSet: function (dateInfo) {
+        // Esta função é chamada após a navegação para uma nova data
+        
+        // Atualizar as datas inicial e final com base na nova visualização
+        const dataInicial = dateInfo.startStr.split('T')[0];
+        const dataFinal = dateInfo.endStr.split('T')[0];
+
+        console.log("A vista do calendário foi atualizada para: ", dataInicial, " até ", dataFinal);
+
+        buscarReservas(dataInicial, dataFinal).then(dados => {
+          calendar.removeAllEvents();
+          calendar.addEventSource(dados);
+        });
+      },
       dayMaxEventRows: true, // Adicione essa linha para limitar o número de eventos por linha
       eventTextColor: '#fff', // Defina a cor do texto do evento como branco
       contentHeight: 'auto', // Adicione essa linha para ajustar automaticamente a altura do calendário
@@ -854,12 +868,6 @@ $(document).ready(function () {
     });
 
     calendar.render();
-
-    const { activeStart, activeEnd } = calendar.view;
-    const dataInicial = activeStart.toISOString().split('T')[0];
-    const dataFinal = activeEnd.toISOString().split('T')[0];
-
-    buscarReservas(dataInicial, dataFinal).then(dados => calendar.addEventSource(dados));
   };
 
   showDiv(divCalendario, [divProfessores, divTipoReserva, divReservaAvulsa, divReservaRegular]);
