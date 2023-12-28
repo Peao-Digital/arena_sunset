@@ -710,7 +710,7 @@ class PacoteAlunoSrv():
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
-  def pode_reservar(pacote_obj, contratante_obj, data, dia_semana):
+  def pode_reservar(pacote_obj, contratante_obj, dia_semana):
     if pacote_obj is None:
       return True
     
@@ -721,26 +721,15 @@ class PacoteAlunoSrv():
     contrato_obj = contrato_obj[0]
     data = datetime.today().date() if data is None else data
 
-    filtros_recorrencias = {
+    filtros = {
       'dia_semana': dia_semana,
       'aula__aulaparticipante__pacote': pacote_obj,
+      'dia_semana': dia_semana,
       'ativo': 'S'
     }
-
-    filtros_reservas = {
-      'aula__aulaparticipante__pacote': pacote_obj,
-      'ativo': 'S'
-    }
-
-    if dia_semana is None:
-      dia_semana = (f_contruir_data(data)).weekday()
-      filtros_recorrencias['dia_semana'] = dia_semana
-      filtros_reservas['data'] = data
-    else:
-      filtros_reservas['data__week_day'] = int(dia_semana) - 2
-
-    a1 = Recorrencia.objects.filter(**filtros_recorrencias)
-    a2 = Reserva.objects.filter(**filtros_reservas)
+    
+    #Verificar periodo
+    d = Recorrencia.objects.filter(filtros)
 
     return True
 
@@ -813,16 +802,22 @@ class AgendaSrv():
     def fdata_minima_vencimento(participantes):
       #Buscar a data de vencimento dos contrantes da reserva para limitar as recorrenciais na agenda
       #Adicionar a esta data os dias a mais de DIAS_INATIVAR_VENCIMENTO
-      data_minima = None
+      data_minima_vencimento = None
+      data_minima_inicio = None
 
       for participante in participantes:
-        data = AlunoPacote.objects.get(pacote=participante.pacote, aluno=participante.contratante, ativo='S').data_validade
+        data_vencimento = AlunoPacote.objects.get(pacote=participante.pacote, aluno=participante.contratante, ativo='S').data_validade
+        data_contratacao = AlunoPacote.objects.get(pacote=participante.pacote, aluno=participante.contratante, ativo='S').data_contratacao
 
         if data_minima is None:
           data_minima = data
+          data_minima_inicio = data_contratacao
         
-        if data < data_minima:
-          data_minima = data
+        if data_vencimento < data_minima:
+          data_minima = data_vencimento
+
+        if data_contratacao < data_minima_inicio:
+          data_minima_inicio = data_contratacao
 
       return data_minima + timedelta(settings.DIAS_INATIVAR_VENCIMENTO)
 
@@ -892,9 +887,9 @@ class AgendaSrv():
 
           if dt_obj >= recorrencia.criado_em.date():
             participantes = AulaParticipante.objects.filter(aula=recorrencia.aula)
-            data_minima_vencimento = fdata_minima_vencimento(participantes)
+            data_minima_vencimento, data_minima_inicio = fdata_minima_vencimento(participantes)
 
-            if dt_obj <= data_minima_vencimento:
+            if dt_obj <= data_minima_vencimento and dt_obj >= data_minima_inicio:
               contratantes = fcontratantes(participantes)
               dados.append({
                 'id': recorrencia.id,
@@ -1108,10 +1103,6 @@ class AgendaSrv():
             else:
               pacote_obj = None
 
-            #CONFERIR SE O CONTRATANTE PODE RESERVAR
-            if PacoteAlunoSrv.pode_reservar(pacote_obj, contratante_obj, data, None) is False:
-              return {"erro": "O usuário não possui mais reservas para o pacote selecionado neste período!", "e": str(e), "tipo_erro": "validacao"}, 400
-
             for aluno in alunos:
               AgendaSrv.salvar_aulaAluno(obj_aula, pacote_obj, contratante_obj, Aluno.objects.get(pk=aluno))
 
@@ -1242,7 +1233,7 @@ class AgendaSrv():
               pacote_obj = pacote_obj[0]
 
             #CONFERIR SE O CONTRATANTE PODE RESERVAR
-            if PacoteAlunoSrv.pode_reservar(pacote_obj, contratante_obj, None, dia_semana) is False:
+            if PacoteAlunoSrv.pode_reservar(pacote_obj, contratante_obj, dia_semana) is False:
               return {"erro": "O usuário não possui mais reservas para o pacote selecionado neste período!", "e": str(e), "tipo_erro": "validacao"}, 400
 
             for aluno in alunos:
