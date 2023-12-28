@@ -680,6 +680,19 @@ class PacoteAlunoSrv():
 
         obj.save()
         obj_historico.save()
+        
+        #Inativar as reservas deste aluno com este pacote
+        recorrencias = Recorrencia.objects.filter(aula__aulaparticipante__pacote=obj.pacote, aula__aulaparticipante__contratante=obj.aluno, ativo='S')
+        for recorrencia in recorrencias:
+          demais_participantes = AulaParticipante.objects.filter(~Q(contratante=obj.aluno), aula=recorrencia.aula)
+
+          if demais_participantes.exists():
+            #Se houver outros participantes, então apenas remover este participante cancelado
+            AulaParticipante.objects.filter(contratante=obj.aluno, aula=recorrencia.aula).delete()
+          else:
+            #Se for o unico contratante, inativar
+            recorrencia.ativo = 'N'
+            recorrencia.save()
 
       return {'msg': 'Contrato cancelado com sucesso!'}, 200
     except ObjectDoesNotExist  as e:
