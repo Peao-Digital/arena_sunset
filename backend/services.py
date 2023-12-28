@@ -819,7 +819,7 @@ class AgendaSrv():
         if data_contratacao < data_minima_inicio:
           data_minima_inicio = data_contratacao
 
-      return data_minima + timedelta(settings.DIAS_INATIVAR_VENCIMENTO)
+      return data_minima + timedelta(settings.DIAS_INATIVAR_VENCIMENTO), data_minima_inicio
 
     def fcontratantes(participantes):
       contratantes = {}
