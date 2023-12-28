@@ -719,7 +719,6 @@ class PacoteAlunoSrv():
       return False
     
     contrato_obj = contrato_obj[0]
-    data = datetime.today().date() if data is None else data
 
     filtros = {
       'dia_semana': dia_semana,
@@ -729,7 +728,7 @@ class PacoteAlunoSrv():
     }
     
     #Verificar periodo
-    d = Recorrencia.objects.filter(filtros)
+    d = Recorrencia.objects.filter(**filtros)
 
     return True
 
@@ -815,7 +814,7 @@ class AgendaSrv():
           data_minima_inicio = data_contratacao
         
         if data_vencimento < data_minima_vencimento:
-          data_minima = data_vencimento
+          data_minima_vencimento = data_vencimento
 
         if data_contratacao < data_minima_inicio:
           data_minima_inicio = data_contratacao
