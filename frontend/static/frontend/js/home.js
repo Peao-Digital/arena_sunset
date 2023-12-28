@@ -157,11 +157,14 @@ $(document).ready(function () {
    * Função de carregamento dos pagantes
    * @param {*} $form Formulário jQuery onde os selects serão carregados
    */
-  const carregar_pagantes = async ($form) => {
+  const carregar_pagantes = async ($form, tipo) => {
     const defaultOption = createOption('', 'Pagante', true, true);
 
-    // Requisição assíncrona para obter a lista de alunos
-    const response = await normal_request('/backend/alunos/contratantes', {}, 'GET', csrftoken);
+    // Define os endpoints de acordo com o tipo de requisição
+    const endpoint = tipo === 'avulsa' ? '/backend/alunos/listar' : '/backend/alunos/contratantes';
+
+    // Realiza a requisição e filtra os dados ativos
+    const response = await normal_request(endpoint, {}, 'GET', csrftoken);
     const dadosFiltrados = response.dados.filter(val => val.ativo !== 'N');
 
     // Atualiza cada select de pagante no formulário
@@ -341,7 +344,15 @@ $(document).ready(function () {
 
     $('.select-pagante').select2({
       minimumResultsForSearch: Infinity,
-      placeholder: `Selecione o Pagante`,
+      placeholder: `Selecione o contratante`,
+      language: {
+        noResults: function () {
+          return "Nenhum contratante encontrado";
+        }
+      },
+      escapeMarkup: function (markup) {
+        return markup;
+      }
     }).change(function () {
       const selectedPagante = $(this).val();
       const selectedPaganteNome = $(this).find('option:selected').text();
@@ -366,6 +377,14 @@ $(document).ready(function () {
     $(`.select-pacotes`).select2({
       minimumResultsForSearch: Infinity,
       placeholder: "Selecione o Pacote",
+      language: {
+        noResults: function () {
+          return "Nenhum pacote encontrado";
+        }
+      },
+      escapeMarkup: function (markup) {
+        return markup;
+      }
     }).change(function () {
       const qtdParticipantes = $(this).find('option:selected').data('qtd-participantes');
       const paganteIndex = $(this).data('id');
@@ -373,7 +392,7 @@ $(document).ready(function () {
       renderizarFieldsets(qtdParticipantes, paganteIndex);
     });
 
-    carregar_pagantes($form);
+    carregar_pagantes($form, tipo);
   };
 
   /**
@@ -442,6 +461,14 @@ $(document).ready(function () {
       $('#participante_' + paganteIndex + '_' + participanteIndex).select2({
         minimumResultsForSearch: Infinity,
         placeholder: "Selecione o Participante",
+        language: {
+          noResults: function () {
+            return "Nenhum participante encontrado";
+          }
+        },
+        escapeMarkup: function (markup) {
+          return markup;
+        }
       }).change(function () {
         const selectedOption = $(this).find('option:selected');
         let celular = selectedOption.data('celular');
@@ -843,12 +870,10 @@ $(document).ready(function () {
       },
       datesSet: function (dateInfo) {
         // Esta função é chamada após a navegação para uma nova data
-        
+
         // Atualizar as datas inicial e final com base na nova visualização
         const dataInicial = dateInfo.startStr.split('T')[0];
         const dataFinal = dateInfo.endStr.split('T')[0];
-
-        console.log("A vista do calendário foi atualizada para: ", dataInicial, " até ", dataFinal);
 
         buscarReservas(dataInicial, dataFinal).then(dados => {
           calendar.removeAllEvents();

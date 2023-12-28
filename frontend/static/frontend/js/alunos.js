@@ -22,6 +22,14 @@ $(document).ready(() => {
   const select_pacotes = $("#pacotes").select2({
     minimumResultsForSearch: Infinity,
     placeholder: "Selecione o Pacote",
+    language: {
+      noResults: function () {
+        return "Nenhum pacote encontrado";
+      }
+    },
+    escapeMarkup: function (markup) {
+      return markup;
+    }
   }).change(function () {
     btnGravarVinculo.val($(this).val());
   });

@@ -14,25 +14,40 @@
   z-index: 99999;
 }
 
-.legenda {
+.legend-table {
   display: flex;
   justify-content: center;
+  padding: 15px;
+  text-align: center;
+  font-size: 15px;
+  margin: 2em auto 0;
 }
 
-.div_aula_avulsa {
-  color: #0073e6 !important;
-  border: 1px solid #0073e6;
-  padding: 5px;
-  border-radius: 2px;
-  margin: 5px;
+.legend-table__marker {
+  width: 25px;
+  height: 25px;
+  margin: 5px 5px 10px;
+  display: inline-block;
+  vertical-align: middle;
+  box-shadow: 0.5px 1px rgba(0, 0, 0, 0.15);
 }
 
-.div_aula_regular {
-  border: 1px solid #ff5722;
-  color: #ff5722 !important;
-  padding: 5px;
-  border-radius: 2px;
-  margin: 5px;
+.legend-table__text {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 25px 5px 5px;
+  font-weight: bold;
+  background: -webkit-linear-gradient(#ccc, #eee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.aula-avulsa {
+  background: linear-gradient(to bottom right, #37cfdc 0%, #0073e6 100%);
+}
+
+.aula-regular {
+  background: linear-gradient(to bottom right, #FF6F02 0%, #FE5408 100%);
 }
 
 .btn-horario:hover,
