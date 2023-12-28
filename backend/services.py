@@ -799,18 +799,19 @@ class AgendaSrv():
   
   @staticmethod
   def buscar_reservas(request):
-    def fdata_minima_vencimento(participantes):
+    def fdata_minima(participantes):
       #Buscar a data de vencimento dos contrantes da reserva para limitar as recorrenciais na agenda
       #Adicionar a esta data os dias a mais de DIAS_INATIVAR_VENCIMENTO
       data_minima_vencimento = None
       data_minima_inicio = None
 
       for participante in participantes:
-        data_vencimento = AlunoPacote.objects.get(pacote=participante.pacote, aluno=participante.contratante, ativo='S').data_validade
-        data_contratacao = AlunoPacote.objects.get(pacote=participante.pacote, aluno=participante.contratante, ativo='S').data_contratacao
+        obj = AlunoPacote.objects.get(pacote=participante.pacote, aluno=participante.contratante, ativo='S')
+        data_vencimento = obj.data_validade
+        data_contratacao = obj.data_contratacao
 
         if data_minima_vencimento is None:
-          data_minima_vencimento = data
+          data_minima_vencimento = data_vencimento
           data_minima_inicio = data_contratacao
         
         if data_vencimento < data_minima_vencimento:
@@ -819,7 +820,7 @@ class AgendaSrv():
         if data_contratacao < data_minima_inicio:
           data_minima_inicio = data_contratacao
 
-      return data_minima + timedelta(settings.DIAS_INATIVAR_VENCIMENTO), data_minima_inicio
+      return data_minima_vencimento + timedelta(settings.DIAS_INATIVAR_VENCIMENTO), data_minima_inicio
 
     def fcontratantes(participantes):
       contratantes = {}
@@ -887,7 +888,7 @@ class AgendaSrv():
 
           if dt_obj >= recorrencia.criado_em.date():
             participantes = AulaParticipante.objects.filter(aula=recorrencia.aula)
-            data_minima_vencimento, data_minima_inicio = fdata_minima_vencimento(participantes)
+            data_minima_vencimento, data_minima_inicio = fdata_minima(participantes)
 
             if dt_obj <= data_minima_vencimento and dt_obj >= data_minima_inicio:
               contratantes = fcontratantes(participantes)
