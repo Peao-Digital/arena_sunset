@@ -5,7 +5,7 @@ body {
   margin: 0;
   color: #d0d6e1;
   background-color: #070e1d;
-  font-family: "Raleway", sans-serif;
+  font-family: "Poppins", sans-serif;
 }
 
 /* Div do conteudo */
@@ -130,7 +130,7 @@ main .page-wrapper {
 /* BotÃµes Sidebar list */
 
 .btn-list {
-  padding: 25px 16px 50px;
+  padding: 25px 0px 50px;
   justify-content: center;
   display: flex;
   flex-direction: column;
@@ -150,6 +150,10 @@ main .page-wrapper {
   color: #FE5408;
 }
 
+.btn-list-active {
+  border-left: 5px solid #FE5408;
+}
+
 .btn-list-sidebar {
   color: #455fa2;
   text-decoration: none;
@@ -158,11 +162,16 @@ main .page-wrapper {
   padding: 0;
   height: 32px;
   white-space: nowrap;
+  margin-left: 25px;
 }
 
-.btn-list-sidebar:hover,
+.btn-list-sidebar:hover{
+  color: #FE5408;
+}
+
 .btn-list-sidebar-active {
   color: #FE5408;
+  margin-left: 20px;
 }
 
 .icons {
@@ -349,7 +358,6 @@ ul.dropdown-menu.show::after {
   border: none !important;
   font-weight: bold;
   border-radius: 2px;
-  border: none;
 }
 
 .btn-view,

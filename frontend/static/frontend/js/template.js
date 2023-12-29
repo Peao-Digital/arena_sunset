@@ -37,7 +37,9 @@ $(document).ready(() => {
     const currentPath = window.location.pathname;
 
     $('.btn-list-sidebar').each(function () {
-      $(this).toggleClass('btn-list-sidebar-active', new URL($(this).attr('href'), window.location.origin).pathname === currentPath);
+      const isActive = new URL($(this).attr('href'), window.location.origin).pathname === currentPath;
+      $(this).toggleClass('btn-list-sidebar-active', isActive);
+      $(this).parent('li').toggleClass('btn-list-active', isActive);
     });
   }
 
