@@ -723,7 +723,7 @@ class PacoteAlunoSrv():
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
-  def pode_reservar(pacote_obj, contratante_obj, dia_semana):
+  def pode_reservar(pacote_obj, contratante_obj):
     if pacote_obj is None:
       return True
     
@@ -734,16 +734,16 @@ class PacoteAlunoSrv():
     contrato_obj = contrato_obj[0]
 
     filtros = {
-      'dia_semana': dia_semana,
       'aula__aulaparticipante__pacote': pacote_obj,
-      'dia_semana': dia_semana,
+      'aula__aulaparticipante__contratante': contratante_obj,
       'ativo': 'S'
     }
     
-    #Verificar periodo
-    d = Recorrencia.objects.filter(**filtros)
+    recorrencias = Recorrencia.objects.filter(**filtros)
+    if recorrencias.exists() is False:
+      return True
 
-    return True
+    return len(recorrencias) < pacote_obj.qtd_aulas_semana
 
 class AgendaSrv():
 
@@ -1235,6 +1235,8 @@ class AgendaSrv():
           obj_aula.full_clean()
           obj_aula.save()
 
+          #Salvando cada participante
+          ignorar = []
           for contratante in contratantes:
             contratante_obj = Aluno.objects.get(pk=contratante['contratante'])
             alunos = contratante['alunos']
@@ -1246,8 +1248,9 @@ class AgendaSrv():
               pacote_obj = pacote_obj[0]
 
             #CONFERIR SE O CONTRATANTE PODE RESERVAR
-            if PacoteAlunoSrv.pode_reservar(pacote_obj, contratante_obj, dia_semana) is False:
-              return {"erro": "O usuário não possui mais reservas para o pacote selecionado neste período!", "e": str(e), "tipo_erro": "validacao"}, 400
+            if PacoteAlunoSrv.pode_reservar(pacote_obj, contratante_obj) is False:
+              return {"erro": "O aluno {} não possui mais reservas disponíveis para o pacote {} neste período!".format(contratante_obj.nome, pacote_obj.nome),
+                      "tipo_erro": "validacao"}, 400
 
             for aluno in alunos:
               AgendaSrv.salvar_aulaAluno(obj_aula, pacote_obj, contratante_obj, Aluno.objects.get(pk=aluno))
