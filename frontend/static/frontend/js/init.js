@@ -62,7 +62,7 @@ const form_data_request = (url, formData, tipo, csrf) => {
         return myXhr
       }
     })
-      .fail(function () {
+      .fail(function (response) {
         let json = (typeof response == "string") ? IsJsonString(response) : response;
         if (json) {
           reject({ 'msg': json.erro, 'erro': json.erro })

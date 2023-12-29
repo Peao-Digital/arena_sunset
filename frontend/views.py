@@ -19,10 +19,7 @@ def f_default_context(user):
 @login_required(login_url="/login")
 def index(request):
   context = f_default_context(request.user)
-
-  if request.user.is_authenticated:
-    return render(request, 'frontend/index.html', context)
-  return render(request, 'frontend/index_publico.html', context)
+  return render(request, 'frontend/index.html', context)
 
 def logar_usuario(request):
   context = f_default_context(request.user)
@@ -55,31 +52,11 @@ def deslogar(request):
   return HttpResponseRedirect('/')
 
 @login_required(login_url="/login")
-def index_administracao(request):
-  context = f_default_context(request.user)
-
-  if context['perfil_administrador']:
-    return render(request, 'frontend/administracao/index.html', context)
-  else:
-    messages.error(request, "Você não possui acesso para o módulo de administração!")
-    return HttpResponseRedirect('/')
-
-@login_required(login_url="/login")
 def criar_usuario_view(request):
   context = f_default_context(request.user)
 
   if context['perfil_administrador']:
-    return render(request, 'frontend/administracao/usuarios/criar.html', context)
-  else:
-    messages.error(request, "Você não possui acesso para o módulo de administração!")
-    return HttpResponseRedirect('/')
-
-@login_required(login_url="/login")
-def atualizar_usuario_view(request, id):
-  context = f_default_context(request.user)
-
-  if context['perfil_administrador']:
-    return render(request, 'frontend/administracao/usuarios/atualizar.html', context)
+    return render(request, 'frontend/usuarios.html', context)
   else:
     messages.error(request, "Você não possui acesso para o módulo de administração!")
     return HttpResponseRedirect('/')
@@ -89,7 +66,7 @@ def criar_pacotes_view(request):
   context = f_default_context(request.user)
 
   if context['perfil_administrador']:
-    return render(request, 'frontend/administracao/pacotes/criar.html', context)
+    return render(request, 'frontend/pacotes.html', context)
   else:
     messages.error(request, "Você não possui acesso para o módulo de administração!")
     return HttpResponseRedirect('/')
@@ -99,7 +76,7 @@ def criar_alunos_view(request):
   context = f_default_context(request.user)
 
   if context['perfil_administrador'] or context['perfil_professor'] or context['perfil_atendimento']:
-    return render(request, 'frontend/alunos/criar.html', context)
+    return render(request, 'frontend/alunos.html', context)
   else:
     messages.error(request, "Você não possui acesso para o módulo de criação de alunos!")
     return HttpResponseRedirect('/')

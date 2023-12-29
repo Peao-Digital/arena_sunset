@@ -53,9 +53,9 @@ class UsuarioSrv():
 
       foto = ''
       cpf = ''
-      if u.perfil:
+      if hasattr(u, 'perfil'):
         cpf = u.perfil.cpf
-        #foto = settings.UPLOAD_URL + 'usuarios/' + u.perfil.foto_perfil
+        foto = settings.UPLOAD_URL + 'usuarios/' + u.perfil.foto_perfil
 
       d_json = {
         'id': u.id,
@@ -108,17 +108,9 @@ class UsuarioSrv():
 
         u_obj.save()
 
-        #arquivo = ''
-        #if request.FILES.get('foto', None) is not None:
-        #  extensao = request.FILES['foto'].name.split('.')[-1]
-        #  nome = 'foto_perfil_{}.{}'.format(u_obj.id, extensao)
-        #  dirpath = os.path.join(settings.UPLOAD_ROOT, 'usuarios')
-        #  arquivo = upload_file(request.FILES['foto'], nome, dirpath)
-
         p_obj = Perfil()
         p_obj.user = u_obj
         p_obj.cpf = cpf
-        #p_obj.foto_perfil = arquivo
 
         p_obj.save()
         
@@ -127,6 +119,59 @@ class UsuarioSrv():
           u_obj.groups.add(grupo)
 
       return {'id': u_obj.id}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+    
+  @staticmethod
+  def deletar_foto(request, id):
+    try:
+      usuario_obj = User.objects.get(pk=id)
+      perfil_obj = usuario_obj.perfil
+
+      fpath = os.path.join(settings.UPLOAD_ROOT, 'usuarios', perfil_obj.foto_perfil)
+      if os.path.exists(fpath):
+        os.remove(fpath)
+        
+      perfil_obj.foto_perfil = ''
+      perfil_obj.save()
+
+      return {'msg': 'Imagem deletada com sucesso!'}, 200
+    except ObjectDoesNotExist  as e:
+      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
+    except ValidationError as e:
+      return {"erro":  str(e), "tipo_erro": "validacao"}, 400
+    except Exception as e:
+      return {"erro": str(e), "tipo_erro": "servidor"}, 500
+    
+  @staticmethod
+  def salvar_foto(request, id):
+    try:
+      usuario_obj = User.objects.get(pk=id)
+      perfil_obj = usuario_obj.perfil
+
+      if perfil_obj.foto_perfil != '':
+        fpath = os.path.join(settings.UPLOAD_ROOT, 'usuarios', perfil_obj.foto_perfil)
+        if os.path.exists(fpath):
+          os.remove(fpath)
+
+      arquivo = ''
+      if request.FILES.get('foto', None) is not None:
+        extensao = request.FILES['foto'].name.split('.')[-1]
+        nome = 'foto_perfil_{}.{}'.format(usuario_obj.id, extensao)
+        dirpath = os.path.join(settings.UPLOAD_ROOT, 'usuarios')
+        arquivo = upload_file(request.FILES['foto'], nome, dirpath)
+
+        if arquivo == '' or arquivo is None:
+          return {'msg': 'Usuário gravado, porém houve um erro ao salvar a imagem!'}, 400
+        
+        perfil_obj.foto_perfil = arquivo
+        perfil_obj.save()
+
+      return {'msg': 'Imagem salva com sucesso!'}, 200
     except ObjectDoesNotExist  as e:
       return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
     except ValidationError as e:
@@ -188,26 +233,6 @@ class UsuarioSrv():
       return {"erro": str(e), "tipo_erro": "servidor"}, 500
 
   @staticmethod
-  def atualizar_foto(request, id):
-    pass
-
-  @staticmethod
-  def deletar_foto(request, id):
-    try:
-      perfil = Perfil.objects.get(user=User.objects.get(pk=id))
-
-      if perfil.foto_perfil != '':
-        os.remove(os.path.join(settings.UPLOAD_ROOT, 'usuarios', perfil.foto_perfil))
-
-      perfil.foto_perfil = ''
-      perfil.save()
-      return {'msg': 'Foto deletada!'}, 200
-    except ObjectDoesNotExist  as e:
-      return {"erro": "O registro não foi encontrado!", "e": str(e), "tipo_erro": "validacao"}, 400
-    except Exception as e:
-      return {"erro": str(e), "tipo_erro": "servidor"}, 500
-
-  @staticmethod
   def ativar_desativar(request, id):
     try:
       
@@ -262,8 +287,10 @@ class UsuarioSrv():
         grupos_id = []
 
         cpf = ''
-        if d.perfil:
+        foto = ''
+        if hasattr(d, 'perfil'):
           cpf = d.perfil.cpf
+          foto = settings.UPLOAD_URL + 'usuarios/' + d.perfil.foto_perfil
 
         for grupo in d.groups.all():
           grupos.append(grupo.name)
@@ -278,7 +305,8 @@ class UsuarioSrv():
           'email': d.email,
           'ativo': d.is_active,
           'grupos': grupos,
-          'grupos_id': grupos_id
+          'grupos_id': grupos_id,
+          'foto': foto
         })
 
       return {'dados': d_json}, 200
@@ -320,10 +348,15 @@ class ProfessorSrv():
 
       d_json = []
       for dado in dados:
+        foto = ''
+        if hasattr(dado, 'perfil'):
+          foto = settings.UPLOAD_URL + 'usuarios/' + dado.perfil.foto_perfil
+          
         d_json.append({
           'id': dado.id, 'usuario': dado.username,
           'ativo': 'S' if dado.is_active else 'N',
-          'nome': f_nome_usuario(dado)
+          'nome': f_nome_usuario(dado),
+          'foto': foto
         })
 
       return {'dados': d_json}, 200

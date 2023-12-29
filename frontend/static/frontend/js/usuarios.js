@@ -111,7 +111,6 @@ $(document).ready(() => {
     return true;
   };
 
-
   /**
    * Puxa os dados do usuário através da ID existente no backend para edição.
    * @param {number} userId - O ID do usuário a ser editado.
@@ -135,6 +134,8 @@ $(document).ready(() => {
         input_cpf.val(dados.cpf).unmask();
 
         btnGravar.val(dados.id);
+        
+        $("#imagem_atual").attr('src', dados.foto == ''? '/static/frontend/img/usuario.png': dados.foto)
         modal.modal("show");
 
         input_cpf.mask('000.000.000-00');
@@ -171,12 +172,32 @@ $(document).ready(() => {
         cpf: input_cpf.val().replaceAll('.', '').replaceAll('-', ''),
         grupo: select_grupo.val()
       }, 'POST', csrftoken)
-        .then(response => {
-          handleResponse(response, alertavel, 'Dados Gravados com Sucesso!');
-        })
-        .catch(response => handleError);
+      .then(response => {
+        let imagem = document.getElementById('foto')
+        if (!response.erro) {
+          if (imagem.files.length == 0) {
+            handleResponse(response, alertavel, 'Dados Gravados com Sucesso!');
+          } else {
+            salvarImagem(response.id, imagem)
+          }
+        } else {
+          handleResponse(response, alertavel, '');
+        }
+      })
+      .catch(response => handleError);
     }
   };
+
+  const salvarImagem = async (id, imagem) => {
+    let formData = new FormData();           
+    formData.append("foto", imagem.files[0]);
+
+    form_data_request('/backend/usuarios/foto/gravar/' + id, formData, 'POST', csrftoken)
+    .then(json => {
+      handleResponse(json, alertavel, 'Dados Gravados com Sucesso!');
+    })
+    .catch(response => handleError);
+  }
 
   /**
    * Edita os dados de um usuário existente no backend.
@@ -196,7 +217,16 @@ $(document).ready(() => {
         nome: input_nome.val(),
       }, 'PUT', csrftoken)
         .then(response => {
-          handleResponse(response, alertavel, 'Dados Editados com Sucesso!');
+          let imagem = document.getElementById('foto')
+          if (!response.erro) {
+            if (imagem.files.length == 0) {
+              handleResponse(response, alertavel, 'Dados Gravados com Sucesso!');
+            } else {
+              salvarImagem(userId, imagem)
+            }
+          } else {
+            handleResponse(response, alertavel, '');
+          }
         }).catch(response => handleError);
     }
   }
@@ -218,6 +248,8 @@ $(document).ready(() => {
   const btnNewUserClickHandler = (event) => {
     event.preventDefault();
     carregar_grupos();
+
+    $("#imagem_atual").attr('src', '/static/frontend/img/usuario.png')
 
     modal.find('input, select').val('');
     modal.find('.modal-title').text('Criação de colaboradores');

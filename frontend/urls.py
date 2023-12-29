@@ -9,10 +9,8 @@ urlpatterns = [
   path('login', views.logar_usuario, name="login"),
   path('logout', views.deslogar, name="logout"),
 
-  path('administracao', views.index_administracao, name="administracao"),
-  path('administracao/usuarios/criar', views.criar_usuario_view, name="Criar usuário"),
-  path('administracao/usuarios/atualizar/<int:id>', views.atualizar_usuario_view, name="Atualizar usuário"),
-  path('administracao/pacotes/criar', views.criar_pacotes_view, name="Criar pacotes"),
-  path('alunos/criar', views.criar_alunos_view, name="Criar aluno"),
+  path('usuarios', views.criar_usuario_view, name="Usuários"),
+  path('pacotes', views.criar_pacotes_view, name="Pacotes"),
+  path('alunos', views.criar_alunos_view, name="Alunos"),
 
 ]

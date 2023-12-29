@@ -57,21 +57,21 @@
 
           {% if perfil_administrador %}
           <li>
-            <a class="btn-list-sidebar" href="{% url 'frontend:Criar aluno' %}">
+            <a class="btn-list-sidebar" href="{% url 'frontend:Alunos' %}">
               <i class="icons fa-solid fa-users"></i>
               <span class="list-title">Alunos</span>
             </a>
           </li>
 
           <li>
-            <a class="btn-list-sidebar" href="{% url 'frontend:Criar pacotes' %}">
+            <a class="btn-list-sidebar" href="{% url 'frontend:Pacotes' %}">
               <i class="icons fa-solid fa-address-card"></i>
               <span class="list-title">Pacotes</span>
             </a>
           </li>
 
           <li>
-            <a class="btn-list-sidebar" href="{% url 'frontend:Criar usuário' %}">
+            <a class="btn-list-sidebar" href="{% url 'frontend:Usuários' %}">
               <i class="icons fa-solid fa-clipboard-user"></i>
               <span class="list-title">Colaboradores</span>
             </a>
@@ -80,7 +80,7 @@
 
           {% if perfil_atendimento or perfil_professor %}
           <li>
-            <a class="btn-list-sidebar" href="{% url 'frontend:Criar aluno' %}">
+            <a class="btn-list-sidebar" href="{% url 'frontend:Alunos' %}">
               <i class="icons fa-solid fa-users"></i>
               <span class="list-title">Alunos</span>
             </a>

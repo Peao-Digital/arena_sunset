@@ -56,7 +56,7 @@ class UsuarioFotoView(View):
   def post(self, request, id):
     res, status = apenas_administracao(request.user)
     if status != 400:
-      res, status = UsuarioSrv.atualizar_foto(request, id)
+      res, status = UsuarioSrv.salvar_foto(request, id)
     return JsonResponse(res, json_dumps_params={'ensure_ascii': False}, status=status)
   
   def delete(self, request, id):

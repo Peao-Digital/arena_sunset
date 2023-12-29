@@ -46,14 +46,14 @@ $(document).ready(function () {
    * @returns 
    */
   const card_professores = (professor) => {
-    const imagePath = "/static/frontend/img/professor.png";
+    const imagePath = professor.foto == ''? "static/frontend/img/usuario.png": professor.foto;
 
     return `
       <div class="col-md-6 col-lg-4 col-sm-12 mb-3">
         <div class="card custom-cards-professores">
           <div class="card-body">
             <div class="div-foto mb-4">
-              <img src="${imagePath}" class="img-professor"/>
+              <img src="/${imagePath}" class="img-professor"/>
             </div>
             <div class="div-nome mt-4">
               <h4>${professor.nome}</h4>

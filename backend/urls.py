@@ -8,12 +8,12 @@ urlpatterns = [
   path('usuarios/ver/<int:id>', UsuarioCRUDView.as_view(http_method_names=['get']), name="Ver usuário"),
   path('usuarios/criar', UsuarioCRUDView.as_view(http_method_names=['post']), name="Criar usuário"),
   path('usuarios/atualizar/<int:id>', UsuarioCRUDView.as_view(http_method_names=['put']), name="atualizar usuário"),
-  path('usuarios/atualizar_foto/<int:id>', UsuarioFotoView.as_view(http_method_names=['post']), name="Atualizar foto do usuário"),
-  path('usuarios/deletar_foto/<int:id>', UsuarioFotoView.as_view(http_method_names=['delete']), name="Deletar foto do usuário"),
   path('usuarios/ativar_desativar/<int:id>', UsuarioAtivacaoView.as_view(http_method_names=['put']), name="Ativar/desativar usuário"),
   path('usuarios/deletar/<int:id>', UsuarioCRUDView.as_view(http_method_names=['delete']), name="Deletar usuário"),
   path('usuarios/buscar', UsuarioCRUDView.as_view(http_method_names=['get']), name="Buscar usuários"),
   path('usuarios/trocar_senha', UsuarioSenhaView.as_view(http_method_names=['put']), name="Trocar senha de usuário"),
+  path('usuarios/foto/gravar/<int:id>', UsuarioFotoView.as_view(http_method_names=['post']), name="Gravar imagem do usuário"),
+  path('usuarios/foto/deletar/<int:id>', UsuarioFotoView.as_view(http_method_names=['delete']), name="Deletar imagem do usuário"),
 
   path('professores/listar', ProfessorView.as_view(http_method_names=['get']), name="Listar os professores"),
 
