@@ -55,7 +55,8 @@ class UsuarioSrv():
       cpf = ''
       if hasattr(u, 'perfil'):
         cpf = u.perfil.cpf
-        foto = settings.UPLOAD_URL + 'usuarios/' + u.perfil.foto_perfil
+        if u.perfil.foto_perfil != '' or u.perfil.foto_perfil is not None:
+          foto = settings.UPLOAD_URL + 'usuarios/' + u.perfil.foto_perfil
 
       d_json = {
         'id': u.id,
@@ -290,7 +291,8 @@ class UsuarioSrv():
         foto = ''
         if hasattr(d, 'perfil'):
           cpf = d.perfil.cpf
-          foto = settings.UPLOAD_URL + 'usuarios/' + d.perfil.foto_perfil
+          if d.perfil.foto_perfil != '' or d.perfil.foto_perfil is not None:
+           foto = settings.UPLOAD_URL + 'usuarios/' + d.perfil.foto_perfil
 
         for grupo in d.groups.all():
           grupos.append(grupo.name)
@@ -350,7 +352,8 @@ class ProfessorSrv():
       for dado in dados:
         foto = ''
         if hasattr(dado, 'perfil'):
-          foto = settings.UPLOAD_URL + 'usuarios/' + dado.perfil.foto_perfil
+          if dado.perfil.foto_perfil != '' or dado.perfil.foto_perfil is not None:
+            foto = settings.UPLOAD_URL + 'usuarios/' + dado.perfil.foto_perfil
           
         d_json.append({
           'id': dado.id, 'usuario': dado.username,
