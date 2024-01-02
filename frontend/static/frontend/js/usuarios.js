@@ -134,8 +134,12 @@ $(document).ready(() => {
         input_cpf.val(dados.cpf).unmask();
 
         btnGravar.val(dados.id);
-        
-        $("#imagem_atual").attr('src', dados.foto == ''? '/static/frontend/img/usuario.png': dados.foto)
+        $(".image-preview").attr('src', dados.foto == '' ? '/static/frontend/img/professor.png' : dados.foto)
+        $('.image-button').css('display', 'none');
+        $('.image-preview').css('display', 'flex');
+        $('.change-image').css('display', 'flex');
+        $('.divFoto').css('display', 'flex');
+
         modal.modal("show");
 
         input_cpf.mask('000.000.000-00');
@@ -172,31 +176,36 @@ $(document).ready(() => {
         cpf: input_cpf.val().replaceAll('.', '').replaceAll('-', ''),
         grupo: select_grupo.val()
       }, 'POST', csrftoken)
-      .then(response => {
-        let imagem = document.getElementById('foto')
-        if (!response.erro) {
-          if (imagem.files.length == 0) {
-            handleResponse(response, alertavel, 'Dados Gravados com Sucesso!');
+        .then(response => {
+          let imagem = document.getElementById('imageInput')
+          if (!response.erro) {
+            if (imagem.files.length == 0) {
+              handleResponse(response, alertavel, 'Dados Gravados com Sucesso!');
+            } else {
+              salvarImagem(response.id, imagem)
+            }
           } else {
-            salvarImagem(response.id, imagem)
+            handleResponse(response, alertavel, '');
           }
-        } else {
-          handleResponse(response, alertavel, '');
-        }
-      })
-      .catch(response => handleError);
+        })
+        .catch(response => handleError);
     }
   };
 
+  /**
+   * Função de gravação de imagens
+   * @param {*} id 
+   * @param {*} imagem 
+   */
   const salvarImagem = async (id, imagem) => {
-    let formData = new FormData();           
+    let formData = new FormData();
     formData.append("foto", imagem.files[0]);
 
     form_data_request('/backend/usuarios/foto/gravar/' + id, formData, 'POST', csrftoken)
-    .then(json => {
-      handleResponse(json, alertavel, 'Dados Gravados com Sucesso!');
-    })
-    .catch(response => handleError);
+      .then(json => {
+        handleResponse(json, alertavel, 'Dados Gravados com Sucesso!');
+      })
+      .catch(response => handleError);
   }
 
   /**
@@ -205,7 +214,7 @@ $(document).ready(() => {
    */
   const editarFormUser = (userId) => {
     const formsData = [input_nome, input_sobrenome, input_usuario, input_email, input_cpf, select_grupo];
-
+    
     if (validateForm(formsData, 'Editar')) {
       normal_request(`/backend/usuarios/atualizar/${userId}`, {
         cpf: input_cpf.val().replaceAll('.', '').replaceAll('-', ''),
@@ -217,7 +226,8 @@ $(document).ready(() => {
         nome: input_nome.val(),
       }, 'PUT', csrftoken)
         .then(response => {
-          let imagem = document.getElementById('foto')
+          let imagem = document.getElementById('imageInput')
+
           if (!response.erro) {
             if (imagem.files.length == 0) {
               handleResponse(response, alertavel, 'Dados Gravados com Sucesso!');
@@ -249,7 +259,10 @@ $(document).ready(() => {
     event.preventDefault();
     carregar_grupos();
 
-    $("#imagem_atual").attr('src', '/static/frontend/img/usuario.png')
+    $('.image-button').css('display', 'flex');
+    $('.image-preview').css('display', 'none');
+    $('.change-image').css('display', 'none');
+    $('.divFoto').css('display', 'none');
 
     modal.find('input, select').val('');
     modal.find('.modal-title').text('Criação de colaboradores');
@@ -290,6 +303,7 @@ $(document).ready(() => {
       $('.image-button').css('display', 'none');
       $('.image-preview').css('display', 'flex');
       $('.change-image').css('display', 'flex');
+      $('.divFoto').css('display', 'flex');
     }
   });
 

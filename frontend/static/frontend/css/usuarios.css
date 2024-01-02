@@ -4,10 +4,13 @@
   align-items: center;
 }
 
+.divFoto{
+  display: none;
+}
+
 .divFoto {
   width: 100%;
   flex-direction: column !important;
-  align-content: center !important;
   justify-content: center;
   align-items: center;
 }
@@ -51,16 +54,18 @@
 }
 
 .image-input img {
-  max-width: 50%;
-  display: none;
   border: 1px solid #182239;
-  border-radius: 5px;
+  width: 200px;
+  height: 200px;
+  border-radius: 10%;
+  overflow: hidden;
+  object-fit: cover;
 }
 
 .image-input span {
   display: none;
   cursor: pointer;
-  color: #ff5f06;
+  color: #ffffff;
   font-weight: bold;
   padding: 5px;
   border-radius: 5px;
@@ -70,14 +75,7 @@
   justify-content: center;
   margin-top: 5px;
   position: absolute;
-}
-
-.image-input span:hover {
-  color: #ffffff;
-  font-weight: bold;
-  background: linear-gradient(180deg, #FF6F02 0%, #FE5408 100%);
-  border: 1px solid #FF5722;
-
+  font-size: 3rem;
 }
 
 @keyframes shake {

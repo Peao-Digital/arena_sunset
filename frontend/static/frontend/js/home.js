@@ -46,7 +46,9 @@ $(document).ready(function () {
    * @returns 
    */
   const card_professores = (professor) => {
-    const imagePath = professor.foto == ''? "static/frontend/img/usuario.png": professor.foto;
+    console.log(professor)
+
+    const imagePath = professor.foto == ''? "static/frontend/img/professor.png": professor.foto;
 
     return `
       <div class="col-md-6 col-lg-4 col-sm-12 mb-3">

@@ -106,16 +106,15 @@
             </div>
           </div>
 
-          <div class="row">
-            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 mb-2">
-              <label for="arquivo" class="form-label"><b>Foto</b></label>
-              <input type="file" class="form-control" id="foto" name="foto">
-            </div>
-          </div>
-
-          <div class="row" style="margin-top: 5px">
-            <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 mb-2 justify-content-center">
-              <img src="/static/frontend/img/usuario.png" id="imagem_atual" style="width:200px; height:200px">
+          <div class="image-input">
+            <input type="file" accept="image/*" id="imageInput" name="imageInput">
+            <label for="imageInput" class="image-button">
+              <i class="far fa-image icon-image"></i>
+              <p>Escolher Foto de Perfil</p>
+            </label>
+            <div class="divFoto">
+              <img src="" class="image-preview" alt="Foto Colaborador">
+              <span class="change-image"><i class="fas fa-image"></i></span>
             </div>
           </div>
 
