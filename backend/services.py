@@ -292,7 +292,7 @@ class UsuarioSrv():
         if hasattr(d, 'perfil'):
           cpf = d.perfil.cpf
           if d.perfil.foto_perfil != '' or d.perfil.foto_perfil is not None:
-           foto = settings.UPLOAD_URL + 'usuarios/' + d.perfil.foto_perfil
+            foto = settings.UPLOAD_URL + 'usuarios/' + d.perfil.foto_perfil
 
         for grupo in d.groups.all():
           grupos.append(grupo.name)
